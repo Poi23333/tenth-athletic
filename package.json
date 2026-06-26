@@ -64,12 +64,5 @@
   },
   "browserslist": [
     "defaults"
-  ],
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "unrs-resolver",
-      "workerd"
-    ]
-  }
+  ]
 }
