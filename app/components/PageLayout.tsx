@@ -1,11 +1,11 @@
-import {Await, Link} from 'react-router';
+import {Await, Link, NavLink} from 'react-router';
 import {Suspense, useId} from 'react';
 import type {
   CartApiQueryFragment,
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
-import {Aside} from '~/components/Aside';
+import {Aside, useAside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
@@ -14,7 +14,6 @@ import {
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
-
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
   footer: Promise<FooterQuery | null>;
@@ -36,6 +35,10 @@ export function PageLayout({
     <Aside.Provider>
       <CartAside cart={cart} />
       <SearchAside />
+      <ProductTypesAside
+        header={header}
+        publicStoreDomain={publicStoreDomain}
+      />
       <MobileMenuAside cart={cart} />
       {header && (
         <Header
@@ -157,4 +160,90 @@ function MobileMenuAside({cart}: {cart: PageLayoutProps['cart']}) {
       <HeaderMenu viewport="mobile" cart={cart} />
     </Aside>
   );
+}
+
+function ProductTypesAside({
+  header,
+  publicStoreDomain,
+}: {
+  header: HeaderQuery;
+  publicStoreDomain: string;
+}) {
+  const {close, productTypeAudience} = useAside();
+  const heading = productTypeAudience === 'man' ? 'MAN' : 'WOMAN';
+  const menu =
+    productTypeAudience === 'man' ? header.manMenu : header.womanMenu;
+  const primaryDomainUrl = header.shop.primaryDomain?.url;
+
+  return (
+    <Aside type="productTypes" heading={heading}>
+      <div className="product-type-menu">
+        {menu ? (
+          menu.items.map((item) => {
+            if (!item.url || !primaryDomainUrl) {
+              return (
+                <span className="product-type-menu-item" key={item.id}>
+                  {item.title}
+                </span>
+              );
+            }
+
+            const url = normalizeShopifyMenuUrl({
+              primaryDomainUrl,
+              publicStoreDomain,
+              url: item.url,
+            });
+            const isExternal = !url.startsWith('/');
+
+            return isExternal ? (
+              <a
+                className="product-type-menu-item"
+                href={url}
+                key={item.id}
+                onClick={close}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {item.title}
+              </a>
+            ) : (
+              <NavLink
+                className="product-type-menu-item"
+                key={item.id}
+                onClick={close}
+                prefetch="intent"
+                to={url}
+              >
+                {item.title}
+              </NavLink>
+            );
+          })
+        ) : (
+          <p className="product-type-menu-empty">
+            Shopify menu handle {productTypeAudience}-menu is not configured.
+          </p>
+        )}
+      </div>
+    </Aside>
+  );
+}
+
+function normalizeShopifyMenuUrl({
+  primaryDomainUrl,
+  publicStoreDomain,
+  url,
+}: {
+  primaryDomainUrl: string;
+  publicStoreDomain: string;
+  url: string;
+}) {
+  const isStorefrontUrl =
+    url.includes('myshopify.com') ||
+    url.includes(publicStoreDomain) ||
+    url.includes(primaryDomainUrl);
+
+  if (!isStorefrontUrl) return url;
+
+  const parsedUrl = new URL(url);
+  return `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
 }

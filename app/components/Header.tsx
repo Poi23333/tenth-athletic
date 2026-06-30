@@ -6,7 +6,7 @@ import {
   useOptimisticCart,
 } from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
-import {useAside} from '~/components/Aside';
+import {type ProductTypeAudience, useAside} from '~/components/Aside';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -17,9 +17,13 @@ interface HeaderProps {
 
 type Viewport = 'desktop' | 'mobile';
 
-const TENTH_NAV_ITEMS = [
-  {id: 'man', title: 'Man', url: '/collections/man'},
-  {id: 'woman', title: 'Woman', url: '/collections/woman'},
+type TenthNavItem =
+  | {id: string; title: string; audience: ProductTypeAudience; url?: never}
+  | {id: string; title: string; url: string; audience?: never};
+
+const TENTH_NAV_ITEMS: TenthNavItem[] = [
+  {id: 'man', title: 'Man', audience: 'man'},
+  {id: 'woman', title: 'Woman', audience: 'woman'},
   {id: 'story', title: 'story', url: '/pages/story'},
   {id: 'community', title: 'community', url: '/pages/community'},
 ];
@@ -50,22 +54,33 @@ export function HeaderMenu({
   cart: Promise<CartApiQueryFragment | null>;
 }) {
   const className = `header-menu-${viewport}`;
-  const {close} = useAside();
+  const {close, openProductTypes} = useAside();
 
   return (
     <nav className={className} role="navigation">
-      {TENTH_NAV_ITEMS.map((item) => (
-        <NavLink
-          className="header-menu-item"
-          end
-          key={item.id}
-          onClick={close}
-          prefetch="intent"
-          to={item.url}
-        >
-          {item.title}
-        </NavLink>
-      ))}
+      {TENTH_NAV_ITEMS.map((item) =>
+        item.audience !== undefined ? (
+          <button
+            className="header-menu-item reset"
+            key={item.id}
+            onClick={() => openProductTypes(item.audience)}
+            type="button"
+          >
+            {item.title}
+          </button>
+        ) : (
+          <NavLink
+            className="header-menu-item"
+            end
+            key={item.id}
+            onClick={close}
+            prefetch="intent"
+            to={item.url}
+          >
+            {item.title}
+          </NavLink>
+        ),
+      )}
       <BagToggle cart={cart} />
     </nav>
   );

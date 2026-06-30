@@ -1,5 +1,6 @@
 import {useLoaderData} from 'react-router';
 import type {Route} from './+types/_index';
+import {DotMatrixMedia} from '~/components/DotMatrixMedia';
 import {MockShopNotice} from '~/components/MockShopNotice';
 
 export const meta: Route.MetaFunction = () => {
@@ -19,11 +20,15 @@ export default function Homepage() {
     <div className="home">
       {data.isShopLinked ? null : <MockShopNotice />}
       <section className="home-hero">
-        <div className="home-hero-image">
+        <DotMatrixMedia
+          className="home-hero-image"
+          maskSrc="/home.png"
+          objectFit="cover"
+        >
           <img src="/home.png" alt="Tenth Athletic" width={640} height={640} />
-        </div>
+        </DotMatrixMedia>
         <div className="home-hero-content">
-          <p className="home-hero-tagline">. Wild movement. Quiet mind.</p>
+          <p className="home-hero-tagline">Wild movement. Quiet mind.</p>
           <p className="home-hero-subtitle">
             Quiet performance for life around distance.
           </p>

@@ -1,6 +1,6 @@
 import type {Route} from './+types/collections.all';
 import {useLoaderData} from 'react-router';
-import {getPaginationVariables, Image, Money} from '@shopify/hydrogen';
+import {getPaginationVariables} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {ProductItem} from '~/components/ProductItem';
 import type {CollectionItemFragment} from 'storefrontapi.generated';
@@ -26,7 +26,7 @@ export async function loader(args: Route.LoaderArgs) {
 async function loadCriticalData({context, request}: Route.LoaderArgs) {
   const {storefront} = context;
   const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
+    pageBy: 15,
   });
 
   const [{products}] = await Promise.all([
@@ -51,8 +51,10 @@ export default function Collection() {
   const {products} = useLoaderData<typeof loader>();
 
   return (
-    <div className="collection">
-      <h1>Products</h1>
+    <div className="collection product-list-page">
+      <header className="product-list-heading">
+        <h1>Products</h1>
+      </header>
       <PaginatedResourceSection<CollectionItemFragment>
         connection={products}
         resourcesClassName="products-grid"
@@ -65,7 +67,19 @@ export default function Collection() {
           />
         )}
       </PaginatedResourceSection>
+      <ProductListNotes />
     </div>
+  );
+}
+
+function ProductListNotes() {
+  return (
+    <nav className="product-list-notes" aria-label="Product information">
+      <a href="#size-fit">Size &amp; Fit</a>
+      <a href="#shipping-returns">Shipping &amp; Returns</a>
+      <a href="#materials">Materials</a>
+      <a href="#technical-specifications">Technical Specifications</a>
+    </nav>
   );
 }
 

@@ -28,7 +28,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {handle} = params;
   const {storefront} = context;
   const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
+    pageBy: 15,
   });
 
   if (!handle) {
@@ -69,9 +69,13 @@ export default function Collection() {
   const {collection} = useLoaderData<typeof loader>();
 
   return (
-    <div className="collection">
-      <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
+    <div className="collection product-list-page">
+      <header className="product-list-heading">
+        <h1>{collection.title}</h1>
+        {collection.description ? (
+          <p className="collection-description">{collection.description}</p>
+        ) : null}
+      </header>
       <PaginatedResourceSection<ProductItemFragment>
         connection={collection.products}
         resourcesClassName="products-grid"
@@ -84,6 +88,7 @@ export default function Collection() {
           />
         )}
       </PaginatedResourceSection>
+      <ProductListNotes />
       <Analytics.CollectionView
         data={{
           collection: {
@@ -93,6 +98,17 @@ export default function Collection() {
         }}
       />
     </div>
+  );
+}
+
+function ProductListNotes() {
+  return (
+    <nav className="product-list-notes" aria-label="Product information">
+      <a href="#size-fit">Size &amp; Fit</a>
+      <a href="#shipping-returns">Shipping &amp; Returns</a>
+      <a href="#materials">Materials</a>
+      <a href="#technical-specifications">Technical Specifications</a>
+    </nav>
   );
 }
 

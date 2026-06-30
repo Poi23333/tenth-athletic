@@ -4,6 +4,7 @@ import type {
   ProductItemFragment,
   CollectionItemFragment,
 } from 'storefrontapi.generated';
+import {DotMatrixMedia} from '~/components/DotMatrixMedia';
 import {useVariantUrl} from '~/lib/variants';
 
 export function ProductItem({
@@ -15,6 +16,8 @@ export function ProductItem({
 }) {
   const variantUrl = useVariantUrl(product.handle);
   const image = product.featuredImage;
+  const {title, color} = getProductDisplayParts(product.title);
+
   return (
     <Link
       className="product-item"
@@ -23,18 +26,61 @@ export function ProductItem({
       to={variantUrl}
     >
       {image && (
-        <Image
-          alt={image.altText || product.title}
-          aspectRatio="1/1"
-          data={image}
-          loading={loading}
-          sizes="(min-width: 45em) 400px, 100vw"
-        />
+        <DotMatrixMedia className="product-item-media" maskSrc={image.url}>
+          <Image
+            alt={image.altText || product.title}
+            data={image}
+            loading={loading}
+            sizes="(min-width: 45em) 400px, 50vw"
+          />
+        </DotMatrixMedia>
       )}
-      <h4>{product.title}</h4>
-      <small>
+      <h4>{title}</h4>
+      {color ? <p className="product-item-color">{color}</p> : null}
+      <small className="product-item-price">
         <Money data={product.priceRange.minVariantPrice} />
       </small>
     </Link>
   );
+}
+
+const COLOR_NAMES = [
+  'black',
+  'white',
+  'grey',
+  'gray',
+  'navy',
+  'blue',
+  'green',
+  'red',
+  'brown',
+  'cream',
+  'beige',
+  'sand',
+  'stone',
+  'olive',
+  'khaki',
+  'charcoal',
+];
+
+function getProductDisplayParts(title: string) {
+  const separated = title.match(/^(.*)\s[-–—]\s([^–—-]+)$/);
+  if (separated && isColorName(separated[2])) {
+    return {title: separated[1], color: separated[2]};
+  }
+
+  const words = title.trim().split(/\s+/);
+  const lastWord = words[words.length - 1]?.toLowerCase();
+  if (lastWord && isColorName(lastWord) && words.length > 1) {
+    return {
+      title: words.slice(0, -1).join(' '),
+      color: words[words.length - 1],
+    };
+  }
+
+  return {title, color: ''};
+}
+
+function isColorName(value: string) {
+  return COLOR_NAMES.includes(value.trim().toLowerCase());
 }

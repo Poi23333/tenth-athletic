@@ -18,13 +18,57 @@ export function Footer({
       <Await resolve={footerPromise}>
         {(footer) => (
           <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-              />
-            )}
+            <div className="footer-inner">
+              <div className="footer-story">
+                <h2 className="footer-title">
+                  Performance without conformity
+                </h2>
+                <p className="footer-body">
+                  Tenth athletic believes running is not a performance for
+                  attention, but a quiet way of building discipline, identity
+                  and belonging.
+                </p>
+              </div>
+
+              <div className="footer-aside">
+                <div
+                  className="footer-social"
+                  aria-label="Tenth Athletic socials"
+                >
+                  <img
+                    src="/logo/footer-social-strava.png"
+                    alt="Strava"
+                    width={88}
+                    height={20}
+                  />
+                  <img
+                    src="/logo/footer-social-spotify.png"
+                    alt="Spotify"
+                    width={62}
+                    height={20}
+                  />
+                </div>
+                <div className="footer-legal">
+                  <span className="footer-copyright">
+                    ©2026 Tenth athletic®
+                  </span>
+                  {footer?.menu && header.shop.primaryDomain?.url && (
+                    <FooterMenu
+                      menu={footer.menu}
+                      primaryDomainUrl={header.shop.primaryDomain.url}
+                      publicStoreDomain={publicStoreDomain}
+                    />
+                  )}
+                  <img
+                    src="/logo/footer-partner-1-percent-planet.png"
+                    alt="1% for the Planet"
+                    className="footer-partner"
+                    width={50}
+                    height={65}
+                  />
+                </div>
+              </div>
+            </div>
           </footer>
         )}
       </Await>
@@ -124,6 +168,6 @@ function activeLinkStyle({
 }) {
   return {
     fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'white',
+    color: isPending ? '#6f6f6f' : undefined,
   };
 }

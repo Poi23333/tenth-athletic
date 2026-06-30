@@ -6,10 +6,13 @@ import {
   useState,
 } from 'react';
 
-type AsideType = 'search' | 'cart' | 'mobile' | 'closed';
+export type ProductTypeAudience = 'man' | 'woman';
+type AsideType = 'search' | 'cart' | 'mobile' | 'productTypes' | 'closed';
 type AsideContextValue = {
   type: AsideType;
+  productTypeAudience: ProductTypeAudience;
   open: (mode: AsideType) => void;
+  openProductTypes: (audience: ProductTypeAudience) => void;
   close: () => void;
 };
 
@@ -76,12 +79,19 @@ const AsideContext = createContext<AsideContextValue | null>(null);
 
 Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
   const [type, setType] = useState<AsideType>('closed');
+  const [productTypeAudience, setProductTypeAudience] =
+    useState<ProductTypeAudience>('man');
 
   return (
     <AsideContext.Provider
       value={{
         type,
+        productTypeAudience,
         open: setType,
+        openProductTypes: (audience) => {
+          setProductTypeAudience(audience);
+          setType('productTypes');
+        },
         close: () => setType('closed'),
       }}
     >
