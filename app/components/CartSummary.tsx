@@ -15,7 +15,6 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
 
   return (
     <div aria-labelledby="cart-summary" className={className}>
-      <h4>Totals</h4>
       <dl className="cart-subtotal">
         <dt>Subtotal</dt>
         <dd>
@@ -26,8 +25,12 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
           )}
         </dd>
       </dl>
-      <CartDiscounts discountCodes={cart?.discountCodes} />
-      <CartGiftCard giftCardCodes={cart?.appliedGiftCards} />
+      {layout === 'page' ? (
+        <>
+          <CartDiscounts discountCodes={cart?.discountCodes} />
+          <CartGiftCard giftCardCodes={cart?.appliedGiftCards} />
+        </>
+      ) : null}
       <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} />
     </div>
   );
@@ -37,12 +40,9 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
   if (!checkoutUrl) return null;
 
   return (
-    <div>
-      <a href={checkoutUrl} target="_self">
-        <p>Continue to Checkout &rarr;</p>
-      </a>
-      <br />
-    </div>
+    <a className="cart-checkout-button" href={checkoutUrl} target="_self">
+      Checkout
+    </a>
   );
 }
 
@@ -58,7 +58,6 @@ function CartDiscounts({
 
   return (
     <div>
-      {/* Have existing discount, display it with a remove option */}
       <dl hidden={!codes.length}>
         <div>
           <dt>Discount(s)</dt>
@@ -74,7 +73,6 @@ function CartDiscounts({
         </div>
       </dl>
 
-      {/* Show an input to apply a discount */}
       <UpdateDiscountForm discountCodes={codes}>
         <div>
           <label htmlFor="discount-code-input" className="sr-only">

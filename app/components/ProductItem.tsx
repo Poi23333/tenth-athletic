@@ -4,7 +4,6 @@ import type {
   ProductItemFragment,
   CollectionItemFragment,
 } from 'storefrontapi.generated';
-import {DotMatrixMedia} from '~/components/DotMatrixMedia';
 import {useVariantUrl} from '~/lib/variants';
 
 export function ProductItem({
@@ -26,20 +25,20 @@ export function ProductItem({
       to={variantUrl}
     >
       {image && (
-        <DotMatrixMedia className="product-item-media" maskSrc={image.url}>
+        <div className="product-item-media">
           <Image
             alt={image.altText || product.title}
             data={image}
             loading={loading}
-            sizes="(min-width: 45em) 400px, 50vw"
+            sizes="(min-width: 48em) 25vw, 50vw"
           />
-        </DotMatrixMedia>
+        </div>
       )}
       <h4>{title}</h4>
       {color ? <p className="product-item-color">{color}</p> : null}
-      <small className="product-item-price">
+      <div className="product-item-price">
         <Money data={product.priceRange.minVariantPrice} />
-      </small>
+      </div>
     </Link>
   );
 }

@@ -24,24 +24,25 @@ type TenthNavItem =
 const TENTH_NAV_ITEMS: TenthNavItem[] = [
   {id: 'man', title: 'Man', audience: 'man'},
   {id: 'woman', title: 'Woman', audience: 'woman'},
-  {id: 'story', title: 'story', url: '/pages/story'},
-  {id: 'community', title: 'community', url: '/pages/community'},
+  {id: 'account', title: 'Account', url: '/account'},
 ];
 
 export function Header({header, cart}: HeaderProps) {
   return (
     <header className="header">
-      <NavLink prefetch="intent" to="/" className="header-logo-link" end>
-        <img
-          src="/logo/brand-logo-header.png"
-          alt={header.shop.name}
-          className="header-logo"
-          width={180}
-          height={32}
-        />
-      </NavLink>
-      <HeaderMenu viewport="desktop" cart={cart} />
-      <HeaderCtas />
+      <div className="header-inner">
+        <NavLink prefetch="intent" to="/" className="header-logo-link" end>
+          <img
+            src="/logo/brand-logo-header.png"
+            alt={header.shop.name}
+            className="header-logo"
+            width={180}
+            height={32}
+          />
+        </NavLink>
+        <HeaderMenu viewport="desktop" cart={cart} />
+        <HeaderCtas />
+      </div>
     </header>
   );
 }
@@ -54,14 +55,19 @@ export function HeaderMenu({
   cart: Promise<CartApiQueryFragment | null>;
 }) {
   const className = `header-menu-${viewport}`;
-  const {close, openProductTypes} = useAside();
+  const {close, open, openProductTypes, productTypeAudience, type} =
+    useAside();
 
   return (
     <nav className={className} role="navigation">
       {TENTH_NAV_ITEMS.map((item) =>
         item.audience !== undefined ? (
           <button
-            className="header-menu-item reset"
+            className={`header-menu-item reset${
+              type === 'productTypes' && productTypeAudience === item.audience
+                ? ' active'
+                : ''
+            }`}
             key={item.id}
             onClick={() => openProductTypes(item.audience)}
             type="button"
@@ -81,6 +87,13 @@ export function HeaderMenu({
           </NavLink>
         ),
       )}
+      <button
+        className="header-menu-item reset"
+        onClick={() => open('search')}
+        type="button"
+      >
+        Search
+      </button>
       <BagToggle cart={cart} />
     </nav>
   );
@@ -140,7 +153,7 @@ function BagBanner() {
         } as CartViewPayload);
       }}
     >
-      Bag{count > 0 ? ` (${count})` : ''}
+      Bag{count > 0 ? `:${count}` : ''}
     </button>
   );
 }

@@ -60,7 +60,7 @@ export function PageLayout({
 
 function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
   return (
-    <Aside type="cart" heading="CART">
+    <Aside type="cart" heading={<CartAsideHeading cart={cart} />}>
       <Suspense fallback={<p>Loading cart ...</p>}>
         <Await resolve={cart}>
           {(cart) => {
@@ -69,6 +69,19 @@ function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
         </Await>
       </Suspense>
     </Aside>
+  );
+}
+
+function CartAsideHeading({cart}: {cart: PageLayoutProps['cart']}) {
+  return (
+    <Suspense fallback="Your Bag">
+      <Await resolve={cart}>
+        {(resolvedCart) => {
+          const count = resolvedCart?.totalQuantity ?? 0;
+          return `Your Bag (${count})`;
+        }}
+      </Await>
+    </Suspense>
   );
 }
 
@@ -171,61 +184,120 @@ function ProductTypesAside({
 }) {
   const {close, productTypeAudience} = useAside();
   const heading = productTypeAudience === 'man' ? 'MAN' : 'WOMAN';
+  const displayHeading = productTypeAudience === 'man' ? 'Man' : 'Woman';
   const menu =
     productTypeAudience === 'man' ? header.manMenu : header.womanMenu;
   const primaryDomainUrl = header.shop.primaryDomain?.url;
+  const collectionUrl =
+    productTypeAudience === 'man'
+      ? '/collections/man-new-arrivals'
+      : '/collections/woman-new-arrivals';
+  const contextText =
+    productTypeAudience === 'man'
+      ? "Performance engineering for disciplined output. Our 'Man' collection pairs measured compression, breathable structure, and stripped-back silhouettes for non-conforming athletic work."
+      : "Performance engineering for the elite athletic form. Our 'Woman' collection integrates bio-mechanical support with avant-garde structural silhouettes. Non-conforming excellence as standard.";
 
   return (
     <Aside type="productTypes" heading={heading}>
-      <div className="product-type-menu">
-        {menu ? (
-          menu.items.map((item) => {
-            if (!item.url || !primaryDomainUrl) {
-              return (
-                <span className="product-type-menu-item" key={item.id}>
-                  {item.title}
-                </span>
-              );
-            }
+      <div className="product-type-drawer">
+        <div className="product-type-drawer-scroll">
+          <nav className="product-type-menu" aria-label={`${displayHeading} collections`}>
+            {menu ? (
+              menu.items.map((item) => {
+                const meta = getProductTypeMenuMeta(item.title);
+                const itemContent = (
+                  <>
+                    <span className="product-type-menu-label">
+                      {item.title}
+                    </span>
+                    {meta ? (
+                      <span className="product-type-menu-meta">{meta}</span>
+                    ) : null}
+                  </>
+                );
 
-            const url = normalizeShopifyMenuUrl({
-              primaryDomainUrl,
-              publicStoreDomain,
-              url: item.url,
-            });
-            const isExternal = !url.startsWith('/');
+                if (!item.url || !primaryDomainUrl) {
+                  return (
+                    <span
+                      className={`product-type-menu-item${meta === 'NEW' ? ' is-featured' : ''}`}
+                      key={item.id}
+                    >
+                      {itemContent}
+                    </span>
+                  );
+                }
 
-            return isExternal ? (
-              <a
-                className="product-type-menu-item"
-                href={url}
-                key={item.id}
-                onClick={close}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                {item.title}
-              </a>
+                const url = normalizeShopifyMenuUrl({
+                  primaryDomainUrl,
+                  publicStoreDomain,
+                  url: item.url,
+                });
+                const isExternal = !url.startsWith('/');
+                const className = `product-type-menu-item${meta === 'NEW' ? ' is-featured' : ''}`;
+
+                return isExternal ? (
+                  <a
+                    className={className}
+                    href={url}
+                    key={item.id}
+                    onClick={close}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {itemContent}
+                  </a>
+                ) : (
+                  <NavLink
+                    className={className}
+                    key={item.id}
+                    onClick={close}
+                    prefetch="intent"
+                    to={url}
+                  >
+                    {itemContent}
+                  </NavLink>
+                );
+              })
             ) : (
-              <NavLink
-                className="product-type-menu-item"
-                key={item.id}
-                onClick={close}
-                prefetch="intent"
-                to={url}
-              >
-                {item.title}
-              </NavLink>
-            );
-          })
-        ) : (
-          <p className="product-type-menu-empty">
-            Shopify menu handle {productTypeAudience}-menu is not configured.
-          </p>
-        )}
+              <p className="product-type-menu-empty">
+                Shopify menu handle {productTypeAudience}-menu is not configured.
+              </p>
+            )}
+          </nav>
+
+          <section className="product-type-context" aria-label="Laboratory context">
+            <div className="product-type-context-heading">
+              <span>Laboratory Context</span>
+              <span className="product-type-context-pulse" aria-hidden="true" />
+            </div>
+            <p>{contextText}</p>
+          </section>
+        </div>
+
+        <div className="product-type-drawer-action">
+          <NavLink
+            className="product-type-menu-cta"
+            onClick={close}
+            prefetch="intent"
+            to={collectionUrl}
+          >
+            View All {displayHeading} Collection
+          </NavLink>
+        </div>
       </div>
     </Aside>
   );
+}
+
+function getProductTypeMenuMeta(title: string) {
+  const normalizedTitle = title.toLowerCase();
+
+  if (normalizedTitle.includes('new')) return 'NEW';
+  if (normalizedTitle.includes('special')) return 'LIMITED';
+  if (normalizedTitle.includes('tops')) return '014 ITEMS';
+  if (normalizedTitle.includes('accessories')) return '032 ITEMS';
+
+  return null;
 }
 
 function normalizeShopifyMenuUrl({

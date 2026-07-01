@@ -103,7 +103,6 @@ function SearchResultsProducts({
 
   return (
     <div className="search-result">
-      <h2>Products</h2>
       <Pagination connection={products}>
         {({nodes, isLoading, NextLink, PreviousLink}) => {
           const ItemsMarkup = nodes.map((product) => {
@@ -115,32 +114,42 @@ function SearchResultsProducts({
 
             const price = product?.selectedOrFirstAvailableVariant?.price;
             const image = product?.selectedOrFirstAvailableVariant?.image;
+            const {title, color} = getProductDisplayParts(product.title);
 
             return (
-              <div className="search-results-item" key={product.id}>
-                <Link prefetch="intent" to={productUrl}>
-                  {image && (
-                    <Image data={image} alt={product.title} width={50} />
-                  )}
-                  <div>
-                    <p>{product.title}</p>
-                    <small>{price && <Money data={price} />}</small>
+              <Link
+                className="product-item"
+                key={product.id}
+                prefetch="intent"
+                to={productUrl}
+              >
+                {image ? (
+                  <div className="product-item-media">
+                    <Image
+                      alt={product.title}
+                      data={image}
+                      sizes="(min-width: 48em) 25vw, 50vw"
+                    />
                   </div>
-                </Link>
-              </div>
+                ) : null}
+                <h4>{title}</h4>
+                {color ? <p className="product-item-color">{color}</p> : null}
+                {price ? (
+                  <div className="product-item-price">
+                    <Money data={price} />
+                  </div>
+                ) : null}
+              </Link>
             );
           });
 
           return (
             <div>
+              <div className="search-results-grid">{ItemsMarkup}</div>
               <div>
                 <PreviousLink>
                   {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
                 </PreviousLink>
-              </div>
-              <div>
-                {ItemsMarkup}
-                <br />
               </div>
               <div>
                 <NextLink>
@@ -151,11 +160,53 @@ function SearchResultsProducts({
           );
         }}
       </Pagination>
-      <br />
     </div>
   );
 }
 
 function SearchResultsEmpty() {
-  return <p>No results, try a different search.</p>;
+  return (
+    <p className="search-empty">No results, try a different search.</p>
+  );
+}
+
+const COLOR_NAMES = [
+  'black',
+  'white',
+  'grey',
+  'gray',
+  'navy',
+  'blue',
+  'green',
+  'red',
+  'brown',
+  'cream',
+  'beige',
+  'sand',
+  'stone',
+  'olive',
+  'khaki',
+  'charcoal',
+];
+
+function getProductDisplayParts(title: string) {
+  const separated = title.match(/^(.*)\s[-–—]\s([^–—-]+)$/);
+  if (separated && isColorName(separated[2])) {
+    return {title: separated[1], color: separated[2]};
+  }
+
+  const words = title.trim().split(/\s+/);
+  const lastWord = words[words.length - 1]?.toLowerCase();
+  if (lastWord && isColorName(lastWord) && words.length > 1) {
+    return {
+      title: words.slice(0, -1).join(' '),
+      color: words[words.length - 1],
+    };
+  }
+
+  return {title, color: ''};
+}
+
+function isColorName(value: string) {
+  return COLOR_NAMES.includes(value.trim().toLowerCase());
 }

@@ -1,106 +1,126 @@
 import {Link, useNavigate} from 'react-router';
-import {type MappedProductOptions} from '@shopify/hydrogen';
-import type {
-  Maybe,
-  ProductOptionValueSwatch,
-} from '@shopify/hydrogen/storefront-api-types';
+import {Money, type MappedProductOptions} from '@shopify/hydrogen';
 import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
 import type {ProductFragment} from 'storefrontapi.generated';
 
 export function ProductForm({
+  productTitle,
   productOptions,
   selectedVariant,
 }: {
+  productTitle: string;
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
+  const image = selectedVariant?.image;
+  const selectableProductOptions = productOptions.filter(
+    (option) => option.optionValues.length > 0 && option.name !== 'Title',
+  );
+
   return (
     <div className="product-form">
-      {productOptions.map((option) => {
-        // If there is only a single value in the option values, don't display the option
-        if (option.optionValues.length === 1) return null;
-
-        return (
-          <div className="product-options" key={option.name}>
-            <h5>{option.name}</h5>
-            <div className="product-options-grid">
-              {option.optionValues.map((value) => {
-                const {
-                  name,
-                  handle,
-                  variantUriQuery,
-                  selected,
-                  available,
-                  exists,
-                  isDifferentProduct,
-                  swatch,
-                } = value;
-
-                if (isDifferentProduct) {
-                  // SEO
-                  // When the variant is a combined listing child product
-                  // that leads to a different url, we need to render it
-                  // as an anchor tag
-                  return (
-                    <Link
-                      className="product-options-item"
-                      key={option.name + name}
-                      prefetch="intent"
-                      preventScrollReset
-                      replace
-                      to={`/products/${handle}?${variantUriQuery}`}
-                      style={{
-                        border: selected
-                          ? '1px solid black'
-                          : '1px solid transparent',
-                        opacity: available ? 1 : 0.3,
-                      }}
-                    >
-                      <ProductOptionSwatch swatch={swatch} name={name} />
-                    </Link>
-                  );
-                } else {
-                  // SEO
-                  // When the variant is an update to the search param,
-                  // render it as a button with javascript navigating to
-                  // the variant so that SEO bots do not index these as
-                  // duplicated links
-                  return (
-                    <button
-                      type="button"
-                      className={`product-options-item${
-                        exists && !selected ? ' link' : ''
-                      }`}
-                      key={option.name + name}
-                      style={{
-                        border: selected
-                          ? '1px solid black'
-                          : '1px solid transparent',
-                        opacity: available ? 1 : 0.3,
-                      }}
-                      disabled={!exists}
-                      onClick={() => {
-                        if (!selected) {
-                          void navigate(`?${variantUriQuery}`, {
-                            replace: true,
-                            preventScrollReset: true,
-                          });
-                        }
-                      }}
-                    >
-                      <ProductOptionSwatch swatch={swatch} name={name} />
-                    </button>
-                  );
-                }
-              })}
-            </div>
+      <div className="product-form-heading">
+        <div>
+          <h2>{productTitle}</h2>
+          <p className="product-form-specs">
+            Two-piece 3D pattern construction
             <br />
-          </div>
-        );
-      })}
+            60% reduction in seam length
+            <br />
+            Tenth Lab modular-ready design
+          </p>
+        </div>
+        {image ? (
+          <img
+            alt={image.altText || productTitle}
+            className="product-form-thumb"
+            src={image.url}
+          />
+        ) : null}
+      </div>
+      {selectableProductOptions.length ? (
+        <div className="product-options-grid">
+          {selectableProductOptions.map((option) => {
+            const selectedValue =
+              option.optionValues.find((value) => value.selected)?.name ??
+              option.optionValues[0]?.name ??
+              option.name;
+            const selectedLabel = formatOptionValue(selectedValue);
+
+            return (
+              <div className="product-options" key={option.name}>
+                {option.optionValues.length === 1 ? (
+                  <div className="product-option-static">
+                    <span>{selectedLabel}</span>
+                    <OptionChevron />
+                  </div>
+                ) : (
+                  <details className="product-option-select">
+                    <summary>
+                      <span>{selectedLabel}</span>
+                      <OptionChevron />
+                    </summary>
+                    <div className="product-option-select-menu">
+                      {option.optionValues.map((value) => {
+                        const {
+                          name,
+                          handle,
+                          variantUriQuery,
+                          selected,
+                          available,
+                          exists,
+                          isDifferentProduct,
+                        } = value;
+
+                        if (isDifferentProduct) {
+                          return (
+                            <Link
+                              className="product-options-item"
+                              key={option.name + name}
+                              prefetch="intent"
+                              preventScrollReset
+                              replace
+                              to={`/products/${handle}?${variantUriQuery}`}
+                              style={{opacity: available ? 1 : 0.3}}
+                            >
+                              <span>{formatOptionValue(name)}</span>
+                            </Link>
+                          );
+                        }
+
+                        return (
+                          <button
+                            type="button"
+                            className={`product-options-item${
+                              exists && !selected ? ' link' : ''
+                            }`}
+                            key={option.name + name}
+                            style={{opacity: available ? 1 : 0.3}}
+                            disabled={!exists}
+                            onClick={() => {
+                              if (!selected) {
+                                void navigate(`?${variantUriQuery}`, {
+                                  replace: true,
+                                  preventScrollReset: true,
+                                });
+                              }
+                            }}
+                          >
+                            <span>{formatOptionValue(name)}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </details>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
         onClick={() => {
@@ -118,33 +138,43 @@ export function ProductForm({
             : []
         }
       >
-        {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+        <div>
+          {selectedVariant?.price ? (
+            <Money data={selectedVariant.price} />
+          ) : (
+            '—'
+          )}
+        </div>
+        <span>
+          {selectedVariant?.availableForSale ? 'Add to Cart' : 'Sold out'}
+        </span>
       </AddToCartButton>
     </div>
   );
 }
 
-function ProductOptionSwatch({
-  swatch,
-  name,
-}: {
-  swatch?: Maybe<ProductOptionValueSwatch> | undefined;
-  name: string;
-}) {
-  const image = swatch?.image?.previewImage?.url;
-  const color = swatch?.color;
-
-  if (!image && !color) return name;
-
+function OptionChevron() {
   return (
-    <div
-      aria-label={name}
-      className="product-option-label-swatch"
-      style={{
-        backgroundColor: color || 'transparent',
-      }}
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height="12"
+      viewBox="0 0 12 12"
+      width="12"
     >
-      {!!image && <img src={image} alt={name} />}
-    </div>
+      <path
+        d="M3 4.5L6 7.5L9 4.5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      />
+    </svg>
   );
+}
+
+function formatOptionValue(value: string) {
+  if (!value || value !== value.toLowerCase()) return value;
+
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }

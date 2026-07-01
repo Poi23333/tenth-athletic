@@ -1,4 +1,5 @@
 import {redirect, useLoaderData} from 'react-router';
+import {useEffect, useState} from 'react';
 import type {Route} from './+types/products.$handle';
 import {
   getSelectedProductOptions,
@@ -8,14 +9,14 @@ import {
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
-import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {PRODUCT_INFORMATION_SECTIONS} from '~/lib/productInformation';
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
+    {title: `${data?.product.title ?? ''} | TENTH Athletic`},
     {
       rel: 'canonical',
       href: `/products/${data?.product.handle}`,
@@ -24,19 +25,11 @@ export const meta: Route.MetaFunction = ({data}) => {
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
-
   return {...deferredData, ...criticalData};
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
 async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {handle} = params;
   const {storefront} = context;
@@ -49,77 +42,171 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
-    // Add other queries here, so that they are loaded in parallel
   ]);
 
   if (!product?.id) {
     throw new Response(null, {status: 404});
   }
 
-  // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
-  return {
-    product,
-  };
+  return {product};
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
-function loadDeferredData({context, params}: Route.LoaderArgs) {
-  // Put any API calls that is not critical to be available on first page render
-  // For example: product reviews, product recommendations, social feeds.
-
+function loadDeferredData(_args: Route.LoaderArgs) {
   return {};
 }
 
 export default function Product() {
   const {product} = useLoaderData<typeof loader>();
+  const [isStickyBuyVisible, setIsStickyBuyVisible] = useState(false);
 
-  // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
     getAdjacentAndFirstAvailableVariants(product),
   );
 
-  // Sets the search param to the selected variant without navigation
-  // only when no search params are set in the url
   useSelectedOptionInUrlParam(selectedVariant.selectedOptions);
 
-  // Get the product options array
   const productOptions = getProductOptions({
     ...product,
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml} = product;
+  const {title, descriptionHtml, description} = product;
+  const galleryImages =
+    product.images?.nodes?.length > 0
+      ? product.images.nodes
+      : selectedVariant?.image
+        ? [selectedVariant.image, selectedVariant.image, selectedVariant.image]
+        : [];
+  const visibleGalleryImages =
+    galleryImages.length > 0 ? galleryImages.slice(0, 3) : [null, null, null];
+  const image = selectedVariant?.image ?? galleryImages[0];
+
+  useEffect(() => {
+    function updateStickyBuyPanel() {
+      const gallery = document.querySelector('.product-gallery');
+      if (!gallery) return;
+
+      const galleryBottom = gallery.getBoundingClientRect().bottom;
+      setIsStickyBuyVisible(galleryBottom <= 104);
+    }
+
+    updateStickyBuyPanel();
+    window.addEventListener('scroll', updateStickyBuyPanel, {passive: true});
+    window.addEventListener('resize', updateStickyBuyPanel);
+
+    return () => {
+      window.removeEventListener('scroll', updateStickyBuyPanel);
+      window.removeEventListener('resize', updateStickyBuyPanel);
+    };
+  }, []);
 
   return (
     <div className="product">
-      <ProductImage image={selectedVariant?.image} />
-      <div className="product-main">
-        <h1>{title}</h1>
-        <ProductPrice
-          price={selectedVariant?.price}
-          compareAtPrice={selectedVariant?.compareAtPrice}
-        />
-        <br />
+      <section className="product-gallery" aria-label="Product images">
+        {visibleGalleryImages.map((galleryImage, index) => (
+          <div
+            className={`product-gallery-cell${
+              index === 1 ? ' product-gallery-cell--hero' : ''
+            }`}
+            key={galleryImage ? `${galleryImage.url}-${index}` : index}
+          >
+            <ProductImage image={galleryImage} />
+            {index === 1 ? (
+              <div
+                className="product-buy-panel"
+                role="region"
+                aria-label="Product purchase options"
+              >
+                <ProductForm
+                  productTitle={title}
+                  productOptions={productOptions}
+                  selectedVariant={selectedVariant}
+                />
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </section>
+
+      <div
+        className={`product-sticky-buy-panel${
+          isStickyBuyVisible ? ' is-visible' : ''
+        }`}
+        role="region"
+        aria-label="Sticky product purchase options"
+      >
         <ProductForm
+          productTitle={title}
           productOptions={productOptions}
           selectedVariant={selectedVariant}
         />
-        <br />
-        <br />
-        <p>
-          <strong>Description</strong>
-        </p>
-        <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-        <br />
       </div>
+
+      <div
+        className="product-buy-panel-mobile"
+        role="region"
+        aria-label="Product purchase options"
+      >
+        <ProductForm
+          productTitle={title}
+          productOptions={productOptions}
+          selectedVariant={selectedVariant}
+        />
+      </div>
+
+      <div className="product-details-grid">
+        <div>
+          {description ? (
+            <div
+              className="product-description"
+              dangerouslySetInnerHTML={{__html: descriptionHtml}}
+            />
+          ) : null}
+        </div>
+        {image ? (
+          <div className="product-details-image">
+            <img
+              alt={image.altText || title}
+              src={image.url}
+              width={image.width ?? undefined}
+              height={image.height ?? undefined}
+            />
+          </div>
+        ) : null}
+      </div>
+
+      <div className="product-accordions">
+        {PRODUCT_INFORMATION_SECTIONS.map((item, index) => (
+          <details className="product-accordion" key={item.id} open={index === 0}>
+            <summary>{item.title}</summary>
+            <div className="product-accordion-content">{item.content}</div>
+          </details>
+        ))}
+      </div>
+
+      {selectedVariant?.sku ? (
+        <section className="product-specs" aria-label="Technical specifications">
+          <h2 className="product-specs-heading">
+            Technical
+            <br />
+            Specifications
+          </h2>
+          <div className="product-specs-row">
+            <div className="product-specs-key">SKU</div>
+            <div className="product-specs-value">{selectedVariant.sku}</div>
+          </div>
+          {selectedVariant.title !== 'Default Title' ? (
+            <div className="product-specs-row">
+              <div className="product-specs-key">Variant</div>
+              <div className="product-specs-value">{selectedVariant.title}</div>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
       <Analytics.ProductView
         data={{
           products: [
@@ -184,6 +271,15 @@ const PRODUCT_FRAGMENT = `#graphql
     handle
     descriptionHtml
     description
+    images(first: 3) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
     encodedVariantExistence
     encodedVariantAvailability
     options {

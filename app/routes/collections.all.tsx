@@ -3,10 +3,17 @@ import {useLoaderData} from 'react-router';
 import {getPaginationVariables} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {ProductItem} from '~/components/ProductItem';
+import {
+  ProductListSidebar,
+  getCatalogSort,
+  getProductListControls,
+  filterProductsByType,
+  getProductTypes,
+} from '~/components/ProductListSidebar';
 import type {CollectionItemFragment} from 'storefrontapi.generated';
 
 export const meta: Route.MetaFunction = () => {
-  return [{title: `Hydrogen | Products`}];
+  return [{title: 'Products | TENTH Athletic'}];
 };
 
 export async function loader(args: Route.LoaderArgs) {
@@ -28,14 +35,22 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 15,
   });
+  const {sort, typeFilters} = getProductListControls(request);
+  const sortInput = getCatalogSort(sort);
 
   const [{products}] = await Promise.all([
     storefront.query(CATALOG_QUERY, {
-      variables: {...paginationVariables},
+      variables: {
+        ...paginationVariables,
+        ...sortInput,
+      },
     }),
     // Add other queries here, so that they are loaded in parallel
   ]);
-  return {products};
+  return {
+    products: filterProductsByType(products, typeFilters),
+    productTypes: getProductTypes(products.nodes),
+  };
 }
 
 /**
@@ -48,38 +63,36 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 }
 
 export default function Collection() {
-  const {products} = useLoaderData<typeof loader>();
+  const {products, productTypes} = useLoaderData<typeof loader>();
 
   return (
     <div className="collection product-list-page">
-      <header className="product-list-heading">
-        <h1>Products</h1>
-      </header>
-      <PaginatedResourceSection<CollectionItemFragment>
-        connection={products}
-        resourcesClassName="products-grid"
-      >
-        {({node: product, index}) => (
-          <ProductItem
-            key={product.id}
-            product={product}
-            loading={index < 8 ? 'eager' : undefined}
-          />
-        )}
-      </PaginatedResourceSection>
-      <ProductListNotes />
+      <aside className="product-list-sidebar" aria-label="Filters and information">
+        <ProductListSidebar productTypes={productTypes} />
+      </aside>
+      <div className="product-list-main">
+        <header className="product-list-heading">
+          <p>System inventory</p>
+          <h1>Products</h1>
+        </header>
+        <div className="product-list-mobile-toolbar" aria-hidden="true">
+          <span className="product-list-sidebar-heading">Filter</span>
+          <span className="product-list-sidebar-heading">Sort</span>
+        </div>
+        <PaginatedResourceSection<CollectionItemFragment>
+          connection={products}
+          resourcesClassName="products-grid"
+        >
+          {({node: product, index}) => (
+            <ProductItem
+              key={product.id}
+              product={product}
+              loading={index < 8 ? 'eager' : undefined}
+            />
+          )}
+        </PaginatedResourceSection>
+      </div>
     </div>
-  );
-}
-
-function ProductListNotes() {
-  return (
-    <nav className="product-list-notes" aria-label="Product information">
-      <a href="#size-fit">Size &amp; Fit</a>
-      <a href="#shipping-returns">Shipping &amp; Returns</a>
-      <a href="#materials">Materials</a>
-      <a href="#technical-specifications">Technical Specifications</a>
-    </nav>
   );
 }
 
@@ -92,6 +105,7 @@ const COLLECTION_ITEM_FRAGMENT = `#graphql
     id
     handle
     title
+    productType
     featuredImage {
       id
       altText
@@ -119,8 +133,17 @@ const CATALOG_QUERY = `#graphql
     $last: Int
     $startCursor: String
     $endCursor: String
+    $sortKey: ProductSortKeys
+    $reverse: Boolean
   ) @inContext(country: $country, language: $language) {
-    products(first: $first, last: $last, before: $startCursor, after: $endCursor) {
+    products(
+      first: $first,
+      last: $last,
+      before: $startCursor,
+      after: $endCursor,
+      sortKey: $sortKey,
+      reverse: $reverse
+    ) {
       nodes {
         ...CollectionItem
       }
