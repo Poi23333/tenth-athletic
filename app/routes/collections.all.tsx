@@ -7,8 +7,6 @@ import {
   ProductListSidebar,
   getCatalogSort,
   getProductListControls,
-  filterProductsByType,
-  getProductTypes,
 } from '~/components/ProductListSidebar';
 import type {CollectionItemFragment} from 'storefrontapi.generated';
 
@@ -35,10 +33,10 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 15,
   });
-  const {sort, typeFilters} = getProductListControls(request);
+  const {sort} = getProductListControls(request);
   const sortInput = getCatalogSort(sort);
 
-  const [{products}] = await Promise.all([
+  const [{products, collections}] = await Promise.all([
     storefront.query(CATALOG_QUERY, {
       variables: {
         ...paginationVariables,
@@ -48,8 +46,8 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
     // Add other queries here, so that they are loaded in parallel
   ]);
   return {
-    products: filterProductsByType(products, typeFilters),
-    productTypes: getProductTypes(products.nodes),
+    products,
+    collectionFilters: collections.nodes,
   };
 }
 
@@ -63,12 +61,12 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 }
 
 export default function Collection() {
-  const {products, productTypes} = useLoaderData<typeof loader>();
+  const {products, collectionFilters} = useLoaderData<typeof loader>();
 
   return (
     <div className="collection product-list-page">
       <aside className="product-list-sidebar" aria-label="Filters and information">
-        <ProductListSidebar productTypes={productTypes} />
+        <ProductListSidebar collectionFilters={collectionFilters} />
       </aside>
       <div className="product-list-main">
         <header className="product-list-heading">
@@ -136,6 +134,12 @@ const CATALOG_QUERY = `#graphql
     $sortKey: ProductSortKeys
     $reverse: Boolean
   ) @inContext(country: $country, language: $language) {
+    collections(first: 250) {
+      nodes {
+        handle
+        title
+      }
+    }
     products(
       first: $first,
       last: $last,

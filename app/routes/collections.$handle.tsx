@@ -8,8 +8,6 @@ import {
   ProductListSidebar,
   getCollectionSort,
   getProductListControls,
-  filterProductsByType,
-  getProductTypes,
 } from '~/components/ProductListSidebar';
 import type {ProductItemFragment} from 'storefrontapi.generated';
 
@@ -29,14 +27,14 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 16,
   });
-  const {sort, typeFilters} = getProductListControls(request);
+  const {sort} = getProductListControls(request);
   const sortInput = getCollectionSort(sort);
 
   if (!handle) {
     throw redirect('/collections');
   }
 
-  const [{collection}] = await Promise.all([
+  const [{collection, collections}] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
       variables: {
         handle,
@@ -55,11 +53,8 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   redirectIfHandleIsLocalized(request, {handle, data: collection});
 
   return {
-    collection: {
-      ...collection,
-      products: filterProductsByType(collection.products, typeFilters),
-    },
-    productTypes: getProductTypes(collection.products.nodes),
+    collection,
+    collectionFilters: collections.nodes,
   };
 }
 
@@ -68,12 +63,15 @@ function loadDeferredData(_args: Route.LoaderArgs) {
 }
 
 export default function Collection() {
-  const {collection, productTypes} = useLoaderData<typeof loader>();
+  const {collection, collectionFilters} = useLoaderData<typeof loader>();
 
   return (
     <div className="collection product-list-page">
       <aside className="product-list-sidebar" aria-label="Filters and information">
-        <ProductListSidebar productTypes={productTypes} />
+        <ProductListSidebar
+          collectionFilters={collectionFilters}
+          selectedCollectionHandle={collection.handle}
+        />
       </aside>
       <div className="product-list-main">
         <header className="product-list-heading">
@@ -152,6 +150,12 @@ const COLLECTION_QUERY = `#graphql
     $sortKey: ProductCollectionSortKeys
     $reverse: Boolean
   ) @inContext(country: $country, language: $language) {
+    collections(first: 250) {
+      nodes {
+        handle
+        title
+      }
+    }
     collection(handle: $handle) {
       id
       handle

@@ -1,6 +1,7 @@
 body {
   font-family:
-    'Inter',
+    'Avenir',
+    'Avenir Next',
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -127,6 +128,13 @@ dl {
 code {
   background: #ddd;
   border-radius: 4px;
-  font-family: monospace;
+  font-family:
+    'Avenir',
+    'Avenir Next',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
   padding: 0.25rem;
 }

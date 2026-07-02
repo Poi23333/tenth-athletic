@@ -7,7 +7,7 @@ import {
 } from 'react';
 
 export type ProductTypeAudience = 'man' | 'woman';
-type AsideType = 'search' | 'cart' | 'mobile' | 'productTypes' | 'closed';
+type AsideType = 'cart' | 'mobile' | 'productTypes' | 'closed';
 type AsideContextValue = {
   type: AsideType;
   productTypeAudience: ProductTypeAudience;
@@ -20,8 +20,7 @@ type AsideContextValue = {
  * A side bar component with Overlay
  * @example
  * ```jsx
- * <Aside type="search" heading="SEARCH">
- *  <input type="search" />
+ * <Aside type="cart" heading="Your Bag">
  *  ...
  * </Aside>
  * ```
@@ -82,6 +81,36 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
   const [type, setType] = useState<AsideType>('closed');
   const [productTypeAudience, setProductTypeAudience] =
     useState<ProductTypeAudience>('man');
+
+  useEffect(() => {
+    if (type === 'closed') return;
+
+    const scrollY = window.scrollY;
+    const {style: bodyStyle} = document.body;
+    const {style: htmlStyle} = document.documentElement;
+    const originalBodyStyles = {
+      overflow: bodyStyle.overflow,
+      position: bodyStyle.position,
+      top: bodyStyle.top,
+      width: bodyStyle.width,
+    };
+    const originalHtmlOverflow = htmlStyle.overflow;
+
+    htmlStyle.overflow = 'hidden';
+    bodyStyle.overflow = 'hidden';
+    bodyStyle.position = 'fixed';
+    bodyStyle.top = `-${scrollY}px`;
+    bodyStyle.width = '100%';
+
+    return () => {
+      htmlStyle.overflow = originalHtmlOverflow;
+      bodyStyle.overflow = originalBodyStyles.overflow;
+      bodyStyle.position = originalBodyStyles.position;
+      bodyStyle.top = originalBodyStyles.top;
+      bodyStyle.width = originalBodyStyles.width;
+      window.scrollTo(0, scrollY);
+    };
+  }, [type]);
 
   return (
     <AsideContext.Provider

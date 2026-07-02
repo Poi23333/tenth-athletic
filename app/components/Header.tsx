@@ -1,10 +1,6 @@
+import {Await, NavLink, useLocation} from 'react-router';
 import {Suspense} from 'react';
-import {Await, NavLink, useAsyncValue} from 'react-router';
-import {
-  type CartViewPayload,
-  useAnalytics,
-  useOptimisticCart,
-} from '@shopify/hydrogen';
+import {type CartViewPayload, useAnalytics} from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {type ProductTypeAudience, useAside} from '~/components/Aside';
 
@@ -18,16 +14,14 @@ interface HeaderProps {
 type Viewport = 'desktop' | 'mobile';
 
 type TenthNavItem =
-  | {id: string; title: string; audience: ProductTypeAudience; url?: never}
-  | {id: string; title: string; url: string; audience?: never};
+  {id: string; title: string; audience: ProductTypeAudience};
 
 const TENTH_NAV_ITEMS: TenthNavItem[] = [
   {id: 'man', title: 'Man', audience: 'man'},
   {id: 'woman', title: 'Woman', audience: 'woman'},
-  {id: 'account', title: 'Account', url: '/account'},
 ];
 
-export function Header({header, cart}: HeaderProps) {
+export function Header({cart, header, isLoggedIn}: HeaderProps) {
   return (
     <header className="header">
       <div className="header-inner">
@@ -40,7 +34,7 @@ export function Header({header, cart}: HeaderProps) {
             height={32}
           />
         </NavLink>
-        <HeaderMenu viewport="desktop" cart={cart} />
+        <HeaderMenu cart={cart} isLoggedIn={isLoggedIn} viewport="desktop" />
         <HeaderCtas />
       </div>
     </header>
@@ -48,54 +42,85 @@ export function Header({header, cart}: HeaderProps) {
 }
 
 export function HeaderMenu({
-  viewport,
   cart,
+  isLoggedIn,
+  viewport,
 }: {
-  viewport: Viewport;
   cart: Promise<CartApiQueryFragment | null>;
+  isLoggedIn: Promise<boolean>;
+  viewport: Viewport;
 }) {
   const className = `header-menu-${viewport}`;
-  const {close, open, openProductTypes, productTypeAudience, type} =
-    useAside();
+  const {openProductTypes, productTypeAudience, type} = useAside();
+  const location = useLocation();
+  const activeAudience = getActiveAudience(location.pathname);
 
   return (
     <nav className={className} role="navigation">
-      {TENTH_NAV_ITEMS.map((item) =>
-        item.audience !== undefined ? (
-          <button
-            className={`header-menu-item reset${
-              type === 'productTypes' && productTypeAudience === item.audience
-                ? ' active'
-                : ''
-            }`}
-            key={item.id}
-            onClick={() => openProductTypes(item.audience)}
-            type="button"
-          >
-            {item.title}
-          </button>
-        ) : (
-          <NavLink
-            className="header-menu-item"
-            end
-            key={item.id}
-            onClick={close}
-            prefetch="intent"
-            to={item.url}
-          >
-            {item.title}
-          </NavLink>
-        ),
-      )}
-      <button
-        className="header-menu-item reset"
-        onClick={() => open('search')}
-        type="button"
-      >
-        Search
-      </button>
+      {TENTH_NAV_ITEMS.map((item) => (
+        <button
+          className={`header-menu-item reset${
+            (type === 'productTypes' && productTypeAudience === item.audience) ||
+            activeAudience === item.audience
+              ? ' active'
+              : ''
+          }`}
+          key={item.id}
+          onClick={() => openProductTypes(item.audience)}
+          type="button"
+        >
+          {item.title}
+        </button>
+      ))}
+      <AccountLink isLoggedIn={isLoggedIn} />
       <BagToggle cart={cart} />
     </nav>
+  );
+}
+
+function getActiveAudience(pathname: string): ProductTypeAudience | null {
+  if (pathname.startsWith('/collections/man-')) {
+    return 'man';
+  }
+
+  if (pathname.startsWith('/collections/woman-')) {
+    return 'woman';
+  }
+
+  return null;
+}
+
+function AccountLink({isLoggedIn}: {isLoggedIn: Promise<boolean>}) {
+  const {close} = useAside();
+
+  return (
+    <Suspense fallback={<AccountNavLink isLoggedIn={false} onClick={close} />}>
+      <Await resolve={isLoggedIn}>
+        {(resolvedIsLoggedIn) => (
+          <AccountNavLink isLoggedIn={resolvedIsLoggedIn} onClick={close} />
+        )}
+      </Await>
+    </Suspense>
+  );
+}
+
+function AccountNavLink({
+  isLoggedIn,
+  onClick,
+}: {
+  isLoggedIn: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <NavLink
+      className="header-menu-item"
+      end
+      onClick={onClick}
+      prefetch="intent"
+      to={isLoggedIn ? '/account' : '/account/login'}
+    >
+      Account
+    </NavLink>
   );
 }
 
@@ -124,25 +149,23 @@ function HeaderMenuMobileToggle() {
 
 function BagToggle({cart}: {cart: Promise<CartApiQueryFragment | null>}) {
   return (
-    <Suspense fallback={<span className="header-menu-item">Bag</span>}>
+    <Suspense fallback={<BagBanner count={0} />}>
       <Await resolve={cart}>
-        <BagBanner />
+        {(resolvedCart) => <BagBanner count={resolvedCart?.totalQuantity ?? 0} />}
       </Await>
     </Suspense>
   );
 }
 
-function BagBanner() {
-  const originalCart = useAsyncValue() as CartApiQueryFragment | null;
-  const cart = useOptimisticCart(originalCart);
+function BagBanner({count}: {count: number}) {
   const {open} = useAside();
   const {publish, shop, cart: analyticsCart, prevCart} = useAnalytics();
-  const count = cart?.totalQuantity ?? 0;
+  const hasItems = count > 0;
 
   return (
     <button
       type="button"
-      className="header-menu-item reset header-bag"
+      className={`header-menu-item reset header-bag${hasItems ? ' has-items' : ''}`}
       onClick={() => {
         open('cart');
         publish('cart_viewed', {
@@ -153,7 +176,11 @@ function BagBanner() {
         } as CartViewPayload);
       }}
     >
-      Bag{count > 0 ? `:${count}` : ''}
+      <span className="header-bag-dot" aria-hidden="true" />
+      <span>Bag</span>
+      <span className="header-bag-count" aria-label={`${count} items in bag`}>
+        ({count})
+      </span>
     </button>
   );
 }

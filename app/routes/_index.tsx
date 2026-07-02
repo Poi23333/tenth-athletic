@@ -27,7 +27,12 @@ export default function Homepage() {
       {data.isShopLinked ? null : <MockShopNotice />}
       <section className="home-hero">
         <div className="home-hero-image-wrap">
-          <img src="/home.png" alt="Tenth Athletic" width={960} height={1200} />
+          <img
+            src="/home-hero-runner-night-v2-cropped-narrow.png"
+            alt="Tenth Athletic runner at night"
+            width={1154}
+            height={1177}
+          />
           <div className="home-hero-image-overlay" aria-hidden="true" />
         </div>
         <div className="home-hero-content">
@@ -53,7 +58,6 @@ export default function Homepage() {
       </section>
       <section className="home-product-highlight" aria-labelledby="home-products">
         <div className="home-section-heading">
-          <p>System inventory</p>
           <h2 id="home-products">Current field issue</h2>
         </div>
         <div className="products-grid home-products-grid">

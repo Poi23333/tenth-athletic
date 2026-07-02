@@ -41,114 +41,129 @@ export function ProductForm({
           />
         ) : null}
       </div>
-      {selectableProductOptions.length ? (
-        <div className="product-options-grid">
-          {selectableProductOptions.map((option) => {
-            const selectedValue =
-              option.optionValues.find((value) => value.selected)?.name ??
-              option.optionValues[0]?.name ??
-              option.name;
-            const selectedLabel = formatOptionValue(selectedValue);
+      <div className="product-purchase-controls">
+        {selectableProductOptions.length ? (
+          <div className="product-options-grid">
+            {selectableProductOptions.map((option) => {
+              const selectedValue =
+                option.optionValues.find((value) => value.selected)?.name ??
+                option.optionValues[0]?.name ??
+                option.name;
+              const selectedLabel = formatOptionValue(selectedValue);
 
-            return (
-              <div className="product-options" key={option.name}>
-                {option.optionValues.length === 1 ? (
-                  <div className="product-option-static">
-                    <span>{selectedLabel}</span>
-                    <OptionChevron />
-                  </div>
-                ) : (
-                  <details className="product-option-select">
-                    <summary>
+              return (
+                <div className="product-options" key={option.name}>
+                  {option.optionValues.length === 1 ? (
+                    <div className="product-option-static">
                       <span>{selectedLabel}</span>
                       <OptionChevron />
-                    </summary>
-                    <div className="product-option-select-menu">
-                      {option.optionValues.map((value) => {
-                        const {
-                          name,
-                          handle,
-                          variantUriQuery,
-                          selected,
-                          available,
-                          exists,
-                          isDifferentProduct,
-                        } = value;
+                    </div>
+                  ) : (
+                    <details className="product-option-select">
+                      <summary>
+                        <span>{selectedLabel}</span>
+                        <OptionChevron />
+                      </summary>
+                      <div className="product-option-select-menu">
+                        {option.optionValues.map((value) => {
+                          const {
+                            name,
+                            handle,
+                            variantUriQuery,
+                            selected,
+                            available,
+                            exists,
+                            isDifferentProduct,
+                          } = value;
 
-                        if (isDifferentProduct) {
+                          if (isDifferentProduct) {
+                            return (
+                              <Link
+                                aria-current={selected ? 'true' : undefined}
+                                className={`product-options-item${
+                                  selected ? ' is-selected' : ''
+                                }${available ? '' : ' is-unavailable'}`}
+                                key={option.name + name}
+                                onClick={(event) => {
+                                  event.currentTarget
+                                    .closest('details')
+                                    ?.removeAttribute('open');
+                                }}
+                                prefetch="intent"
+                                preventScrollReset
+                                replace
+                                to={`/products/${handle}?${variantUriQuery}`}
+                              >
+                                <span>{formatOptionValue(name)}</span>
+                              </Link>
+                            );
+                          }
+
                           return (
-                            <Link
-                              className="product-options-item"
+                            <button
+                              type="button"
+                              className={`product-options-item${
+                                exists && !selected ? ' link' : ''
+                              }${selected ? ' is-selected' : ''}${
+                                available ? '' : ' is-unavailable'
+                              }`}
                               key={option.name + name}
-                              prefetch="intent"
-                              preventScrollReset
-                              replace
-                              to={`/products/${handle}?${variantUriQuery}`}
-                              style={{opacity: available ? 1 : 0.3}}
+                              aria-current={selected ? 'true' : undefined}
+                              disabled={!exists}
+                              onClick={(event) => {
+                                event.currentTarget
+                                  .closest('details')
+                                  ?.removeAttribute('open');
+
+                                if (!selected) {
+                                  void navigate(`?${variantUriQuery}`, {
+                                    replace: true,
+                                    preventScrollReset: true,
+                                  });
+                                }
+                              }}
                             >
                               <span>{formatOptionValue(name)}</span>
-                            </Link>
+                            </button>
                           );
-                        }
-
-                        return (
-                          <button
-                            type="button"
-                            className={`product-options-item${
-                              exists && !selected ? ' link' : ''
-                            }`}
-                            key={option.name + name}
-                            style={{opacity: available ? 1 : 0.3}}
-                            disabled={!exists}
-                            onClick={() => {
-                              if (!selected) {
-                                void navigate(`?${variantUriQuery}`, {
-                                  replace: true,
-                                  preventScrollReset: true,
-                                });
-                              }
-                            }}
-                          >
-                            <span>{formatOptionValue(name)}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </details>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      ) : null}
-      <AddToCartButton
-        disabled={!selectedVariant || !selectedVariant.availableForSale}
-        onClick={() => {
-          open('cart');
-        }}
-        lines={
-          selectedVariant
-            ? [
-                {
-                  merchandiseId: selectedVariant.id,
-                  quantity: 1,
-                  selectedVariant,
-                },
-              ]
-            : []
-        }
-      >
-        <div>
-          {selectedVariant?.price ? (
-            <Money data={selectedVariant.price} />
-          ) : (
-            '—'
-          )}
-        </div>
-        <span>
-          {selectedVariant?.availableForSale ? 'Add to Cart' : 'Sold out'}
-        </span>
-      </AddToCartButton>
+                        })}
+                      </div>
+                    </details>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+        <AddToCartButton
+          disabled={!selectedVariant || !selectedVariant.availableForSale}
+          onClick={() => {
+            open('cart');
+          }}
+          lines={
+            selectedVariant
+              ? [
+                  {
+                    merchandiseId: selectedVariant.id,
+                    quantity: 1,
+                    selectedVariant,
+                  },
+                ]
+              : []
+          }
+        >
+          <span className="product-form-price">
+            {selectedVariant?.price ? (
+              <Money data={selectedVariant.price} />
+            ) : (
+              '—'
+            )}
+          </span>
+          <span className="product-form-add-label">
+            {selectedVariant?.availableForSale ? 'Add to Cart' : 'Sold out'}
+          </span>
+        </AddToCartButton>
+      </div>
     </div>
   );
 }

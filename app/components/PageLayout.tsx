@@ -1,5 +1,5 @@
-import {Await, Link, NavLink} from 'react-router';
-import {Suspense, useId} from 'react';
+import {Await, NavLink} from 'react-router';
+import {Suspense} from 'react';
 import type {
   CartApiQueryFragment,
   FooterQuery,
@@ -9,11 +9,8 @@ import {Aside, useAside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
-import {
-  SEARCH_ENDPOINT,
-  SearchFormPredictive,
-} from '~/components/SearchFormPredictive';
-import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import {CookieConsent} from '~/components/CookieConsent';
+
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
   footer: Promise<FooterQuery | null>;
@@ -34,12 +31,11 @@ export function PageLayout({
   return (
     <Aside.Provider>
       <CartAside cart={cart} />
-      <SearchAside />
       <ProductTypesAside
         header={header}
         publicStoreDomain={publicStoreDomain}
       />
-      <MobileMenuAside cart={cart} />
+      <MobileMenuAside cart={cart} isLoggedIn={isLoggedIn} />
       {header && (
         <Header
           header={header}
@@ -54,6 +50,7 @@ export function PageLayout({
         header={header}
         publicStoreDomain={publicStoreDomain}
       />
+      <CookieConsent />
     </Aside.Provider>
   );
 }
@@ -85,92 +82,16 @@ function CartAsideHeading({cart}: {cart: PageLayoutProps['cart']}) {
   );
 }
 
-function SearchAside() {
-  const queriesDatalistId = useId();
-  return (
-    <Aside type="search" heading="SEARCH">
-      <div className="predictive-search">
-        <br />
-        <SearchFormPredictive>
-          {({fetchResults, goToSearch, inputRef}) => (
-            <>
-              <input
-                name="q"
-                onChange={fetchResults}
-                onFocus={fetchResults}
-                placeholder="Search"
-                ref={inputRef}
-                type="search"
-                list={queriesDatalistId}
-              />
-              &nbsp;
-              <button onClick={goToSearch}>Search</button>
-            </>
-          )}
-        </SearchFormPredictive>
-
-        <SearchResultsPredictive>
-          {({items, total, term, state, closeSearch}) => {
-            const {articles, collections, pages, products, queries} = items;
-
-            if (state === 'loading' && term.current) {
-              return <div>Loading...</div>;
-            }
-
-            if (!total) {
-              return <SearchResultsPredictive.Empty term={term} />;
-            }
-
-            return (
-              <>
-                <SearchResultsPredictive.Queries
-                  queries={queries}
-                  queriesDatalistId={queriesDatalistId}
-                />
-                <SearchResultsPredictive.Products
-                  products={products}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-                <SearchResultsPredictive.Collections
-                  collections={collections}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-                <SearchResultsPredictive.Pages
-                  pages={pages}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-                <SearchResultsPredictive.Articles
-                  articles={articles}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-                {term.current && total ? (
-                  <Link
-                    onClick={closeSearch}
-                    to={`${SEARCH_ENDPOINT}?q=${term.current}`}
-                  >
-                    <p>
-                      View all results for <q>{term.current}</q>
-                      &nbsp; →
-                    </p>
-                  </Link>
-                ) : null}
-              </>
-            );
-          }}
-        </SearchResultsPredictive>
-      </div>
-    </Aside>
-  );
-}
-
-function MobileMenuAside({cart}: {cart: PageLayoutProps['cart']}) {
+function MobileMenuAside({
+  cart,
+  isLoggedIn,
+}: {
+  cart: PageLayoutProps['cart'];
+  isLoggedIn: PageLayoutProps['isLoggedIn'];
+}) {
   return (
     <Aside type="mobile" heading="MENU">
-      <HeaderMenu viewport="mobile" cart={cart} />
+      <HeaderMenu cart={cart} isLoggedIn={isLoggedIn} viewport="mobile" />
     </Aside>
   );
 }
@@ -201,7 +122,10 @@ function ProductTypesAside({
     <Aside type="productTypes" heading={heading}>
       <div className="product-type-drawer">
         <div className="product-type-drawer-scroll">
-          <nav className="product-type-menu" aria-label={`${displayHeading} collections`}>
+          <nav
+            className="product-type-menu"
+            aria-label={`${displayHeading} collections`}
+          >
             {menu ? (
               menu.items.map((item) => {
                 const meta = getProductTypeMenuMeta(item.title);
@@ -260,12 +184,16 @@ function ProductTypesAside({
               })
             ) : (
               <p className="product-type-menu-empty">
-                Shopify menu handle {productTypeAudience}-menu is not configured.
+                Shopify menu handle {productTypeAudience}-menu is not
+                configured.
               </p>
             )}
           </nav>
 
-          <section className="product-type-context" aria-label="Laboratory context">
+          <section
+            className="product-type-context"
+            aria-label="Laboratory context"
+          >
             <div className="product-type-context-heading">
               <span>Laboratory Context</span>
               <span className="product-type-context-pulse" aria-hidden="true" />

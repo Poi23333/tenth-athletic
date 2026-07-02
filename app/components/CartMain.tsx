@@ -93,7 +93,7 @@ function CartEmpty({
 }) {
   const {close} = useAside();
   return (
-    <div hidden={hidden} className="search-empty">
+    <div hidden={hidden} className="cart-empty">
       <p>
         Looks like you haven&rsquo;t added anything yet, let&rsquo;s get you
         started!

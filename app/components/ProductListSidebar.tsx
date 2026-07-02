@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {useSearchParams, useSubmit} from 'react-router';
+import {Link, useSearchParams, useSubmit} from 'react-router';
 import type * as StorefrontAPI from '@shopify/hydrogen/storefront-api-types';
 import {PRODUCT_LIST_INFORMATION_SECTIONS} from '~/lib/productInformation';
 
@@ -9,39 +9,71 @@ const SORT_OPTIONS = [
   {label: 'Price: High to Low', value: 'price-desc'},
 ] as const;
 
-export function ProductListSidebar({productTypes}: {productTypes: string[]}) {
+export type ProductListCollectionFilter = {
+  handle: string;
+  title: string;
+};
+
+export function ProductListSidebar({
+  collectionFilters,
+  selectedCollectionHandle,
+}: {
+  collectionFilters: ProductListCollectionFilter[];
+  selectedCollectionHandle?: string;
+}) {
   const [searchParams] = useSearchParams();
   const [openInformationId, setOpenInformationId] = useState<string | null>(
     null,
   );
   const submit = useSubmit();
-  const selectedTypes = searchParams.getAll('type');
   const selectedSort = searchParams.get('sort') ?? 'newest';
+  const selectedCollection = collectionFilters.find(
+    (collection) => collection.handle === selectedCollectionHandle,
+  );
+  const selectedAudience = selectedCollection
+    ? getCollectionAudience(selectedCollection)
+    : null;
+  const visibleCollectionFilters = selectedAudience
+    ? collectionFilters.filter(
+        (collection) => getCollectionAudience(collection) === selectedAudience,
+      )
+    : collectionFilters;
 
   return (
     <>
-      <form
-        className="product-list-controls"
-        method="get"
-        onChange={(event) => {
-          void submit(event.currentTarget, {replace: false});
-        }}
-      >
+      <div className="product-list-controls">
         <div className="product-list-sidebar-section product-list-filter-group">
           <h3 className="product-list-sidebar-heading">Filter</h3>
-          {productTypes.map((option) => (
-            <label className="product-list-filter-option" key={option}>
-              <input
-                defaultChecked={selectedTypes.includes(option)}
-                name="type"
-                type="checkbox"
-                value={option}
-              />
-              <span>{option}</span>
-            </label>
-          ))}
+          {visibleCollectionFilters.map((collection) => {
+            const isSelected = collection.handle === selectedCollectionHandle;
+            const to = getCollectionFilterUrl(collection.handle, selectedSort);
+
+            return (
+              <Link
+                className="product-list-filter-option"
+                key={collection.handle}
+                prefetch="intent"
+                to={to}
+              >
+                <input
+                  checked={isSelected}
+                  name="collection"
+                  readOnly
+                  type="checkbox"
+                  value={collection.handle}
+                />
+                <span>{getCollectionFilterLabel(collection)}</span>
+              </Link>
+            );
+          })}
         </div>
-        <div className="product-list-sidebar-section product-list-sort-group">
+        <form
+          className="product-list-sidebar-section product-list-sort-group"
+          method="get"
+          onChange={(event) => {
+            void submit(event.currentTarget, {replace: false});
+          }}
+        >
           <h3 className="product-list-sidebar-heading">Sort</h3>
           <select
             className="product-list-sort-select"
@@ -54,8 +86,8 @@ export function ProductListSidebar({productTypes}: {productTypes: string[]}) {
               </option>
             ))}
           </select>
-        </div>
-      </form>
+        </form>
+      </div>
       <div className="product-list-sidebar-accordion">
         {PRODUCT_LIST_INFORMATION_SECTIONS.map((item) => (
           <details
@@ -83,12 +115,10 @@ export function ProductListSidebar({productTypes}: {productTypes: string[]}) {
 
 export function getProductListControls(request: Request) {
   const url = new URL(request.url);
-  const typeFilters = url.searchParams.getAll('type').filter(Boolean);
   const sort = url.searchParams.get('sort') ?? 'newest';
 
   return {
     sort,
-    typeFilters,
   };
 }
 
@@ -128,35 +158,36 @@ export function getCatalogSort(sort: string) {
   }
 }
 
-export function getCollectionFilters(typeFilters: string[]) {
-  return typeFilters.map(normalizeProductType);
+function getCollectionFilterUrl(handle: string, sort: string) {
+  const searchParams = new URLSearchParams();
+
+  if (sort !== 'newest') {
+    searchParams.set('sort', sort);
+  }
+
+  const query = searchParams.toString();
+
+  return `/collections/${handle}${query ? `?${query}` : ''}`;
 }
 
-export function filterProductsByType<
-  TConnection extends {nodes: Array<{productType?: string}>},
->(connection: TConnection, typeFilters: string[]) {
-  const normalizedFilters = getCollectionFilters(typeFilters);
+function getCollectionAudience(collection: ProductListCollectionFilter) {
+  const normalizedTitle = collection.title.trim().toLowerCase();
+  const normalizedHandle = collection.handle.trim().toLowerCase();
 
-  if (normalizedFilters.length === 0) return connection;
+  if (normalizedTitle.startsWith('man ') || normalizedHandle.startsWith('man-')) {
+    return 'man';
+  }
 
-  return {
-    ...connection,
-    nodes: connection.nodes.filter((product) =>
-      normalizedFilters.includes(normalizeProductType(product.productType ?? '')),
-    ),
-  };
+  if (
+    normalizedTitle.startsWith('woman ') ||
+    normalizedHandle.startsWith('woman-')
+  ) {
+    return 'woman';
+  }
+
+  return null;
 }
 
-export function getProductTypes(products: Array<{productType?: string}>) {
-  return Array.from(
-    new Set(
-      products
-        .map((product) => product.productType?.trim())
-        .filter((productType): productType is string => Boolean(productType)),
-    ),
-  );
-}
-
-function normalizeProductType(value: string) {
-  return value.trim().toLowerCase();
+function getCollectionFilterLabel(collection: ProductListCollectionFilter) {
+  return collection.title.trim().replace(/^(man|woman)\s+/i, '');
 }

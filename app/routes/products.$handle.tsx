@@ -1,5 +1,5 @@
 import {redirect, useLoaderData} from 'react-router';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import type {Route} from './+types/products.$handle';
 import {
   getSelectedProductOptions,
@@ -59,7 +59,22 @@ function loadDeferredData(_args: Route.LoaderArgs) {
 
 export default function Product() {
   const {product} = useLoaderData<typeof loader>();
-  const [isStickyBuyVisible, setIsStickyBuyVisible] = useState(false);
+  const heroGalleryCellRef = useRef<HTMLDivElement | null>(null);
+  const lastScrollYRef = useRef(0);
+  const stickyBuyPanelRef = useRef<HTMLDivElement | null>(null);
+  const [stickyBuyState, setStickyBuyState] = useState<{
+    fixedLeft: number;
+    isCollapsed: boolean;
+    mode: 'hidden' | 'fixed' | 'stopped';
+    panelWidth: number;
+    stoppedBottom: number;
+  }>({
+    fixedLeft: 0,
+    isCollapsed: false,
+    mode: 'hidden',
+    panelWidth: 0,
+    stoppedBottom: 0,
+  });
 
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
@@ -86,13 +101,74 @@ export default function Product() {
 
   useEffect(() => {
     function updateStickyBuyPanel() {
-      const gallery = document.querySelector('.product-gallery');
-      if (!gallery) return;
+      const sizeFitBoundary = document.querySelector('.product-accordions');
+      const heroGalleryCell = heroGalleryCellRef.current;
+      const stickyBuyPanel = stickyBuyPanelRef.current;
 
-      const galleryBottom = gallery.getBoundingClientRect().bottom;
-      setIsStickyBuyVisible(galleryBottom <= 104);
+      if (!heroGalleryCell || !sizeFitBoundary || !stickyBuyPanel) {
+        return;
+      }
+
+      const viewportHeight = window.innerHeight;
+      const heroCellRect = heroGalleryCell.getBoundingClientRect();
+      const sizeFitRect = sizeFitBoundary.getBoundingClientRect();
+      const bottomGap = parseFloat(
+        getComputedStyle(stickyBuyPanel).getPropertyValue(
+          '--product-buy-panel-bottom-gap',
+        ),
+      );
+      const stickyBottomGap = Number.isFinite(bottomGap) ? bottomGap : 0;
+      const stickyBottomLine = viewportHeight - stickyBottomGap;
+      const hasReachedStickyStart = heroCellRect.bottom < stickyBottomLine - 1;
+      const hasReachedStickyStop = sizeFitRect.top <= stickyBottomLine;
+      const stoppedBottom = Math.max(
+        0,
+        viewportHeight - sizeFitRect.top + stickyBottomGap,
+      );
+      const scrollDelta = window.scrollY - lastScrollYRef.current;
+      const isScrollingDown = scrollDelta > 4;
+      const isScrollingUp = scrollDelta < -4;
+
+      lastScrollYRef.current = window.scrollY;
+
+      setStickyBuyState((currentState) => {
+        const nextMode = !hasReachedStickyStart
+          ? 'hidden'
+          : hasReachedStickyStop
+            ? 'stopped'
+            : 'fixed';
+        const nextLeft = heroCellRect.left;
+        const nextWidth = heroCellRect.width;
+        const nextCollapsed =
+          nextMode === 'hidden'
+            ? false
+            : isScrollingDown
+              ? true
+              : isScrollingUp
+                ? false
+                : currentState.isCollapsed;
+
+        if (
+          currentState.mode === nextMode &&
+          currentState.isCollapsed === nextCollapsed &&
+          Math.abs(currentState.fixedLeft - nextLeft) < 1 &&
+          Math.abs(currentState.panelWidth - nextWidth) < 1 &&
+          Math.abs(currentState.stoppedBottom - stoppedBottom) < 1
+        ) {
+          return currentState;
+        }
+
+        return {
+          fixedLeft: nextLeft,
+          isCollapsed: nextCollapsed,
+          mode: nextMode,
+          panelWidth: nextWidth,
+          stoppedBottom,
+        };
+      });
     }
 
+    lastScrollYRef.current = window.scrollY;
     updateStickyBuyPanel();
     window.addEventListener('scroll', updateStickyBuyPanel, {passive: true});
     window.addEventListener('resize', updateStickyBuyPanel);
@@ -112,13 +188,30 @@ export default function Product() {
               index === 1 ? ' product-gallery-cell--hero' : ''
             }`}
             key={galleryImage ? `${galleryImage.url}-${index}` : index}
+            ref={index === 1 ? heroGalleryCellRef : undefined}
           >
             <ProductImage image={galleryImage} />
             {index === 1 ? (
               <div
-                className="product-buy-panel"
+                className={`product-buy-panel is-${stickyBuyState.mode}${
+                  stickyBuyState.isCollapsed ? ' is-collapsed' : ''
+                }`}
+                ref={stickyBuyPanelRef}
                 role="region"
                 aria-label="Product purchase options"
+                style={
+                  stickyBuyState.mode === 'fixed' ||
+                  stickyBuyState.mode === 'stopped'
+                    ? {
+                        bottom:
+                          stickyBuyState.mode === 'stopped'
+                            ? `${stickyBuyState.stoppedBottom}px`
+                            : undefined,
+                        left: `${stickyBuyState.fixedLeft}px`,
+                        width: `${stickyBuyState.panelWidth}px`,
+                      }
+                    : undefined
+                }
               >
                 <ProductForm
                   productTitle={title}
@@ -130,20 +223,6 @@ export default function Product() {
           </div>
         ))}
       </section>
-
-      <div
-        className={`product-sticky-buy-panel${
-          isStickyBuyVisible ? ' is-visible' : ''
-        }`}
-        role="region"
-        aria-label="Sticky product purchase options"
-      >
-        <ProductForm
-          productTitle={title}
-          productOptions={productOptions}
-          selectedVariant={selectedVariant}
-        />
-      </div>
 
       <div
         className="product-buy-panel-mobile"
