@@ -61,6 +61,7 @@ body {
 body > main {
   background: inherit;
   flex-grow: 1;
+  margin: 0;
   width: 100%;
 }
 
@@ -165,20 +166,21 @@ body > main {
   }
 }
 
-aside {
+.overlay > aside {
   background: var(--color-light);
   box-shadow: none;
   display: flex;
   flex-direction: column;
   height: 100vh;
   position: fixed;
-  right: calc(-1 * var(--aside-width));
+  right: 0;
   top: 0;
   transition: transform 200ms ease-in-out;
+  transform: translateX(100%);
   width: min(var(--aside-width), 100vw);
 }
 
-aside header {
+.overlay > aside > header {
   align-items: center;
   border-bottom: 1px solid var(--color-border-subtle);
   display: flex;
@@ -187,7 +189,7 @@ aside header {
   padding: 1rem var(--page-gutter);
 }
 
-aside header h3 {
+.overlay > aside > header h3 {
   color: var(--color-text);
   font-family: var(--font-display);
   font-size: 1.25rem;
@@ -196,7 +198,7 @@ aside header h3 {
   margin: 0;
 }
 
-aside header .close {
+.overlay > aside > header .close {
   color: var(--color-text);
   font-size: 1.75rem;
   font-weight: 400;
@@ -208,31 +210,31 @@ aside header .close {
   width: 2rem;
 }
 
-aside header .close:hover {
+.overlay > aside > header .close:hover {
   opacity: 1;
 }
 
-aside header h2 {
+.overlay > aside > header h2 {
   margin-bottom: 0.6rem;
   margin-top: 0;
 }
 
-aside main {
+.overlay > aside > main {
   flex: 1;
   margin: 0;
   overflow-y: auto;
   padding: 0 var(--page-gutter) var(--page-gutter);
 }
 
-aside p {
+.overlay > aside p {
   margin: 0 0 0.25rem;
 }
 
-aside p:last-child {
+.overlay > aside p:last-child {
   margin: 0;
 }
 
-aside li {
+.overlay > aside li {
   margin-bottom: 0.125rem;
 }
 
@@ -254,6 +256,7 @@ aside li {
   bottom: 0;
   left: 0;
   opacity: 0;
+  overflow: hidden;
   pointer-events: none;
   position: fixed;
   right: 0;
@@ -271,7 +274,7 @@ aside li {
   left: 0;
   position: absolute;
   top: 0;
-  width: calc(100% - var(--aside-width));
+  width: calc(100% - min(var(--aside-width), 100vw));
 }
 
 .overlay .light {
@@ -290,9 +293,14 @@ aside li {
   pointer-events: auto;
   visibility: visible;
 }
+
+.overlay:not(.expanded) {
+  display: none;
+}
+
 /* reveal aside */
 .overlay.expanded aside {
-  transform: translateX(calc(var(--aside-width) * -1));
+  transform: translateX(0);
 }
 
 button.reset {
@@ -694,8 +702,8 @@ button.reset:hover:not(:has(> *)) {
   align-items: center;
   display: grid;
   gap: 1.35rem clamp(1.5rem, 3vw, 3.25rem);
-  grid-template-columns: max-content auto;
-  width: auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
 }
 
 .footer-social {
@@ -723,11 +731,11 @@ button.reset:hover:not(:has(> *)) {
   align-items: center;
   color: #8f8f8f;
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   font-family: var(--font-body);
   font-size: 0.875rem;
   font-weight: 400;
-  gap: clamp(1.5rem, 3vw, 3.25rem);
+  gap: 0.75rem 1.5rem;
   grid-column: 1;
   justify-content: flex-start;
   letter-spacing: 0;
@@ -774,6 +782,18 @@ button.reset:hover:not(:has(> *)) {
   opacity: 1;
   place-self: center end;
   width: auto;
+}
+
+@media (min-width: 48em) {
+  .footer-aside {
+    grid-template-columns: max-content auto;
+    width: auto;
+  }
+
+  .footer-legal {
+    flex-wrap: nowrap;
+    gap: clamp(1.5rem, 3vw, 3.25rem);
+  }
 }
 
 /*
@@ -1865,7 +1885,7 @@ body > main:has(.home) {
 }
 
 .product-purchase-controls {
-  background: rgba(0,0,0,.4);
+  background: rgba(0, 0, 0, 0.4);
   border-radius: 0.5rem;
   display: grid;
   gap: 0.5rem;
@@ -2088,8 +2108,12 @@ body > main:has(.home) {
   border-bottom: 1px solid var(--color-text);
 }
 
-.product-accordion summary {
+.product-accordion-trigger {
   align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
   cursor: pointer;
   display: flex;
   font-family: var(--font-display);
@@ -2099,27 +2123,46 @@ body > main:has(.home) {
   line-height: 1.3;
   list-style: none;
   padding: 1rem 0;
+  text-align: left;
+  width: 100%;
 }
 
-.product-accordion summary::-webkit-details-marker {
-  display: none;
-}
-
-.product-accordion summary::after {
+.product-accordion-trigger::after {
   content: '+';
   font-size: 1.25rem;
   font-weight: 400;
   transition: transform 200ms ease;
 }
 
-.product-accordion[open] summary::after {
+.product-accordion.is-open .product-accordion-trigger::after {
   transform: rotate(45deg);
+}
+
+.product-accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 240ms ease,
+    opacity 180ms ease;
+}
+
+.product-accordion.is-open .product-accordion-panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
 }
 
 .product-accordion-content {
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   line-height: 1.4;
+  min-height: 0;
+  overflow: hidden;
+  padding-bottom: 0;
+  transition: padding-bottom 240ms ease;
+}
+
+.product-accordion.is-open .product-accordion-content {
   padding-bottom: 1.5rem;
 }
 

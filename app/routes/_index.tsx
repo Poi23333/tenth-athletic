@@ -5,7 +5,7 @@ import {ProductItem} from '~/components/ProductItem';
 import type {CollectionItemFragment} from 'storefrontapi.generated';
 
 export const meta: Route.MetaFunction = () => {
-  return [{title: 'TENTH Athletic — Performance without conformity'}];
+  return [{title: 'Tenth Athletic — Performance without conformity'}];
 };
 
 export async function loader({context}: Route.LoaderArgs) {
@@ -54,22 +54,6 @@ export default function Homepage() {
           <Link className="home-hero-cta" prefetch="intent" to="/collections/all">
             Explore the Collection
           </Link>
-        </div>
-      </section>
-      <section className="home-product-highlight" aria-labelledby="home-products">
-        <div className="home-section-heading">
-          <h2 id="home-products">Current field issue</h2>
-        </div>
-        <div className="products-grid home-products-grid">
-          {data.products.nodes.map(
-            (product: CollectionItemFragment, index: number) => (
-              <ProductItem
-                key={product.id}
-                product={product}
-                loading={index < 2 ? 'eager' : undefined}
-              />
-            ),
-          )}
         </div>
       </section>
     </div>

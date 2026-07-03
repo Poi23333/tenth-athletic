@@ -1,7 +1,5 @@
-import {useState} from 'react';
 import {Link, useSearchParams, useSubmit} from 'react-router';
 import type * as StorefrontAPI from '@shopify/hydrogen/storefront-api-types';
-import {PRODUCT_LIST_INFORMATION_SECTIONS} from '~/lib/productInformation';
 
 const SORT_OPTIONS = [
   {label: 'Newest', value: 'newest'},
@@ -22,9 +20,6 @@ export function ProductListSidebar({
   selectedCollectionHandle?: string;
 }) {
   const [searchParams] = useSearchParams();
-  const [openInformationId, setOpenInformationId] = useState<string | null>(
-    null,
-  );
   const submit = useSubmit();
   const selectedSort = searchParams.get('sort') ?? 'newest';
   const selectedCollection = collectionFilters.find(
@@ -87,27 +82,6 @@ export function ProductListSidebar({
             ))}
           </select>
         </form>
-      </div>
-      <div className="product-list-sidebar-accordion">
-        {PRODUCT_LIST_INFORMATION_SECTIONS.map((item) => (
-          <details
-            className="product-accordion"
-            key={item.id}
-            open={openInformationId === item.id}
-          >
-            <summary
-              onClick={(event) => {
-                event.preventDefault();
-                setOpenInformationId((currentId) =>
-                  currentId === item.id ? null : item.id,
-                );
-              }}
-            >
-              {item.title}
-            </summary>
-            <div className="product-accordion-content">{item.content}</div>
-          </details>
-        ))}
       </div>
     </>
   );

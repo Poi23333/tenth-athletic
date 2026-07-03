@@ -1,5 +1,6 @@
 import {redirect, useLoaderData} from 'react-router';
 import {useEffect, useRef, useState} from 'react';
+import type {ReactNode} from 'react';
 import type {Route} from './+types/products.$handle';
 import {
   getSelectedProductOptions,
@@ -259,15 +260,21 @@ export default function Product() {
 
       <div className="product-accordions">
         {PRODUCT_INFORMATION_SECTIONS.map((item, index) => (
-          <details className="product-accordion" key={item.id} open={index === 0}>
-            <summary>{item.title}</summary>
-            <div className="product-accordion-content">{item.content}</div>
-          </details>
+          <ProductInformationAccordion
+            content={item.content}
+            defaultOpen={index === 0}
+            id={item.id}
+            key={item.id}
+            title={item.title}
+          />
         ))}
       </div>
 
       {selectedVariant?.sku ? (
-        <section className="product-specs" aria-label="Technical specifications">
+        <section
+          className="product-specs"
+          aria-label="Technical specifications"
+        >
           <h2 className="product-specs-heading">
             Technical
             <br />
@@ -301,6 +308,42 @@ export default function Product() {
           ],
         }}
       />
+    </div>
+  );
+}
+
+function ProductInformationAccordion({
+  content,
+  defaultOpen,
+  id,
+  title,
+}: {
+  content: ReactNode;
+  defaultOpen: boolean;
+  id: string;
+  title: string;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const panelId = `product-information-${id}`;
+
+  return (
+    <div className={`product-accordion${isOpen ? ' is-open' : ''}`}>
+      <button
+        aria-controls={panelId}
+        aria-expanded={isOpen}
+        className="product-accordion-trigger"
+        onClick={() => setIsOpen((current) => !current)}
+        type="button"
+      >
+        {title}
+      </button>
+      <div
+        aria-hidden={!isOpen}
+        className="product-accordion-panel"
+        id={panelId}
+      >
+        <div className="product-accordion-content">{content}</div>
+      </div>
     </div>
   );
 }
