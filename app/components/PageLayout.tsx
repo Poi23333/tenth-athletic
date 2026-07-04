@@ -143,7 +143,7 @@ function ProductTypesAside({
                 if (!item.url || !primaryDomainUrl) {
                   return (
                     <span
-                      className={`product-type-menu-item${meta === 'NEW' ? ' is-featured' : ''}`}
+                      className="product-type-menu-item"
                       key={item.id}
                     >
                       {itemContent}
@@ -157,7 +157,7 @@ function ProductTypesAside({
                   url: item.url,
                 });
                 const isExternal = !url.startsWith('/');
-                const className = `product-type-menu-item${meta === 'NEW' ? ' is-featured' : ''}`;
+                const className = 'product-type-menu-item';
 
                 return isExternal ? (
                   <a
@@ -190,28 +190,28 @@ function ProductTypesAside({
             )}
           </nav>
 
-          <section
-            className="product-type-context"
-            aria-label="Laboratory context"
-          >
-            <div className="product-type-context-heading">
-              <span>Laboratory Context</span>
-              <span className="product-type-context-pulse" aria-hidden="true" />
-            </div>
-            <p>{contextText}</p>
-          </section>
+          {/*<section*/}
+          {/*  className="product-type-context"*/}
+          {/*  aria-label="Laboratory context"*/}
+          {/*>*/}
+          {/*  <div className="product-type-context-heading">*/}
+          {/*    <span>Laboratory Context</span>*/}
+          {/*    <span className="product-type-context-pulse" aria-hidden="true" />*/}
+          {/*  </div>*/}
+          {/*  <p>{contextText}</p>*/}
+          {/*</section>*/}
         </div>
 
-        <div className="product-type-drawer-action">
-          <NavLink
-            className="product-type-menu-cta"
-            onClick={close}
-            prefetch="intent"
-            to={collectionUrl}
-          >
-            View All {displayHeading} Collection
-          </NavLink>
-        </div>
+        {/*<div className="product-type-drawer-action">*/}
+        {/*  <NavLink*/}
+        {/*    className="product-type-menu-cta"*/}
+        {/*    onClick={close}*/}
+        {/*    prefetch="intent"*/}
+        {/*    to={collectionUrl}*/}
+        {/*  >*/}
+        {/*    View All {displayHeading} Collection*/}
+        {/*  </NavLink>*/}
+        {/*</div>*/}
       </div>
     </Aside>
   );

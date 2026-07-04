@@ -41,8 +41,8 @@ export default function Homepage() {
             Performance
             <br />
             without
-            <br />
-            conformity
+            {/*<br />*/}
+            &nbsp;&nbsp;conformity
           </h1>
           <p className="home-hero-body">
             Tenth athletic believes running is not a performance for attention,
@@ -51,9 +51,9 @@ export default function Homepage() {
             performance begins as a private experience before it becomes a
             public result.
           </p>
-          <Link className="home-hero-cta" prefetch="intent" to="/collections/all">
-            Explore the Collection
-          </Link>
+          {/*<Link className="home-hero-cta" prefetch="intent" to="/collections/all">*/}
+          {/*  Explore the Collection*/}
+          {/*</Link>*/}
         </div>
       </section>
     </div>

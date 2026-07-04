@@ -61,8 +61,12 @@ function loadDeferredData(_args: Route.LoaderArgs) {
 export default function Product() {
   const {product} = useLoaderData<typeof loader>();
   const heroGalleryCellRef = useRef<HTMLDivElement | null>(null);
+  const productInformationSectionRef = useRef<HTMLElement | null>(null);
+  const productInformationBuyPanelRef = useRef<HTMLDivElement | null>(null);
   const lastScrollYRef = useRef(0);
   const stickyBuyPanelRef = useRef<HTMLDivElement | null>(null);
+  const [isInformationBuyPanelVisible, setIsInformationBuyPanelVisible] =
+    useState(false);
   const [stickyBuyState, setStickyBuyState] = useState<{
     fixedLeft: number;
     isCollapsed: boolean;
@@ -104,14 +108,26 @@ export default function Product() {
     function updateStickyBuyPanel() {
       const sizeFitBoundary = document.querySelector('.product-accordions');
       const heroGalleryCell = heroGalleryCellRef.current;
+      const productInformationSection = productInformationSectionRef.current;
+      const productInformationBuyPanel = productInformationBuyPanelRef.current;
       const stickyBuyPanel = stickyBuyPanelRef.current;
 
-      if (!heroGalleryCell || !sizeFitBoundary || !stickyBuyPanel) {
+      if (
+        !heroGalleryCell ||
+        !sizeFitBoundary ||
+        !stickyBuyPanel ||
+        !productInformationSection ||
+        !productInformationBuyPanel
+      ) {
         return;
       }
 
       const viewportHeight = window.innerHeight;
       const heroCellRect = heroGalleryCell.getBoundingClientRect();
+      const productInformationRect =
+        productInformationSection.getBoundingClientRect();
+      const productInformationBuyPanelRect =
+        productInformationBuyPanel.getBoundingClientRect();
       const sizeFitRect = sizeFitBoundary.getBoundingClientRect();
       const bottomGap = parseFloat(
         getComputedStyle(stickyBuyPanel).getPropertyValue(
@@ -121,16 +137,39 @@ export default function Product() {
       const stickyBottomGap = Number.isFinite(bottomGap) ? bottomGap : 0;
       const stickyBottomLine = viewportHeight - stickyBottomGap;
       const hasReachedStickyStart = heroCellRect.bottom < stickyBottomLine - 1;
-      const hasReachedStickyStop = sizeFitRect.top <= stickyBottomLine;
+      const hasReachedStickyStop =
+        sizeFitRect.top <= stickyBottomLine ||
+        productInformationRect.top <= stickyBottomLine;
       const stoppedBottom = Math.max(
         0,
-        viewportHeight - sizeFitRect.top + stickyBottomGap,
+        viewportHeight -
+          Math.min(sizeFitRect.top, productInformationRect.top) +
+          stickyBottomGap,
       );
+      const informationPanelTopOffset = parseFloat(
+        getComputedStyle(productInformationBuyPanel).getPropertyValue(
+          '--product-information-buy-panel-top',
+        ),
+      );
+      const stickyTopOffset = Number.isFinite(informationPanelTopOffset)
+        ? informationPanelTopOffset
+        : 0;
+      const panelWidth = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue(
+          '--aside-width',
+        ),
+      );
+      const nextPanelWidth = Number.isFinite(panelWidth) ? panelWidth : 500;
+      const shouldShowInformationBuyPanel =
+        hasReachedStickyStop &&
+        productInformationRect.bottom - stickyTopOffset >=
+          productInformationBuyPanelRect.height;
       const scrollDelta = window.scrollY - lastScrollYRef.current;
       const isScrollingDown = scrollDelta > 4;
       const isScrollingUp = scrollDelta < -4;
 
       lastScrollYRef.current = window.scrollY;
+      setIsInformationBuyPanelVisible(shouldShowInformationBuyPanel);
 
       setStickyBuyState((currentState) => {
         const nextMode = !hasReachedStickyStart
@@ -138,8 +177,9 @@ export default function Product() {
           : hasReachedStickyStop
             ? 'stopped'
             : 'fixed';
-        const nextLeft = heroCellRect.left;
-        const nextWidth = heroCellRect.width;
+        const nextLeft =
+          heroCellRect.left + (heroCellRect.width - nextPanelWidth) / 2;
+        const nextWidth = nextPanelWidth;
         const nextCollapsed =
           nextMode === 'hidden'
             ? false
@@ -258,40 +298,67 @@ export default function Product() {
         ) : null}
       </div>
 
-      <div className="product-accordions">
-        {PRODUCT_INFORMATION_SECTIONS.map((item, index) => (
-          <ProductInformationAccordion
-            content={item.content}
-            defaultOpen={index === 0}
-            id={item.id}
-            key={item.id}
-            title={item.title}
-          />
-        ))}
-      </div>
-
-      {selectedVariant?.sku ? (
-        <section
-          className="product-specs"
-          aria-label="Technical specifications"
-        >
-          <h2 className="product-specs-heading">
-            Technical
-            <br />
-            Specifications
-          </h2>
-          <div className="product-specs-row">
-            <div className="product-specs-key">SKU</div>
-            <div className="product-specs-value">{selectedVariant.sku}</div>
+      <section
+        className="product-information-section"
+        ref={productInformationSectionRef}
+      >
+        <div className="product-information-layout">
+          <div className="product-accordions">
+            {PRODUCT_INFORMATION_SECTIONS.map((item, index) => (
+              <ProductInformationAccordion
+                content={item.content}
+                defaultOpen={index === 0}
+                id={item.id}
+                key={item.id}
+                title={item.title}
+              />
+            ))}
           </div>
-          {selectedVariant.title !== 'Default Title' ? (
-            <div className="product-specs-row">
-              <div className="product-specs-key">Variant</div>
-              <div className="product-specs-value">{selectedVariant.title}</div>
-            </div>
+
+          {selectedVariant?.sku ? (
+            <section
+              className="product-specs"
+              aria-label="Technical specifications"
+            >
+              <h2 className="product-specs-heading">
+                Technical
+                <br />
+                Specifications
+              </h2>
+              <div className="product-specs-row">
+                <div className="product-specs-key">SKU</div>
+                <div className="product-specs-value">{selectedVariant.sku}</div>
+              </div>
+              {selectedVariant.title !== 'Default Title' ? (
+                <div className="product-specs-row">
+                  <div className="product-specs-key">Variant</div>
+                  <div className="product-specs-value">
+                    {selectedVariant.title}
+                  </div>
+                </div>
+              ) : null}
+            </section>
           ) : null}
-        </section>
-      ) : null}
+        </div>
+
+        <aside
+          aria-hidden={!isInformationBuyPanelVisible}
+          className={`product-information-buy-panel${
+            isInformationBuyPanelVisible ? ' is-visible' : ''
+          }${stickyBuyState.isCollapsed ? ' is-collapsed' : ''}`}
+          ref={productInformationBuyPanelRef}
+          role="region"
+          aria-label="Product purchase options"
+        >
+          <div className="product-information-buy-panel-inner">
+            <ProductForm
+              productTitle={title}
+              productOptions={productOptions}
+              selectedVariant={selectedVariant}
+            />
+          </div>
+        </aside>
+      </section>
 
       <Analytics.ProductView
         data={{

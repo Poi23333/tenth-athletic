@@ -1,16 +1,145 @@
+import {useState} from 'react';
+
+type SizeGuideUnit = 'cm' | 'in';
+
+type SizeGuideValue = number | [number, number];
+
+const SIZE_GUIDE_COLUMNS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
+
+const SIZE_GUIDE_ROWS: Array<{
+  label: string;
+  values: SizeGuideValue[];
+}> = [
+  {
+    label: 'BUST',
+    values: [
+      32.3,
+      [32.7, 34.6],
+      [35, 37],
+      [37.4, 39.4],
+      [39.8, 42.9],
+      [43.4, 46.5],
+    ],
+  },
+  {
+    label: 'WAIST',
+    values: [
+      26.4,
+      [26.8, 28.7],
+      [29.1, 31.1],
+      [31.5, 33.5],
+      [33.9, 37.4],
+      [37.8, 41.3],
+    ],
+  },
+  {
+    label: 'HIP',
+    values: [
+      35.4,
+      [35.8, 37.8],
+      [38.2, 40.2],
+      [40.6, 42.5],
+      [42.9, 45.3],
+      [45.7, 48],
+    ],
+  },
+];
+
+function formatSizeGuideNumber(value: number) {
+  return Number(value.toFixed(1)).toString();
+}
+
+function toCentimeters(value: number) {
+  return value * 2.54;
+}
+
+function formatSizeGuideValue(value: SizeGuideValue, unit: SizeGuideUnit) {
+  const convert = unit === 'cm' ? toCentimeters : (entry: number) => entry;
+
+  if (Array.isArray(value)) {
+    return `${formatSizeGuideNumber(convert(value[0]))} - ${formatSizeGuideNumber(
+      convert(value[1]),
+    )}`;
+  }
+
+  return formatSizeGuideNumber(convert(value));
+}
+
+function SizeGuideTable() {
+  const [unit, setUnit] = useState<SizeGuideUnit>('cm');
+
+  return (
+    <section className="size-guide" aria-label="Women's apparel size guide">
+      <div className="size-guide-header">
+        <div>
+          <h3 className="size-guide-title">Size Guide - Womens Apparel</h3>
+          <p className="size-guide-description">
+            Your body measurements in {unit === 'cm' ? 'centimeters' : 'inches'}
+          </p>
+        </div>
+        <div
+          className="size-guide-toggle"
+          role="group"
+          aria-label="Size guide units"
+        >
+          <button
+            aria-pressed={unit === 'cm'}
+            className={`size-guide-toggle-button${
+              unit === 'cm' ? ' is-active' : ''
+            }`}
+            onClick={() => setUnit('cm')}
+            type="button"
+          >
+            Centimeters
+          </button>
+          <button
+            aria-pressed={unit === 'in'}
+            className={`size-guide-toggle-button${
+              unit === 'in' ? ' is-active' : ''
+            }`}
+            onClick={() => setUnit('in')}
+            type="button"
+          >
+            Inches
+          </button>
+        </div>
+      </div>
+
+      <div className="size-guide-table-wrap">
+        <table className="size-guide-table">
+          <thead>
+            <tr>
+              <th scope="col" />
+              {SIZE_GUIDE_COLUMNS.map((column) => (
+                <th key={column} scope="col">
+                  {column}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {SIZE_GUIDE_ROWS.map((row) => (
+              <tr key={row.label}>
+                <th scope="row">{row.label}</th>
+                {row.values.map((value, index) => (
+                  <td key={`${row.label}-${SIZE_GUIDE_COLUMNS[index]}`}>
+                    {formatSizeGuideValue(value, unit)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 export const PRODUCT_INFORMATION_SECTIONS = [
   {
     id: 'size-fit',
     title: 'Size & Fit',
-    content: (
-      <>
-        <p>
-          Refer to our size guide for detailed measurements. All Tenth Athletic
-          garments are designed with a performance race fit unless otherwise
-          noted.
-        </p>
-      </>
-    ),
+    content: <SizeGuideTable />,
   },
   {
     id: 'shipping-returns',
