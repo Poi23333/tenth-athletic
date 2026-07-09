@@ -7,7 +7,7 @@
 ## Local Verification
 
 - The local development service is already running.
-- When validation requires opening or calling the storefront, use `http://localhost:3000`.
+- When validation requires opening or calling the storefront, use `http://localhost:3080`.
 - Do not start another local development service unless the user explicitly asks for it.
 
 ## Implementation Rules

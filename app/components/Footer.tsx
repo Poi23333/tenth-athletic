@@ -1,7 +1,7 @@
 import {Suspense} from 'react';
 import {Await, NavLink} from 'react-router';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
-import {openCookieManager} from '~/components/CookieConsent';
+import footerCactus from '~/assets/footer-cactus.svg';
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
@@ -9,72 +9,95 @@ interface FooterProps {
   publicStoreDomain: string;
 }
 
-export function Footer({
-  footer: footerPromise,
-}: FooterProps) {
+type FooterLink = {
+  label: string;
+  to?: string;
+  href?: string;
+};
+
+const FOOTER_COLUMNS: FooterLink[][] = [
+  [
+    {label: 'Customer Service', to: '/pages/customer-service'},
+    {label: 'Shipping & Returns', to: '/policies/shipping-policy'},
+    {label: 'FAQ', to: '/pages/faq'},
+    {label: 'Terms & Conditions', to: '/policies/terms-of-service'},
+    {label: 'Privacy & Cookie Policy', to: '/pages/privacy-cookie-policy'},
+  ],
+  [
+    {label: 'Our Packaging', to: '/pages/our-packaging'},
+    {label: 'Care Guide', to: '/pages/care-guide'},
+    {label: 'Sustainability', to: '/pages/sustainability'},
+    {label: 'Careers', to: '/pages/careers'},
+    {label: 'Store Locator / Stockists', to: '/pages/store-locator'},
+  ],
+  [
+    {label: 'Instagram', href: 'https://www.instagram.com/'},
+    {label: 'YouTube', href: 'https://www.youtube.com/'},
+    {label: 'TikTok', href: 'https://www.tiktok.com/'},
+    {label: 'Strava', href: 'https://www.strava.com/'},
+    {label: 'Spotify', href: 'https://open.spotify.com/'},
+  ],
+];
+
+export function Footer({footer: footerPromise}: FooterProps) {
   return (
     <Suspense>
       <Await resolve={footerPromise}>
         {() => (
           <footer className="footer">
             <div className="footer-inner">
-              <div className="footer-story">
-                <h2 className="footer-title">
-                  Performance without conformity
-                </h2>
-                <p className="footer-body">
-                  Tenth athletic believes running is not a performance for
-                  attention, but a quiet way of building discipline, identity
-                  and belonging.
-                </p>
+              <div className="footer-links">
+                <div className="footer-rule" aria-hidden="true" />
+                <div className="footer-columns">
+                  {FOOTER_COLUMNS.map((column, columnIndex) => (
+                    <ul className="footer-column" key={columnIndex}>
+                      {column.map((link) => (
+                        <li key={link.label}>
+                          <FooterLinkItem link={link} />
+                        </li>
+                      ))}
+                    </ul>
+                  ))}
+                </div>
               </div>
-
-              <div className="footer-aside">
-                <div
-                  className="footer-social"
-                  aria-label="Tenth Athletic socials"
-                >
-                  <img
-                    src="/logo/footer-social-strava.png"
-                    alt="Strava"
-                    width={88}
-                    height={20}
-                  />
-                  <img
-                    src="/logo/footer-social-spotify.png"
-                    alt="Spotify"
-                    width={62}
-                    height={20}
-                  />
-                </div>
-                <div className="footer-legal">
-                  <span className="footer-copyright">
-                    ©2026 Tenth athletic®
-                  </span>
-                  <button
-                    className="footer-legal-action"
-                    type="button"
-                    onClick={openCookieManager}
-                  >
-                    Manage Cookies
-                  </button>
-                  <span className="footer-legal-text">
-                    Terms & Conditions
-                  </span>
-                  <span className="footer-legal-text">Privacy Policy</span>
-                </div>
+              <div className="footer-aside" aria-hidden="true">
                 <img
-                  src="/logo/footer-partner-1-percent-planet.png"
-                  alt="1% for the Planet"
-                  className="footer-partner"
-                  width={50}
-                  height={65}
+                  className="footer-illustration"
+                  src={footerCactus}
+                  alt=""
+                  width={128}
+                  height={286}
+                  decoding="async"
                 />
               </div>
+            </div>
+            <div className="footer-copyright-bar">
+              <p>© Tenth Athletic Limited 2026. All rights reserved.</p>
             </div>
           </footer>
         )}
       </Await>
     </Suspense>
+  );
+}
+
+function FooterLinkItem({link}: {link: FooterLink}) {
+  if (link.href) {
+    return (
+      <a
+        className="footer-link"
+        href={link.href}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        {link.label}
+      </a>
+    );
+  }
+
+  return (
+    <NavLink className="footer-link" prefetch="intent" to={link.to ?? '/'}>
+      {link.label}
+    </NavLink>
   );
 }

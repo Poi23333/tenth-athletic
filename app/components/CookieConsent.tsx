@@ -1,5 +1,6 @@
 import {useEffect, useMemo, useState} from 'react';
 import {useAnalytics} from '@shopify/hydrogen';
+import brandLogo from '~/assets/logo.svg';
 
 type ConsentChoice = {
   analytics: boolean;
@@ -138,7 +139,7 @@ export function CookieConsent() {
           x
         </button>
         <img
-          src="/logo/brand-logo-cookie.png"
+          src={brandLogo}
           alt="Tenth Athletic"
           className="cookie-consent-logo"
           width={184}

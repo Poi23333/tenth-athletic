@@ -35,6 +35,7 @@ export function PageLayout({
         header={header}
         publicStoreDomain={publicStoreDomain}
       />
+      <LocaleAside />
       <MobileMenuAside cart={cart} isLoggedIn={isLoggedIn} />
       {header && (
         <Header
@@ -104,128 +105,100 @@ function ProductTypesAside({
   publicStoreDomain: string;
 }) {
   const {close, productTypeAudience} = useAside();
-  const heading = productTypeAudience === 'man' ? 'MAN' : 'WOMAN';
   const displayHeading = productTypeAudience === 'man' ? 'Man' : 'Woman';
   const menu =
     productTypeAudience === 'man' ? header.manMenu : header.womanMenu;
   const primaryDomainUrl = header.shop.primaryDomain?.url;
-  const collectionUrl =
-    productTypeAudience === 'man'
-      ? '/collections/man-new-arrivals'
-      : '/collections/woman-new-arrivals';
-  const contextText =
-    productTypeAudience === 'man'
-      ? "Performance engineering for disciplined output. Our 'Man' collection pairs measured compression, breathable structure, and stripped-back silhouettes for non-conforming athletic work."
-      : "Performance engineering for the elite athletic form. Our 'Woman' collection integrates bio-mechanical support with avant-garde structural silhouettes. Non-conforming excellence as standard.";
 
   return (
-    <Aside type="productTypes" heading={heading}>
-      <div className="product-type-drawer">
-        <div className="product-type-drawer-scroll">
-          <nav
-            className="product-type-menu"
-            aria-label={`${displayHeading} collections`}
-          >
-            {menu ? (
-              menu.items.map((item) => {
-                const meta = getProductTypeMenuMeta(item.title);
-                const itemContent = (
-                  <>
-                    <span className="product-type-menu-label">
-                      {item.title}
-                    </span>
-                    {meta ? (
-                      <span className="product-type-menu-meta">{meta}</span>
-                    ) : null}
-                  </>
-                );
+    <Aside chrome="brand" type="productTypes" heading={displayHeading}>
+      <nav
+        className="drawer-list"
+        aria-label={`${displayHeading} collections`}
+      >
+        {menu ? (
+          menu.items.map((item) => {
+            if (!item.url || !primaryDomainUrl) {
+              return (
+                <span className="drawer-list-item" key={item.id}>
+                  {item.title}
+                </span>
+              );
+            }
 
-                if (!item.url || !primaryDomainUrl) {
-                  return (
-                    <span
-                      className="product-type-menu-item"
-                      key={item.id}
-                    >
-                      {itemContent}
-                    </span>
-                  );
-                }
+            const url = normalizeShopifyMenuUrl({
+              primaryDomainUrl,
+              publicStoreDomain,
+              url: item.url,
+            });
+            const isExternal = !url.startsWith('/');
 
-                const url = normalizeShopifyMenuUrl({
-                  primaryDomainUrl,
-                  publicStoreDomain,
-                  url: item.url,
-                });
-                const isExternal = !url.startsWith('/');
-                const className = 'product-type-menu-item';
-
-                return isExternal ? (
-                  <a
-                    className={className}
-                    href={url}
-                    key={item.id}
-                    onClick={close}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    {itemContent}
-                  </a>
-                ) : (
-                  <NavLink
-                    className={className}
-                    key={item.id}
-                    onClick={close}
-                    prefetch="intent"
-                    to={url}
-                  >
-                    {itemContent}
-                  </NavLink>
-                );
-              })
+            return isExternal ? (
+              <a
+                className="drawer-list-item"
+                href={url}
+                key={item.id}
+                onClick={close}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {item.title}
+              </a>
             ) : (
-              <p className="product-type-menu-empty">
-                Shopify menu handle {productTypeAudience}-menu is not
-                configured.
-              </p>
-            )}
-          </nav>
-
-          {/*<section*/}
-          {/*  className="product-type-context"*/}
-          {/*  aria-label="Laboratory context"*/}
-          {/*>*/}
-          {/*  <div className="product-type-context-heading">*/}
-          {/*    <span>Laboratory Context</span>*/}
-          {/*    <span className="product-type-context-pulse" aria-hidden="true" />*/}
-          {/*  </div>*/}
-          {/*  <p>{contextText}</p>*/}
-          {/*</section>*/}
-        </div>
-
-        {/*<div className="product-type-drawer-action">*/}
-        {/*  <NavLink*/}
-        {/*    className="product-type-menu-cta"*/}
-        {/*    onClick={close}*/}
-        {/*    prefetch="intent"*/}
-        {/*    to={collectionUrl}*/}
-        {/*  >*/}
-        {/*    View All {displayHeading} Collection*/}
-        {/*  </NavLink>*/}
-        {/*</div>*/}
-      </div>
+              <NavLink
+                className="drawer-list-item"
+                key={item.id}
+                onClick={close}
+                prefetch="intent"
+                to={url}
+              >
+                {item.title}
+              </NavLink>
+            );
+          })
+        ) : (
+          <p className="drawer-list-empty">
+            Shopify menu handle {productTypeAudience}-menu is not configured.
+          </p>
+        )}
+      </nav>
     </Aside>
   );
 }
 
-function getProductTypeMenuMeta(title: string) {
-  const normalizedTitle = title.toLowerCase();
+const LOCALE_OPTIONS = [
+  {id: 'gb', label: 'United Kingdom [ GBP £ ]'},
+  {id: 'eu', label: 'Europe [ EUR € ]'},
+  {id: 'us', label: 'United States [ USD $ ]'},
+  {id: 'hk', label: 'Hong Kong SAR [ HKD $ ]'},
+  {id: 'sg', label: 'Singapore [ SGD $ ]'},
+  {id: 'jp', label: 'Japan [ JPY ¥ ]'},
+  {id: 'kr', label: 'South Korea [ KRW ₩ ]'},
+  {id: 'au', label: 'Australia [ AUD $ ]'},
+  {id: 'ca', label: 'Canada [ CAD $ ]'},
+  {id: 'tw', label: 'Taiwan Region [ TWD $ ]'},
+  {id: 'row', label: 'Rest of the World [ GBP £ ]'},
+] as const;
 
-  if (normalizedTitle.includes('new')) return 'NEW';
-  if (normalizedTitle.includes('special')) return 'LIMITED';
-  if (normalizedTitle.includes('tops')) return '014 ITEMS';
-  if (normalizedTitle.includes('accessories')) return '032 ITEMS';
+function LocaleAside() {
+  const {close} = useAside();
 
-  return null;
+  return (
+    <Aside chrome="brand" type="locale" heading="Region and currency">
+      <nav className="drawer-list" aria-label="Region and currency">
+        {LOCALE_OPTIONS.map((option) => (
+          <button
+            className="drawer-list-item"
+            key={option.id}
+            type="button"
+            onClick={close}
+          >
+            {option.label}
+          </button>
+        ))}
+      </nav>
+    </Aside>
+  );
 }
 
 function normalizeShopifyMenuUrl({

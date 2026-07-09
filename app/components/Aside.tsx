@@ -7,7 +7,8 @@ import {
 } from 'react';
 
 export type ProductTypeAudience = 'man' | 'woman';
-type AsideType = 'cart' | 'mobile' | 'productTypes' | 'closed';
+type AsideType = 'cart' | 'mobile' | 'productTypes' | 'locale' | 'closed';
+type AsideChrome = 'default' | 'brand';
 type AsideContextValue = {
   type: AsideType;
   productTypeAudience: ProductTypeAudience;
@@ -15,6 +16,10 @@ type AsideContextValue = {
   openProductTypes: (audience: ProductTypeAudience) => void;
   close: () => void;
 };
+
+function isBrandAside(type: AsideType) {
+  return type === 'productTypes' || type === 'locale';
+}
 
 /**
  * A side bar component with Overlay
@@ -27,15 +32,18 @@ type AsideContextValue = {
  */
 export function Aside({
   children,
+  chrome = 'default',
   heading,
   type,
 }: {
   children?: React.ReactNode;
+  chrome?: AsideChrome;
   type: AsideType;
   heading: React.ReactNode;
 }) {
   const {type: activeType, close} = useAside();
   const expanded = type === activeType;
+  const isBrand = chrome === 'brand';
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -62,14 +70,26 @@ export function Aside({
       role="dialog"
     >
       <button className="close-outside" onClick={close} />
-      <aside>
-        <header>
-          <h3>{heading}</h3>
-          <button className="close reset" onClick={close} aria-label="Close">
-            &times;
-          </button>
-        </header>
-        <main>{children}</main>
+      <aside
+        className={isBrand ? 'aside-brand' : undefined}
+        aria-label={typeof heading === 'string' ? heading : undefined}
+      >
+        {isBrand ? (
+          <>
+            <h2 className="sr-only">{heading}</h2>
+            <main className="aside-brand-main">{children}</main>
+          </>
+        ) : (
+          <>
+            <header>
+              <h3>{heading}</h3>
+              <button className="close reset" onClick={close} aria-label="Close">
+                &times;
+              </button>
+            </header>
+            <main>{children}</main>
+          </>
+        )}
       </aside>
     </div>
   );
@@ -81,6 +101,13 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
   const [type, setType] = useState<AsideType>('closed');
   const [productTypeAudience, setProductTypeAudience] =
     useState<ProductTypeAudience>('man');
+
+  useEffect(() => {
+    document.body.classList.toggle('brand-drawer-open', isBrandAside(type));
+    return () => {
+      document.body.classList.remove('brand-drawer-open');
+    };
+  }, [type]);
 
   useEffect(() => {
     if (type === 'closed') return;

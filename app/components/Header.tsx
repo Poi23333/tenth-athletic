@@ -1,8 +1,9 @@
 import {Await, NavLink, useLocation} from 'react-router';
-import {Suspense} from 'react';
+import {Suspense, useLayoutEffect, useRef} from 'react';
 import {type CartViewPayload, useAnalytics} from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {type ProductTypeAudience, useAside} from '~/components/Aside';
+import brandLogo from '~/assets/logo.svg';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -13,8 +14,7 @@ interface HeaderProps {
 
 type Viewport = 'desktop' | 'mobile';
 
-type TenthNavItem =
-  {id: string; title: string; audience: ProductTypeAudience};
+type TenthNavItem = {id: string; title: string; audience: ProductTypeAudience};
 
 const TENTH_NAV_ITEMS: TenthNavItem[] = [
   {id: 'man', title: 'Man', audience: 'man'},
@@ -27,7 +27,7 @@ export function Header({cart, header, isLoggedIn}: HeaderProps) {
       <div className="header-inner">
         <NavLink prefetch="intent" to="/" className="header-logo-link" end>
           <img
-            src="/logo/brand-logo-header.png"
+            src={brandLogo}
             alt={header.shop.name}
             className="header-logo"
             width={180}
@@ -51,12 +51,58 @@ export function HeaderMenu({
   viewport: Viewport;
 }) {
   const className = `header-menu-${viewport}`;
-  const {openProductTypes, productTypeAudience, type} = useAside();
+  const navRef = useRef<HTMLElement>(null);
+  const {open, openProductTypes, productTypeAudience, type} = useAside();
   const location = useLocation();
   const activeAudience = getActiveAudience(location.pathname);
 
+  useLayoutEffect(() => {
+    if (viewport !== 'desktop') return;
+
+    const syncAsideWidth = () => {
+      const nav = navRef.current;
+      const firstItem = nav?.querySelector<HTMLElement>('.header-menu-item');
+      if (!firstItem) return;
+
+      // Match header nav span, then widen slightly so the drawer isn't flush to UK/GBP.
+      const navSpan = Math.round(
+        window.innerWidth - firstItem.getBoundingClientRect().left,
+      );
+      const extra = Math.round(
+        Number.parseFloat(
+          getComputedStyle(document.documentElement).fontSize || '16',
+        ) * 3,
+      );
+      document.documentElement.style.setProperty(
+        '--aside-width',
+        `${navSpan + extra}px`,
+      );
+    };
+
+    syncAsideWidth();
+    window.addEventListener('resize', syncAsideWidth);
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined' ? new ResizeObserver(syncAsideWidth) : null;
+    if (navRef.current) resizeObserver?.observe(navRef.current);
+
+    return () => {
+      window.removeEventListener('resize', syncAsideWidth);
+      resizeObserver?.disconnect();
+    };
+  }, [viewport]);
+
   return (
-    <nav className={className} role="navigation">
+    <nav className={className} ref={navRef} role="navigation">
+      <button
+        className={`header-menu-item reset header-locale${
+          type === 'locale' ? ' active' : ''
+        }`}
+        type="button"
+        onClick={() => open('locale')}
+      >
+        UK / GBP £
+      </button>
       {TENTH_NAV_ITEMS.map((item) => (
         <button
           className={`header-menu-item reset${
@@ -73,6 +119,13 @@ export function HeaderMenu({
         </button>
       ))}
       <AccountLink isLoggedIn={isLoggedIn} />
+      <NavLink
+        className="header-menu-item"
+        prefetch="intent"
+        to="/pages/field-index"
+      >
+        Field Index
+      </NavLink>
       <BagToggle cart={cart} />
     </nav>
   );
@@ -177,10 +230,7 @@ function BagBanner({count}: {count: number}) {
       }}
     >
       <span className="header-bag-dot" aria-hidden="true" />
-      <span>Bag</span>
-      <span className="header-bag-count" aria-label={`${count} items in bag`}>
-        ({count})
-      </span>
+      <span>Bag({count})</span>
     </button>
   );
 }
