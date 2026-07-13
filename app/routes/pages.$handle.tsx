@@ -1,28 +1,40 @@
 import {useLoaderData} from 'react-router';
 import type {Route} from './+types/pages.$handle';
+import {InfoPage} from '~/components/InfoPage';
+import {getInfoPage} from '~/data/info-pages';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: Route.MetaFunction = ({data}) => {
-  return [{title: `Hydrogen | ${data?.page.title ?? ''}`}];
+  const title =
+    data?.type === 'info'
+      ? data.title
+      : data?.type === 'shopify'
+        ? data.page.title
+        : '';
+
+  return [{title: title ? `Tenth Athletic | ${title}` : 'Tenth Athletic'}];
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
   return {...deferredData, ...criticalData};
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
 async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
   if (!params.handle) {
     throw new Error('Missing page handle');
+  }
+
+  const infoPage = getInfoPage(params.handle);
+  if (infoPage) {
+    return {
+      type: 'info' as const,
+      handle: params.handle,
+      title: infoPage.title,
+      wide: infoPage.wide ?? false,
+    };
   }
 
   const [{page}] = await Promise.all([
@@ -31,7 +43,6 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
         handle: params.handle,
       },
     }),
-    // Add other queries here, so that they are loaded in parallel
   ]);
 
   if (!page) {
@@ -41,28 +52,37 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
   redirectIfHandleIsLocalized(request, {handle: params.handle, data: page});
 
   return {
+    type: 'shopify' as const,
     page,
   };
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
-function loadDeferredData({context}: Route.LoaderArgs) {
+function loadDeferredData(_args: Route.LoaderArgs) {
   return {};
 }
 
 export default function Page() {
-  const {page} = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
+
+  if (data.type === 'info') {
+    const infoPage = getInfoPage(data.handle);
+    if (!infoPage) {
+      throw new Response('Not Found', {status: 404});
+    }
+
+    return (
+      <InfoPage title={infoPage.title} wide={infoPage.wide}>
+        {infoPage.content}
+      </InfoPage>
+    );
+  }
 
   return (
     <div className="page">
       <header>
-        <h1>{page.title}</h1>
+        <h1>{data.page.title}</h1>
       </header>
-      <main dangerouslySetInnerHTML={{__html: page.body}} />
+      <main dangerouslySetInnerHTML={{__html: data.page.body}} />
     </div>
   );
 }

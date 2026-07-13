@@ -215,36 +215,45 @@ export const HEADER_QUERY = `#graphql
   }
   query Header(
     $country: CountryCode
-    $headerMenuHandle: String!
     $language: LanguageCode
-    $manMenuHandle: String!
-    $womanMenuHandle: String!
+    $shopMenuHandle: String!
   ) @inContext(language: $language, country: $country) {
     shop {
       ...Shop
     }
-    menu(handle: $headerMenuHandle) {
-      ...Menu
-    }
-    manMenu: menu(handle: $manMenuHandle) {
-      ...Menu
-    }
-    womanMenu: menu(handle: $womanMenuHandle) {
+    shopMenu: menu(handle: $shopMenuHandle) {
       ...Menu
     }
   }
   ${MENU_FRAGMENT}
 ` as const;
 
-export const FOOTER_QUERY = `#graphql
-  query Footer(
+export const LOCALIZATION_QUERY = `#graphql
+  query Localization(
     $country: CountryCode
-    $footerMenuHandle: String!
     $language: LanguageCode
-  ) @inContext(language: $language, country: $country) {
-    menu(handle: $footerMenuHandle) {
-      ...Menu
+  ) @inContext(country: $country, language: $language) {
+    localization {
+      country {
+        isoCode
+        name
+        currency {
+          isoCode
+          symbol
+        }
+      }
+      language {
+        isoCode
+        name
+      }
+      availableCountries {
+        isoCode
+        name
+        currency {
+          isoCode
+          symbol
+        }
+      }
     }
   }
-  ${MENU_FRAGMENT}
 ` as const;

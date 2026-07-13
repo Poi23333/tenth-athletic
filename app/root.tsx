@@ -14,13 +14,27 @@ import {
 import type {Route} from './+types/root';
 import favicon from '~/assets/favicon.svg';
 import globalDotMatrix from '~/assets/global-dot-matrix.svg';
-import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
+import {REGIONS, type Region} from '~/data/regions';
+import {HEADER_QUERY, LOCALIZATION_QUERY} from '~/lib/fragments';
+import {
+  getCurrentRegionFromRequest,
+  getGeoCountry,
+  isGeoBannerDismissed,
+  resolveRegionForGeo,
+} from '~/lib/locale';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
+import infoPageStyles from '~/styles/info-page.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 
 export type RootLoader = typeof loader;
+
+export type GeoBannerData = {
+  show: true;
+  currentRegion: Region;
+  suggestedRegion: Region;
+};
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -76,10 +90,28 @@ export async function loader(args: Route.LoaderArgs) {
   const criticalData = await loadCriticalData(args);
 
   const {storefront, env} = args.context;
+  const currentRegion = getCurrentRegionFromRequest(args.request);
+  const geoCountry = getGeoCountry(args.request);
+  const suggestedRegion = resolveRegionForGeo(geoCountry);
+  const showGeoBanner =
+    Boolean(suggestedRegion) &&
+    suggestedRegion!.id !== currentRegion.id &&
+    !isGeoBannerDismissed(args.request);
+
+  const geoBanner: GeoBannerData | null = showGeoBanner
+    ? {
+        show: true,
+        currentRegion,
+        suggestedRegion: suggestedRegion!,
+      }
+    : null;
 
   return {
     ...deferredData,
     ...criticalData,
+    regions: REGIONS,
+    currentRegion,
+    geoBanner,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
     shop: getShopAnalytics({
       storefront,
@@ -103,19 +135,19 @@ export async function loader(args: Route.LoaderArgs) {
 async function loadCriticalData({context}: Route.LoaderArgs) {
   const {storefront} = context;
 
-  const [header] = await Promise.all([
+  const [header, localization] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheNone(),
       variables: {
-        headerMenuHandle: 'main-menu', // Adjust to your header menu handle
-        manMenuHandle: 'man-menu',
-        womanMenuHandle: 'woman-menu',
+        shopMenuHandle: 'shop-menu',
       },
     }),
-    // Add other queries here, so that they are loaded in parallel
+    storefront.query(LOCALIZATION_QUERY, {
+      cache: storefront.CacheLong(),
+    }),
   ]);
 
-  return {header};
+  return {header, localization};
 }
 
 /**
@@ -124,25 +156,11 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
 function loadDeferredData({context}: Route.LoaderArgs) {
-  const {storefront, customerAccount, cart} = context;
+  const {customerAccount, cart} = context;
 
-  // defer the footer query (below the fold)
-  const footer = storefront
-    .query(FOOTER_QUERY, {
-      cache: storefront.CacheLong(),
-      variables: {
-        footerMenuHandle: 'footer', // Adjust to your footer menu handle
-      },
-    })
-    .catch((error: Error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
-    });
   return {
     cart: cart.get(),
     isLoggedIn: customerAccount.isLoggedIn(),
-    footer,
   };
 }
 
@@ -157,6 +175,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={tailwindCss}></link>
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
+        <link rel="stylesheet" href={infoPageStyles}></link>
         <Meta />
         <Links />
       </head>

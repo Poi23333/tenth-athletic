@@ -33,6 +33,11 @@ h2 {
   margin-bottom: 1rem;
 }
 
+b,
+strong {
+  font-weight: 700;
+}
+
 h4 {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
@@ -80,9 +85,6 @@ body > main {
 
 section {
   padding: 1rem 0;
-  @media (min-width: 768px) {
-    padding: 2rem 0;
-  }
 }
 
 fieldset {
@@ -107,7 +109,7 @@ input {
 }
 
 legend {
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 0.5rem;
 }
 

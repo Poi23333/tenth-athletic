@@ -1,8 +1,7 @@
-import {Await, NavLink} from 'react-router';
-import {Suspense} from 'react';
+import {Await, Form, NavLink} from 'react-router';
+import {Suspense, useEffect, useRef} from 'react';
 import type {
   CartApiQueryFragment,
-  FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
 import {Aside, useAside} from '~/components/Aside';
@@ -10,47 +9,63 @@ import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
 import {CookieConsent} from '~/components/CookieConsent';
+import {RegionBanner} from '~/components/RegionBanner';
+import type {GeoBannerData} from '~/root';
+import {
+  formatConfirmBody,
+  formatConfirmSwitchLabel,
+  formatRegionListLabel,
+  getRegionById,
+  type Region,
+} from '~/data/regions';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
-  footer: Promise<FooterQuery | null>;
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
+  regions: readonly Region[];
+  currentRegion: Region;
+  geoBanner: GeoBannerData | null;
   children?: React.ReactNode;
 }
 
 export function PageLayout({
   cart,
   children = null,
-  footer,
   header,
   isLoggedIn,
   publicStoreDomain,
+  regions,
+  currentRegion,
+  geoBanner,
 }: PageLayoutProps) {
   return (
     <Aside.Provider>
       <CartAside cart={cart} />
-      <ProductTypesAside
-        header={header}
-        publicStoreDomain={publicStoreDomain}
+      <ShopAside header={header} publicStoreDomain={publicStoreDomain} />
+      <LocaleAside regions={regions} currentRegion={currentRegion} />
+      <MobileMenuAside
+        cart={cart}
+        isLoggedIn={isLoggedIn}
+        currentRegion={currentRegion}
       />
-      <LocaleAside />
-      <MobileMenuAside cart={cart} isLoggedIn={isLoggedIn} />
+      {geoBanner?.show ? (
+        <RegionBanner
+          currentRegion={geoBanner.currentRegion}
+          suggestedRegion={geoBanner.suggestedRegion}
+        />
+      ) : null}
       {header && (
         <Header
           header={header}
           cart={cart}
           isLoggedIn={isLoggedIn}
-          publicStoreDomain={publicStoreDomain}
+          currentRegion={currentRegion}
         />
       )}
       <main>{children}</main>
-      <Footer
-        footer={footer}
-        header={header}
-        publicStoreDomain={publicStoreDomain}
-      />
+      <Footer />
       <CookieConsent />
     </Aside.Provider>
   );
@@ -86,36 +101,38 @@ function CartAsideHeading({cart}: {cart: PageLayoutProps['cart']}) {
 function MobileMenuAside({
   cart,
   isLoggedIn,
+  currentRegion,
 }: {
   cart: PageLayoutProps['cart'];
   isLoggedIn: PageLayoutProps['isLoggedIn'];
+  currentRegion: Region;
 }) {
   return (
     <Aside type="mobile" heading="MENU">
-      <HeaderMenu cart={cart} isLoggedIn={isLoggedIn} viewport="mobile" />
+      <HeaderMenu
+        cart={cart}
+        isLoggedIn={isLoggedIn}
+        viewport="mobile"
+        currentRegion={currentRegion}
+      />
     </Aside>
   );
 }
 
-function ProductTypesAside({
+function ShopAside({
   header,
   publicStoreDomain,
 }: {
   header: HeaderQuery;
   publicStoreDomain: string;
 }) {
-  const {close, productTypeAudience} = useAside();
-  const displayHeading = productTypeAudience === 'man' ? 'Man' : 'Woman';
-  const menu =
-    productTypeAudience === 'man' ? header.manMenu : header.womanMenu;
+  const {close} = useAside();
+  const menu = header.shopMenu;
   const primaryDomainUrl = header.shop.primaryDomain?.url;
 
   return (
-    <Aside chrome="brand" type="productTypes" heading={displayHeading}>
-      <nav
-        className="drawer-list"
-        aria-label={`${displayHeading} collections`}
-      >
+    <Aside chrome="brand" type="shop" heading="Shop">
+      <nav className="drawer-list" aria-label="Shop collections">
         {menu ? (
           menu.items.map((item) => {
             if (!item.url || !primaryDomainUrl) {
@@ -158,7 +175,7 @@ function ProductTypesAside({
           })
         ) : (
           <p className="drawer-list-empty">
-            Shopify menu handle {productTypeAudience}-menu is not configured.
+            Shopify menu handle shop-menu is not configured.
           </p>
         )}
       </nav>
@@ -166,37 +183,82 @@ function ProductTypesAside({
   );
 }
 
-const LOCALE_OPTIONS = [
-  {id: 'gb', label: 'United Kingdom [ GBP £ ]'},
-  {id: 'eu', label: 'Europe [ EUR € ]'},
-  {id: 'us', label: 'United States [ USD $ ]'},
-  {id: 'hk', label: 'Hong Kong SAR [ HKD $ ]'},
-  {id: 'sg', label: 'Singapore [ SGD $ ]'},
-  {id: 'jp', label: 'Japan [ JPY ¥ ]'},
-  {id: 'kr', label: 'South Korea [ KRW ₩ ]'},
-  {id: 'au', label: 'Australia [ AUD $ ]'},
-  {id: 'ca', label: 'Canada [ CAD $ ]'},
-  {id: 'tw', label: 'Taiwan Region [ TWD $ ]'},
-  {id: 'row', label: 'Rest of the World [ GBP £ ]'},
-] as const;
+function LocaleAside({
+  regions,
+  currentRegion,
+}: {
+  regions: readonly Region[];
+  currentRegion: Region;
+}) {
+  const {
+    close,
+    type,
+    localeConfirmRegionId,
+    openLocaleConfirm,
+    clearLocaleConfirm,
+  } = useAside();
+  const confirmRegion = localeConfirmRegionId
+    ? getRegionById(localeConfirmRegionId)
+    : null;
 
-function LocaleAside() {
-  const {close} = useAside();
+  useEffect(() => {
+    if (type !== 'locale') {
+      clearLocaleConfirm();
+    }
+  }, [type, clearLocaleConfirm]);
+
+  // SPA redirect after /locale keeps Aside state; close when the market actually changes.
+  const prevRegionIdRef = useRef(currentRegion.id);
+  useEffect(() => {
+    if (prevRegionIdRef.current === currentRegion.id) return;
+    prevRegionIdRef.current = currentRegion.id;
+    close();
+  }, [currentRegion.id, close]);
 
   return (
     <Aside chrome="brand" type="locale" heading="Region and currency">
-      <nav className="drawer-list" aria-label="Region and currency">
-        {LOCALE_OPTIONS.map((option) => (
-          <button
-            className="drawer-list-item"
-            key={option.id}
-            type="button"
-            onClick={close}
-          >
-            {option.label}
-          </button>
-        ))}
-      </nav>
+      {confirmRegion ? (
+        <div className="locale-confirm">
+          <h3 className="locale-confirm-title">Switch field location?</h3>
+          <p className="locale-confirm-body">{formatConfirmBody(confirmRegion)}</p>
+          <div className="locale-confirm-actions">
+            <Form method="post" action="/locale" reloadDocument>
+              <input type="hidden" name="intent" value="switch" />
+              <input type="hidden" name="regionId" value={confirmRegion.id} />
+              <button className="locale-confirm-switch" type="submit">
+                {formatConfirmSwitchLabel(confirmRegion)}
+              </button>
+            </Form>
+            <button
+              className="locale-confirm-stay reset"
+              type="button"
+              onClick={clearLocaleConfirm}
+            >
+              Stay here
+            </button>
+          </div>
+          <hr className="locale-confirm-rule" />
+        </div>
+      ) : (
+        <nav className="drawer-list" aria-label="Region and currency">
+          {regions.map((region) => (
+            <button
+              className="drawer-list-item"
+              key={region.id}
+              type="button"
+              onClick={() => {
+                if (region.id === currentRegion.id) {
+                  close();
+                  return;
+                }
+                openLocaleConfirm(region.id);
+              }}
+            >
+              {formatRegionListLabel(region)}
+            </button>
+          ))}
+        </nav>
+      )}
     </Aside>
   );
 }

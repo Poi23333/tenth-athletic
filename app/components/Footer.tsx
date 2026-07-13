@@ -1,13 +1,5 @@
-import {Suspense} from 'react';
-import {Await, NavLink} from 'react-router';
-import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
+import {NavLink} from 'react-router';
 import footerCactus from '~/assets/footer-cactus.svg';
-
-interface FooterProps {
-  footer: Promise<FooterQuery | null>;
-  header: HeaderQuery;
-  publicStoreDomain: string;
-}
 
 type FooterLink = {
   label: string;
@@ -18,9 +10,9 @@ type FooterLink = {
 const FOOTER_COLUMNS: FooterLink[][] = [
   [
     {label: 'Customer Service', to: '/pages/customer-service'},
-    {label: 'Shipping & Returns', to: '/policies/shipping-policy'},
+    {label: 'Shipping & Returns', to: '/pages/shipping-returns'},
     {label: 'FAQ', to: '/pages/faq'},
-    {label: 'Terms & Conditions', to: '/policies/terms-of-service'},
+    {label: 'Terms & Conditions', to: '/pages/terms-conditions'},
     {label: 'Privacy & Cookie Policy', to: '/pages/privacy-cookie-policy'},
   ],
   [
@@ -39,45 +31,39 @@ const FOOTER_COLUMNS: FooterLink[][] = [
   ],
 ];
 
-export function Footer({footer: footerPromise}: FooterProps) {
+export function Footer() {
   return (
-    <Suspense>
-      <Await resolve={footerPromise}>
-        {() => (
-          <footer className="footer">
-            <div className="footer-inner">
-              <div className="footer-links">
-                <div className="footer-rule" aria-hidden="true" />
-                <div className="footer-columns">
-                  {FOOTER_COLUMNS.map((column, columnIndex) => (
-                    <ul className="footer-column" key={columnIndex}>
-                      {column.map((link) => (
-                        <li key={link.label}>
-                          <FooterLinkItem link={link} />
-                        </li>
-                      ))}
-                    </ul>
-                  ))}
-                </div>
-              </div>
-              <div className="footer-aside" aria-hidden="true">
-                <img
-                  className="footer-illustration"
-                  src={footerCactus}
-                  alt=""
-                  width={128}
-                  height={286}
-                  decoding="async"
-                />
-              </div>
-            </div>
-            <div className="footer-copyright-bar">
-              <p>© Tenth Athletic Limited 2026. All rights reserved.</p>
-            </div>
-          </footer>
-        )}
-      </Await>
-    </Suspense>
+    <footer className="footer">
+      <div className="footer-inner">
+        <div className="footer-links">
+          <div className="footer-rule" aria-hidden="true" />
+          <div className="footer-columns">
+            {FOOTER_COLUMNS.map((column, columnIndex) => (
+              <ul className="footer-column" key={columnIndex}>
+                {column.map((link) => (
+                  <li key={link.label}>
+                    <FooterLinkItem link={link} />
+                  </li>
+                ))}
+              </ul>
+            ))}
+          </div>
+        </div>
+        <div className="footer-aside" aria-hidden="true">
+          <img
+            className="footer-illustration"
+            src={footerCactus}
+            alt=""
+            width={128}
+            height={286}
+            decoding="async"
+          />
+        </div>
+      </div>
+      <div className="footer-copyright-bar">
+        <p>© Tenth Athletic Limited 2026. All rights reserved.</p>
+      </div>
+    </footer>
   );
 }
 

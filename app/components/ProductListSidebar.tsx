@@ -7,6 +7,14 @@ const SORT_OPTIONS = [
   {label: 'Price: High to Low', value: 'price-desc'},
 ] as const;
 
+/** Preferred Shop filter order; matches Navigation → shop-menu. */
+const SHOP_COLLECTION_ORDER = [
+  'man',
+  'woman',
+  'accessories',
+  'new-arrivals',
+] as const;
+
 export type ProductListCollectionFilter = {
   handle: string;
   title: string;
@@ -22,17 +30,7 @@ export function ProductListSidebar({
   const [searchParams] = useSearchParams();
   const submit = useSubmit();
   const selectedSort = searchParams.get('sort') ?? 'newest';
-  const selectedCollection = collectionFilters.find(
-    (collection) => collection.handle === selectedCollectionHandle,
-  );
-  const selectedAudience = selectedCollection
-    ? getCollectionAudience(selectedCollection)
-    : null;
-  const visibleCollectionFilters = selectedAudience
-    ? collectionFilters.filter(
-        (collection) => getCollectionAudience(collection) === selectedAudience,
-      )
-    : collectionFilters;
+  const visibleCollectionFilters = sortShopCollections(collectionFilters);
 
   return (
     <>
@@ -57,7 +55,7 @@ export function ProductListSidebar({
                   type="checkbox"
                   value={collection.handle}
                 />
-                <span>{getCollectionFilterLabel(collection)}</span>
+                <span>{collection.title}</span>
               </Link>
             );
           })}
@@ -132,6 +130,26 @@ export function getCatalogSort(sort: string) {
   }
 }
 
+function sortShopCollections(collections: ProductListCollectionFilter[]) {
+  const orderIndex = new Map(
+    SHOP_COLLECTION_ORDER.map((handle, index) => [handle, index]),
+  );
+
+  return [...collections].sort((a, b) => {
+    const aIndex = orderIndex.get(
+      a.handle as (typeof SHOP_COLLECTION_ORDER)[number],
+    );
+    const bIndex = orderIndex.get(
+      b.handle as (typeof SHOP_COLLECTION_ORDER)[number],
+    );
+
+    if (aIndex != null && bIndex != null) return aIndex - bIndex;
+    if (aIndex != null) return -1;
+    if (bIndex != null) return 1;
+    return a.title.localeCompare(b.title);
+  });
+}
+
 function getCollectionFilterUrl(handle: string, sort: string) {
   const searchParams = new URLSearchParams();
 
@@ -142,26 +160,4 @@ function getCollectionFilterUrl(handle: string, sort: string) {
   const query = searchParams.toString();
 
   return `/collections/${handle}${query ? `?${query}` : ''}`;
-}
-
-function getCollectionAudience(collection: ProductListCollectionFilter) {
-  const normalizedTitle = collection.title.trim().toLowerCase();
-  const normalizedHandle = collection.handle.trim().toLowerCase();
-
-  if (normalizedTitle.startsWith('man ') || normalizedHandle.startsWith('man-')) {
-    return 'man';
-  }
-
-  if (
-    normalizedTitle.startsWith('woman ') ||
-    normalizedHandle.startsWith('woman-')
-  ) {
-    return 'woman';
-  }
-
-  return null;
-}
-
-function getCollectionFilterLabel(collection: ProductListCollectionFilter) {
-  return collection.title.trim().replace(/^(man|woman)\s+/i, '');
 }

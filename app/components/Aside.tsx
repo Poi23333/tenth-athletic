@@ -1,24 +1,26 @@
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
 } from 'react';
+import type {RegionId} from '~/data/regions';
 
-export type ProductTypeAudience = 'man' | 'woman';
-type AsideType = 'cart' | 'mobile' | 'productTypes' | 'locale' | 'closed';
+type AsideType = 'cart' | 'mobile' | 'shop' | 'locale' | 'closed';
 type AsideChrome = 'default' | 'brand';
 type AsideContextValue = {
   type: AsideType;
-  productTypeAudience: ProductTypeAudience;
+  localeConfirmRegionId: RegionId | null;
   open: (mode: AsideType) => void;
-  openProductTypes: (audience: ProductTypeAudience) => void;
+  openLocaleConfirm: (regionId: RegionId) => void;
+  clearLocaleConfirm: () => void;
   close: () => void;
 };
 
 function isBrandAside(type: AsideType) {
-  return type === 'productTypes' || type === 'locale';
+  return type === 'shop' || type === 'locale';
 }
 
 /**
@@ -99,8 +101,27 @@ const AsideContext = createContext<AsideContextValue | null>(null);
 
 Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
   const [type, setType] = useState<AsideType>('closed');
-  const [productTypeAudience, setProductTypeAudience] =
-    useState<ProductTypeAudience>('man');
+  const [localeConfirmRegionId, setLocaleConfirmRegionId] =
+    useState<RegionId | null>(null);
+
+  const close = useCallback(() => {
+    setType('closed');
+    setLocaleConfirmRegionId(null);
+  }, []);
+
+  const open = useCallback((mode: AsideType) => {
+    setLocaleConfirmRegionId(null);
+    setType(mode);
+  }, []);
+
+  const openLocaleConfirm = useCallback((regionId: RegionId) => {
+    setLocaleConfirmRegionId(regionId);
+    setType('locale');
+  }, []);
+
+  const clearLocaleConfirm = useCallback(() => {
+    setLocaleConfirmRegionId(null);
+  }, []);
 
   useEffect(() => {
     document.body.classList.toggle('brand-drawer-open', isBrandAside(type));
@@ -143,13 +164,11 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
     <AsideContext.Provider
       value={{
         type,
-        productTypeAudience,
-        open: setType,
-        openProductTypes: (audience) => {
-          setProductTypeAudience(audience);
-          setType('productTypes');
-        },
-        close: () => setType('closed'),
+        localeConfirmRegionId,
+        open,
+        openLocaleConfirm,
+        clearLocaleConfirm,
+        close,
       }}
     >
       {children}

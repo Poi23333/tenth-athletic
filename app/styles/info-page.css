@@ -1,0 +1,305 @@
+/*
+ * Shared styles for Footer-linked information pages.
+ * Layout and typography match the info-page design system;
+ * swap page content without changing these rules.
+ */
+
+.info-page {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  /* Match header chrome gutter so title aligns with logo */
+  padding: clamp(2.5rem, 6vw, 4.5rem) clamp(2rem, 2.5vw, 3.25rem)
+    clamp(3rem, 8vw, 6rem);
+  width: 100%;
+}
+
+.info-page-inner {
+  max-width: 42rem;
+  width: 100%;
+}
+
+.info-page--wide .info-page-inner {
+  max-width: 51.625rem;
+}
+
+.info-page-title {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 0 0 1.25rem;
+}
+
+/* Only the page title is bold; reset UA bold on headings/buttons/etc. */
+.info-page-body,
+.info-page-body :where(h1, h2, h3, h4, h5, h6, button, strong, b, th) {
+  font-weight: 400;
+}
+
+.info-page-body {
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.info-page-body > *:first-child {
+  margin-top: 0;
+}
+
+.info-page-body > *:last-child {
+  margin-bottom: 0;
+}
+
+.info-page-body p {
+  margin: 0 0 1.25rem;
+}
+
+.info-page-body a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.info-page-body a:hover {
+  opacity: 0.7;
+}
+
+.info-page-heading {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 1.75rem 0 0.75rem;
+}
+
+.info-page-heading:first-child {
+  margin-top: 0;
+}
+
+.info-page-list {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+}
+
+.info-page-list > li {
+  margin: 0 0 0.35rem;
+  padding-left: 0.85rem;
+  position: relative;
+}
+
+.info-page-list > li::before {
+  content: '-';
+  left: 0;
+  position: absolute;
+}
+
+.info-page-returns-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.info-page-returns-list > li {
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 0 0 1.75rem;
+}
+
+.info-page-returns-list > li:last-child {
+  margin-bottom: 0;
+}
+
+.info-page-faq {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.info-page-faq-item {
+  margin: 0;
+}
+
+/* Beat the shared body heading reset so FAQ questions stay bold. */
+.info-page-body .info-page-faq-question {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0 0 0.35rem;
+}
+
+.info-page-faq-answer {
+  font-weight: 400;
+  margin: 0;
+}
+
+.info-page-accordions {
+  margin: 0;
+}
+
+.info-page-accordion {
+  border-bottom: 0;
+}
+
+.info-page-accordion-trigger {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  justify-content: space-between;
+  line-height: 1.2;
+  padding: 0.85rem 0;
+  text-align: left;
+  width: 100%;
+}
+
+.info-page-accordion-trigger::after {
+  content: '+';
+  flex-shrink: 0;
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1;
+  margin-left: 1rem;
+}
+
+.info-page-accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 240ms ease,
+    opacity 180ms ease;
+}
+
+.info-page-accordion.is-open .info-page-accordion-panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.info-page-accordion-content {
+  font-weight: 300;
+  line-height: 1.2;
+  min-height: 0;
+  overflow: hidden;
+  padding-bottom: 0;
+  transition: padding-bottom 240ms ease;
+}
+
+.info-page-accordion.is-open .info-page-accordion-content {
+  padding-bottom: 1.75rem;
+}
+
+/* Shipping accordion: tight body spacing */
+.info-page-accordion-content > .info-page-heading {
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 1.05rem 0 0;
+}
+
+.info-page-accordion-content > .info-page-heading:first-child {
+  margin-top: 0;
+}
+
+.info-page-body .info-page-accordion-content p {
+  margin: 0;
+}
+
+.info-page-region-title {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.info-page-region-note {
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  margin: 0;
+}
+
+.info-page-region .info-page-table {
+  margin-top: 0;
+}
+
+.info-page-table {
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  font-weight: 300;
+  line-height: 1.2;
+  margin: 0;
+  table-layout: fixed;
+  width: min(100%, 26rem);
+}
+
+.info-page-table th,
+.info-page-table td {
+  padding: 0.15rem 0.75rem 0.15rem 0;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.info-page-table th:nth-child(1),
+.info-page-table td:nth-child(1) {
+  width: 7.25rem;
+}
+
+.info-page-table th:nth-child(2),
+.info-page-table td:nth-child(2) {
+  padding-right: 1.5rem;
+  width: 2.75rem;
+}
+
+.info-page-table th {
+  font-weight: 400;
+}
+
+.info-page-table th:last-child,
+.info-page-table td:last-child {
+  padding-right: 0;
+  white-space: normal;
+}
+
+.info-page-note {
+  margin: 0.75rem 0 0;
+}
+
+@media (max-width: 749px) {
+  .info-page {
+    padding: 2rem var(--page-gutter) 3rem;
+  }
+
+  .info-page-title {
+    font-size: 1.375rem;
+  }
+
+  .info-page-accordion-trigger {
+    font-size: 1rem;
+  }
+
+  .info-page-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+}
