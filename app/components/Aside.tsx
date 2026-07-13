@@ -144,6 +144,9 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
     };
     const originalHtmlOverflow = htmlStyle.overflow;
 
+    // body fixed + top:-scrollY freezes scroll, but breaks sticky. Offset sticky
+    // tops by the same scrollY so header/banner stay pinned to the viewport.
+    htmlStyle.setProperty('--scroll-lock-y', `${scrollY}px`);
     htmlStyle.overflow = 'hidden';
     bodyStyle.overflow = 'hidden';
     bodyStyle.position = 'fixed';
@@ -151,6 +154,7 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
     bodyStyle.width = '100%';
 
     return () => {
+      htmlStyle.removeProperty('--scroll-lock-y');
       htmlStyle.overflow = originalHtmlOverflow;
       bodyStyle.overflow = originalBodyStyles.overflow;
       bodyStyle.position = originalBodyStyles.position;

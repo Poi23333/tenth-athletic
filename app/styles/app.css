@@ -195,19 +195,21 @@ body > main {
   flex-direction: column;
   height: 100vh;
   position: fixed;
-  right: 0;
+  /* Slide with `right`, not transform — transform breaks background-attachment: fixed */
+  right: calc(-1 * min(var(--aside-width), 100vw));
   top: 0;
-  transition: transform 200ms ease-in-out;
-  transform: translateX(100%);
+  transition: right 200ms ease-in-out;
   width: min(var(--aside-width), 100vw);
 }
 
 .overlay > aside.aside-brand {
+  /* Same fixed grid as body so drawer dots continue the page pattern */
   background-color: var(--color-light);
   background-image: var(--page-dot-matrix);
-  background-position: right top;
+  background-position: center top;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: 100% 100%;
+  background-attachment: fixed;
   border-left: 0;
   overflow: hidden;
   position: fixed;
@@ -410,7 +412,7 @@ body.brand-drawer-open .footer-copyright-bar {
 
 /* reveal aside */
 .overlay.expanded aside {
-  transform: translateX(0);
+  right: 0;
 }
 
 button.reset {
@@ -443,7 +445,8 @@ button.reset:hover:not(:has(> *)) {
   border-bottom: 0;
   border-top: 1px solid #8a8a8a;
   position: sticky;
-  top: var(--region-banner-height, 0px);
+  /* --scroll-lock-y compensates body top:-scrollY while a drawer is open */
+  top: calc(var(--region-banner-height, 0px) + var(--scroll-lock-y, 0px));
   width: 100%;
   z-index: 50;
 }
@@ -515,7 +518,7 @@ button.reset:hover:not(:has(> *)) {
   justify-content: space-between;
   padding: 0.65rem 1.25rem;
   position: sticky;
-  top: 0;
+  top: var(--scroll-lock-y, 0px);
   width: 100%;
   z-index: 120;
 }
