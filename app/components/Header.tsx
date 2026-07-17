@@ -1,4 +1,4 @@
-import {Await, NavLink, useLocation} from 'react-router';
+import {Await, NavLink} from 'react-router';
 import {Suspense, useEffect, useLayoutEffect, useRef} from 'react';
 import {type CartViewPayload, useAnalytics} from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
@@ -58,9 +58,6 @@ export function HeaderMenu({
   const className = `header-menu-${viewport}`;
   const navRef = useRef<HTMLElement>(null);
   const {open, type} = useAside();
-  const location = useLocation();
-  const isShopActive =
-    type === 'shop' || location.pathname.startsWith('/collections/');
 
   useIsomorphicLayoutEffect(() => {
     if (viewport !== 'desktop') return;
@@ -109,13 +106,20 @@ export function HeaderMenu({
       >
         {formatRegionNavLabel(currentRegion)}
       </button>
-      <button
-        className={`header-menu-item reset${isShopActive ? ' active' : ''}`}
-        type="button"
-        onClick={() => open('shop')}
+      <NavLink
+        className="header-menu-item"
+        prefetch="intent"
+        to="/collections/man"
       >
-        Shop
-      </button>
+        Man
+      </NavLink>
+      <NavLink
+        className="header-menu-item"
+        prefetch="intent"
+        to="/collections/woman"
+      >
+        Woman
+      </NavLink>
       <AccountLink isLoggedIn={isLoggedIn} />
       <NavLink
         className="header-menu-item"

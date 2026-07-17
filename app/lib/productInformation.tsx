@@ -66,7 +66,7 @@ function formatSizeGuideValue(value: SizeGuideValue, unit: SizeGuideUnit) {
 }
 
 function SizeGuideTable() {
-  const [unit, setUnit] = useState<SizeGuideUnit>('cm');
+  const [unit, setUnit] = useState<SizeGuideUnit>('in');
 
   return (
     <section className="size-guide" aria-label="Women's apparel size guide">
@@ -161,6 +161,9 @@ export const PRODUCT_INFORMATION_SECTIONS = [
           UK. Express Delivery time is approximately 1-3 business days within
           the UK.
         </p>
+        <a className="product-shipping-link" href="/pages/shipping-returns">
+          More Shipping &amp; Delivery info <span aria-hidden="true">↗</span>
+        </a>
       </>
     ),
   },

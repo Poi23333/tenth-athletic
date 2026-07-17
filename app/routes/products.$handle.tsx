@@ -1,5 +1,5 @@
 import {redirect, useLoaderData} from 'react-router';
-import {useEffect, useRef, useState} from 'react';
+import {startTransition, useEffect, useRef, useState} from 'react';
 import type {ReactNode} from 'react';
 import type {Route} from './+types/products.$handle';
 import {
@@ -12,6 +12,12 @@ import {
 } from '@shopify/hydrogen';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
+import {ProductEditorialContent} from '~/components/product/ProductEditorialContent';
+import {ProductFeatureIndex} from '~/components/product/ProductFeatureIndex';
+import {ProductCampaignVideo} from '~/components/product/ProductCampaignVideo';
+import {ProductTechnicalSpecs} from '~/components/product/ProductTechnicalSpecs';
+import productSilhouette from '~/assets/product/auralite/product-silhouette.svg';
+import {AURALITE_PRODUCT_DETAILS} from '~/data/productDetails';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {PRODUCT_INFORMATION_SECTIONS} from '~/lib/productInformation';
 
@@ -49,6 +55,12 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     throw new Response(null, {status: 404});
   }
 
+  if (product.images.nodes.length !== 2) {
+    throw new Error(
+      `Auralite product page requires exactly two product images; received ${product.images.nodes.length}.`,
+    );
+  }
+
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
   return {product};
@@ -60,25 +72,31 @@ function loadDeferredData(_args: Route.LoaderArgs) {
 
 export default function Product() {
   const {product} = useLoaderData<typeof loader>();
-  const heroGalleryCellRef = useRef<HTMLDivElement | null>(null);
-  const productInformationSectionRef = useRef<HTMLElement | null>(null);
-  const productInformationBuyPanelRef = useRef<HTMLDivElement | null>(null);
+  const heroRef = useRef<HTMLElement | null>(null);
+  const purchasePanelRef = useRef<HTMLDivElement | null>(null);
+  const videoBoundaryRef = useRef<HTMLElement | null>(null);
+  const informationSectionRef = useRef<HTMLElement | null>(null);
   const lastScrollYRef = useRef(0);
-  const stickyBuyPanelRef = useRef<HTMLDivElement | null>(null);
-  const [isInformationBuyPanelVisible, setIsInformationBuyPanelVisible] =
-    useState(false);
-  const [stickyBuyState, setStickyBuyState] = useState<{
+  const [purchasePanelState, setPurchasePanelState] = useState<{
     fixedLeft: number;
     isCollapsed: boolean;
-    mode: 'hidden' | 'fixed' | 'stopped';
+    isDesktop: boolean;
+    mode: 'embedded' | 'fixed' | 'stopped';
     panelWidth: number;
-    stoppedBottom: number;
+    primaryVisible: boolean;
+    secondaryVisible: boolean;
+    stoppedLeft: number;
+    stoppedTop: number;
   }>({
     fixedLeft: 0,
     isCollapsed: false,
-    mode: 'hidden',
+    isDesktop: false,
+    mode: 'embedded',
     panelWidth: 0,
-    stoppedBottom: 0,
+    primaryVisible: true,
+    secondaryVisible: false,
+    stoppedLeft: 0,
+    stoppedTop: 0,
   });
 
   const selectedVariant = useOptimisticVariant(
@@ -93,272 +111,227 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml, description} = product;
-  const galleryImages =
-    product.images?.nodes?.length > 0
-      ? product.images.nodes
-      : selectedVariant?.image
-        ? [selectedVariant.image, selectedVariant.image, selectedVariant.image]
-        : [];
-  const visibleGalleryImages =
-    galleryImages.length > 0 ? galleryImages.slice(0, 3) : [null, null, null];
-  const image = selectedVariant?.image ?? galleryImages[0];
+  const {title, descriptionHtml} = product;
+  const heroImage = product.images.nodes[0]!;
+  const lifestyleImage = product.images.nodes[1]!;
 
   useEffect(() => {
-    function updateStickyBuyPanel() {
-      const sizeFitBoundary = document.querySelector('.product-accordions');
-      const heroGalleryCell = heroGalleryCellRef.current;
-      const productInformationSection = productInformationSectionRef.current;
-      const productInformationBuyPanel = productInformationBuyPanelRef.current;
-      const stickyBuyPanel = stickyBuyPanelRef.current;
+    function updatePurchasePanel() {
+      const hero = heroRef.current;
+      const purchasePanel = purchasePanelRef.current;
+      const videoBoundary = videoBoundaryRef.current;
+      const informationSection = informationSectionRef.current;
 
-      if (
-        !heroGalleryCell ||
-        !sizeFitBoundary ||
-        !stickyBuyPanel ||
-        !productInformationSection ||
-        !productInformationBuyPanel
-      ) {
+      if (!hero || !purchasePanel || !videoBoundary || !informationSection) {
         return;
       }
 
-      const viewportHeight = window.innerHeight;
-      const heroCellRect = heroGalleryCell.getBoundingClientRect();
-      const productInformationRect =
-        productInformationSection.getBoundingClientRect();
-      const productInformationBuyPanelRect =
-        productInformationBuyPanel.getBoundingClientRect();
-      const sizeFitRect = sizeFitBoundary.getBoundingClientRect();
-      const bottomGap = parseFloat(
-        getComputedStyle(stickyBuyPanel).getPropertyValue(
-          '--product-buy-panel-bottom-gap',
-        ),
-      );
-      const stickyBottomGap = Number.isFinite(bottomGap) ? bottomGap : 0;
-      const stickyBottomLine = viewportHeight - stickyBottomGap;
-      const hasReachedStickyStart = heroCellRect.bottom < stickyBottomLine - 1;
-      const hasReachedStickyStop =
-        sizeFitRect.top <= stickyBottomLine ||
-        productInformationRect.top <= stickyBottomLine;
-      const stoppedBottom = Math.max(
-        0,
-        viewportHeight -
-          Math.min(sizeFitRect.top, productInformationRect.top) +
-          stickyBottomGap,
-      );
-      const informationPanelTopOffset = parseFloat(
-        getComputedStyle(productInformationBuyPanel).getPropertyValue(
-          '--product-information-buy-panel-top',
-        ),
-      );
-      const stickyTopOffset = Number.isFinite(informationPanelTopOffset)
-        ? informationPanelTopOffset
-        : 0;
-      const panelWidth = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue(
-          '--aside-width',
-        ),
-      );
-      const nextPanelWidth = Number.isFinite(panelWidth) ? panelWidth : 500;
-      const shouldShowInformationBuyPanel =
-        hasReachedStickyStop &&
-        productInformationRect.bottom - stickyTopOffset >=
-          productInformationBuyPanelRect.height;
+      if (!window.matchMedia('(min-width: 48em)').matches) {
+        lastScrollYRef.current = window.scrollY;
+        startTransition(() => {
+          setPurchasePanelState((currentState) =>
+            currentState.mode === 'embedded' &&
+            !currentState.isCollapsed &&
+            !currentState.isDesktop &&
+            currentState.primaryVisible &&
+            !currentState.secondaryVisible
+              ? currentState
+              : {
+                  ...currentState,
+                  isCollapsed: false,
+                  isDesktop: false,
+                  mode: 'embedded',
+                  primaryVisible: true,
+                  secondaryVisible: false,
+                },
+          );
+        });
+        return;
+      }
+
+      const bottomGap = 12;
+      const viewportBottomLine = window.innerHeight - bottomGap;
+      const heroRect = hero.getBoundingClientRect();
+      const videoBoundaryRect = videoBoundary.getBoundingClientRect();
+      const informationSectionRect = informationSection.getBoundingClientRect();
+      const panelWidth = Math.min(508, heroRect.width);
+      const measuredPanelHeight = purchasePanel.getBoundingClientRect().height;
+      const hasReachedFixedPosition = heroRect.bottom <= viewportBottomLine;
+      const hasReachedStopBoundary =
+        videoBoundaryRect.top <= viewportBottomLine;
+      const nextMode: 'embedded' | 'fixed' | 'stopped' =
+        !hasReachedFixedPosition
+          ? 'embedded'
+          : hasReachedStopBoundary
+            ? 'stopped'
+            : 'fixed';
       const scrollDelta = window.scrollY - lastScrollYRef.current;
       const isScrollingDown = scrollDelta > 4;
       const isScrollingUp = scrollDelta < -4;
+      const primaryVisible =
+        nextMode !== 'stopped' ||
+        videoBoundaryRect.top > measuredPanelHeight + bottomGap;
+      const secondaryVisible =
+        !primaryVisible &&
+        informationSectionRect.top <= window.innerHeight * 0.7;
 
       lastScrollYRef.current = window.scrollY;
-      setIsInformationBuyPanelVisible(shouldShowInformationBuyPanel);
 
-      setStickyBuyState((currentState) => {
-        const nextMode = !hasReachedStickyStart
-          ? 'hidden'
-          : hasReachedStickyStop
-            ? 'stopped'
-            : 'fixed';
-        const nextLeft =
-          heroCellRect.left + (heroCellRect.width - nextPanelWidth) / 2;
-        const nextWidth = nextPanelWidth;
-        const nextCollapsed =
-          nextMode === 'hidden'
-            ? false
-            : isScrollingDown
-              ? true
-              : isScrollingUp
-                ? false
-                : currentState.isCollapsed;
+      startTransition(() => {
+        setPurchasePanelState((currentState) => {
+          const nextCollapsed =
+            nextMode === 'embedded'
+              ? false
+              : isScrollingDown
+                ? true
+                : isScrollingUp
+                  ? false
+                  : currentState.isCollapsed;
+          const nextState = {
+            fixedLeft: heroRect.left + (heroRect.width - panelWidth) / 2,
+            isCollapsed: nextCollapsed,
+            isDesktop: true,
+            mode: nextMode,
+            panelWidth,
+            primaryVisible,
+            secondaryVisible,
+            stoppedLeft: (heroRect.width - panelWidth) / 2,
+            stoppedTop:
+              videoBoundary.offsetTop -
+              hero.offsetTop -
+              measuredPanelHeight -
+              bottomGap,
+          };
 
-        if (
-          currentState.mode === nextMode &&
-          currentState.isCollapsed === nextCollapsed &&
-          Math.abs(currentState.fixedLeft - nextLeft) < 1 &&
-          Math.abs(currentState.panelWidth - nextWidth) < 1 &&
-          Math.abs(currentState.stoppedBottom - stoppedBottom) < 1
-        ) {
-          return currentState;
-        }
+          if (
+            currentState.mode === nextState.mode &&
+            currentState.isCollapsed === nextState.isCollapsed &&
+            currentState.isDesktop === nextState.isDesktop &&
+            Math.abs(currentState.fixedLeft - nextState.fixedLeft) < 1 &&
+            Math.abs(currentState.panelWidth - nextState.panelWidth) < 1 &&
+            currentState.primaryVisible === nextState.primaryVisible &&
+            currentState.secondaryVisible === nextState.secondaryVisible &&
+            Math.abs(currentState.stoppedLeft - nextState.stoppedLeft) < 1 &&
+            Math.abs(currentState.stoppedTop - nextState.stoppedTop) < 1
+          ) {
+            return currentState;
+          }
 
-        return {
-          fixedLeft: nextLeft,
-          isCollapsed: nextCollapsed,
-          mode: nextMode,
-          panelWidth: nextWidth,
-          stoppedBottom,
-        };
+          return nextState;
+        });
       });
     }
 
     lastScrollYRef.current = window.scrollY;
-    updateStickyBuyPanel();
-    window.addEventListener('scroll', updateStickyBuyPanel, {passive: true});
-    window.addEventListener('resize', updateStickyBuyPanel);
+    updatePurchasePanel();
+    const resizeObserver = new ResizeObserver(updatePurchasePanel);
+    resizeObserver.observe(heroRef.current!);
+    resizeObserver.observe(purchasePanelRef.current!);
+    window.addEventListener('resize', updatePurchasePanel);
+    window.addEventListener('scroll', updatePurchasePanel, {passive: true});
 
     return () => {
-      window.removeEventListener('scroll', updateStickyBuyPanel);
-      window.removeEventListener('resize', updateStickyBuyPanel);
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updatePurchasePanel);
+      window.removeEventListener('scroll', updatePurchasePanel);
     };
   }, []);
 
   return (
     <div className="product">
-      <section className="product-gallery" aria-label="Product images">
-        {visibleGalleryImages.map((galleryImage, index) => (
-          <div
-            className={`product-gallery-cell${
-              index === 1 ? ' product-gallery-cell--hero' : ''
-            }`}
-            key={galleryImage ? `${galleryImage.url}-${index}` : index}
-            ref={index === 1 ? heroGalleryCellRef : undefined}
-          >
-            <ProductImage image={galleryImage} />
-            {index === 1 ? (
-              <div
-                className={`product-buy-panel is-${stickyBuyState.mode}${
-                  stickyBuyState.isCollapsed ? ' is-collapsed' : ''
-                }`}
-                ref={stickyBuyPanelRef}
-                role="region"
-                aria-label="Product purchase options"
-                style={
-                  stickyBuyState.mode === 'fixed' ||
-                  stickyBuyState.mode === 'stopped'
-                    ? {
-                        bottom:
-                          stickyBuyState.mode === 'stopped'
-                            ? `${stickyBuyState.stoppedBottom}px`
-                            : undefined,
-                        left: `${stickyBuyState.fixedLeft}px`,
-                        width: `${stickyBuyState.panelWidth}px`,
-                      }
-                    : undefined
+      <h1 className="sr-only">{title}</h1>
+      <section
+        className="product-hero"
+        aria-label="Product overview"
+        ref={heroRef}
+      >
+        <div className="product-hero-media">
+          <ProductImage image={heroImage} kind="hero" />
+        </div>
+        <div
+          className={`product-purchase-panel is-${purchasePanelState.mode}${
+            purchasePanelState.isCollapsed ? ' is-collapsed' : ''
+          }${purchasePanelState.primaryVisible ? ' is-visible' : ' is-hidden'}`}
+          ref={purchasePanelRef}
+          role="region"
+          aria-label="Product purchase options"
+          aria-hidden={!purchasePanelState.primaryVisible}
+          style={
+            purchasePanelState.mode === 'fixed'
+              ? {
+                  left: `${purchasePanelState.fixedLeft}px`,
+                  width: `${purchasePanelState.panelWidth}px`,
                 }
-              >
-                <ProductForm
-                  productTitle={title}
-                  productOptions={productOptions}
-                  selectedVariant={selectedVariant}
-                />
-              </div>
-            ) : null}
-          </div>
-        ))}
+              : purchasePanelState.mode === 'stopped'
+                ? {
+                    left: `${purchasePanelState.stoppedLeft}px`,
+                    top: `${purchasePanelState.stoppedTop}px`,
+                    width: `${purchasePanelState.panelWidth}px`,
+                  }
+                : undefined
+          }
+        >
+          <ProductForm
+            icon={productSilhouette}
+            productTitle={title}
+            productOptions={productOptions}
+            selectedVariant={selectedVariant}
+            summary={AURALITE_PRODUCT_DETAILS.summary}
+          />
+        </div>
       </section>
 
-      <div
-        className="product-buy-panel-mobile"
-        role="region"
-        aria-label="Product purchase options"
+      <section
+        className="product-lifestyle-showcase"
+        aria-label="Product shown from multiple angles"
       >
-        <ProductForm
-          productTitle={title}
-          productOptions={productOptions}
-          selectedVariant={selectedVariant}
-        />
-      </div>
-
-      <div className="product-details-grid">
-        <div>
-          {description ? (
-            <div
-              className="product-description"
-              dangerouslySetInnerHTML={{__html: descriptionHtml}}
-            />
-          ) : null}
+        <div className="product-lifestyle-media">
+          <ProductImage image={lifestyleImage} kind="lifestyle" />
         </div>
-        {image ? (
-          <div className="product-details-image">
-            <img
-              alt={image.altText || title}
-              src={image.url}
-              width={image.width ?? undefined}
-              height={image.height ?? undefined}
-            />
-          </div>
-        ) : null}
-      </div>
+      </section>
+
+      <ProductFeatureIndex />
+
+      <ProductEditorialContent html={descriptionHtml} />
+
+      <ProductCampaignVideo ref={videoBoundaryRef} />
 
       <section
         className="product-information-section"
-        ref={productInformationSectionRef}
+        ref={informationSectionRef}
       >
-        <div className="product-information-layout">
-          <div className="product-accordions">
-            {PRODUCT_INFORMATION_SECTIONS.map((item, index) => (
-              <ProductInformationAccordion
-                content={item.content}
-                defaultOpen={index === 0}
-                id={item.id}
-                key={item.id}
-                title={item.title}
-              />
-            ))}
-          </div>
-
-          {selectedVariant?.sku ? (
-            <section
-              className="product-specs"
-              aria-label="Technical specifications"
-            >
-              <h2 className="product-specs-heading">
-                Technical
-                <br />
-                Specifications
-              </h2>
-              <div className="product-specs-row">
-                <div className="product-specs-key">SKU</div>
-                <div className="product-specs-value">{selectedVariant.sku}</div>
-              </div>
-              {selectedVariant.title !== 'Default Title' ? (
-                <div className="product-specs-row">
-                  <div className="product-specs-key">Variant</div>
-                  <div className="product-specs-value">
-                    {selectedVariant.title}
-                  </div>
-                </div>
-              ) : null}
-            </section>
-          ) : null}
-        </div>
-
-        <aside
-          aria-hidden={!isInformationBuyPanelVisible}
-          className={`product-information-buy-panel${
-            isInformationBuyPanelVisible ? ' is-visible' : ''
-          }${stickyBuyState.isCollapsed ? ' is-collapsed' : ''}`}
-          ref={productInformationBuyPanelRef}
-          role="region"
-          aria-label="Product purchase options"
-        >
-          <div className="product-information-buy-panel-inner">
-            <ProductForm
-              productTitle={title}
-              productOptions={productOptions}
-              selectedVariant={selectedVariant}
+        <div className="product-accordions">
+          {PRODUCT_INFORMATION_SECTIONS.map((item, index) => (
+            <ProductInformationAccordion
+              content={item.content}
+              defaultOpen={index < 2}
+              id={item.id}
+              key={item.id}
+              title={item.title}
             />
-          </div>
-        </aside>
+          ))}
+        </div>
       </section>
+
+      {purchasePanelState.isDesktop ? (
+        <aside
+          aria-hidden={!purchasePanelState.secondaryVisible}
+          aria-label="Product purchase options"
+          className={`product-secondary-purchase-panel${
+            purchasePanelState.secondaryVisible ? ' is-visible' : ''
+          }`}
+        >
+          <ProductForm
+            icon={productSilhouette}
+            productTitle={title}
+            productOptions={productOptions}
+            selectedVariant={selectedVariant}
+            summary={AURALITE_PRODUCT_DETAILS.summary}
+          />
+        </aside>
+      ) : null}
+
+      <ProductTechnicalSpecs sku={selectedVariant?.sku} />
 
       <Analytics.ProductView
         data={{
@@ -460,7 +433,7 @@ const PRODUCT_FRAGMENT = `#graphql
     handle
     descriptionHtml
     description
-    images(first: 3) {
+    images(first: 2) {
       nodes {
         id
         url

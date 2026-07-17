@@ -11,19 +11,22 @@ type ProductImageData = {
 
 export function ProductImage({
   image,
+  kind = 'hero',
 }: {
-  image?: ProductImageData | null;
+  image: ProductImageData;
+  kind?: 'hero' | 'lifestyle';
 }) {
-  if (!image) {
-    return <div className="product-image" />;
-  }
   return (
-    <div className="product-image">
+    <div className={`product-image product-image--${kind}`}>
       <Image
         alt={image.altText || 'Product Image'}
         data={image}
         key={image.id}
-        sizes="(min-width: 48em) 33vw, 100vw"
+        sizes={
+          kind === 'hero'
+            ? '(min-width: 64em) 44rem, 92vw'
+            : '(min-width: 64em) 90rem, 100vw'
+        }
       />
     </div>
   );

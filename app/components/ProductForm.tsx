@@ -5,41 +5,40 @@ import {useAside} from './Aside';
 import type {ProductFragment} from 'storefrontapi.generated';
 
 export function ProductForm({
+  icon,
+  summary,
   productTitle,
   productOptions,
   selectedVariant,
 }: {
+  icon: string;
+  summary: readonly string[];
   productTitle: string;
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
-  const image = selectedVariant?.image;
   const selectableProductOptions = productOptions.filter(
     (option) => option.optionValues.length > 0 && option.name !== 'Title',
   );
-
   return (
     <div className="product-form">
       <div className="product-form-heading">
         <div>
           <h2>{productTitle}</h2>
           <p className="product-form-specs">
-            Two-piece 3D pattern construction
-            <br />
-            60% reduction in seam length
-            <br />
-            Tenth Lab modular-ready design
+            {summary.map((line) => (
+              <span key={line}>{line}</span>
+            ))}
           </p>
         </div>
-        {image ? (
-          <img
-            alt={image.altText || productTitle}
-            className="product-form-thumb"
-            src={image.url}
-          />
-        ) : null}
+        <img
+          alt=""
+          aria-hidden="true"
+          className="product-form-thumb"
+          src={icon}
+        />
       </div>
       <div className="product-purchase-controls">
         {selectableProductOptions.length ? (

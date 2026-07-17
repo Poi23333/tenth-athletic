@@ -3,6 +3,7 @@ import {useLoaderData} from 'react-router';
 import {getPaginationVariables} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {ProductItem} from '~/components/ProductItem';
+import {ProductListEmpty} from '~/components/ProductListEmpty';
 import {
   ProductListSidebar,
   getCatalogSort,
@@ -77,18 +78,22 @@ export default function Collection() {
           <span className="product-list-sidebar-heading">Filter</span>
           <span className="product-list-sidebar-heading">Sort</span>
         </div>
-        <PaginatedResourceSection<CollectionItemFragment>
-          connection={products}
-          resourcesClassName="products-grid"
-        >
-          {({node: product, index}) => (
-            <ProductItem
-              key={product.id}
-              product={product}
-              loading={index < 8 ? 'eager' : undefined}
-            />
-          )}
-        </PaginatedResourceSection>
+        {products.nodes.length > 0 ? (
+          <PaginatedResourceSection<CollectionItemFragment>
+            connection={products}
+            resourcesClassName="products-grid"
+          >
+            {({node: product, index}) => (
+              <ProductItem
+                key={product.id}
+                product={product}
+                loading={index < 8 ? 'eager' : undefined}
+              />
+            )}
+          </PaginatedResourceSection>
+        ) : (
+          <ProductListEmpty />
+        )}
       </div>
     </div>
   );

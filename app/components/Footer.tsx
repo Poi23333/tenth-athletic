@@ -1,5 +1,4 @@
 import {NavLink} from 'react-router';
-import footerCactus from '~/assets/footer-cactus.svg';
 
 type FooterLink = {
   label: string;
@@ -38,8 +37,8 @@ export function Footer() {
         <div className="footer-links">
           <div className="footer-rule" aria-hidden="true" />
           <div className="footer-columns">
-            {FOOTER_COLUMNS.map((column, columnIndex) => (
-              <ul className="footer-column" key={columnIndex}>
+            {FOOTER_COLUMNS.map((column) => (
+              <ul className="footer-column" key={column[0].label}>
                 {column.map((link) => (
                   <li key={link.label}>
                     <FooterLinkItem link={link} />
@@ -48,16 +47,6 @@ export function Footer() {
               </ul>
             ))}
           </div>
-        </div>
-        <div className="footer-aside" aria-hidden="true">
-          <img
-            className="footer-illustration"
-            src={footerCactus}
-            alt=""
-            width={128}
-            height={286}
-            decoding="async"
-          />
         </div>
       </div>
       <div className="footer-copyright-bar">

@@ -4,6 +4,7 @@ import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
+import {ProductListEmpty} from '~/components/ProductListEmpty';
 import {
   ProductListSidebar,
   getCollectionSort,
@@ -84,18 +85,22 @@ export default function Collection() {
           <span className="product-list-sidebar-heading">Filter</span>
           <span className="product-list-sidebar-heading">Sort</span>
         </div>
-        <PaginatedResourceSection<ProductItemFragment>
-          connection={collection.products}
-          resourcesClassName="products-grid"
-        >
-          {({node: product, index}) => (
-            <ProductItem
-              key={product.id}
-              product={product}
-              loading={index < 8 ? 'eager' : undefined}
-            />
-          )}
-        </PaginatedResourceSection>
+        {collection.products.nodes.length > 0 ? (
+          <PaginatedResourceSection<ProductItemFragment>
+            connection={collection.products}
+            resourcesClassName="products-grid"
+          >
+            {({node: product, index}) => (
+              <ProductItem
+                key={product.id}
+                product={product}
+                loading={index < 8 ? 'eager' : undefined}
+              />
+            )}
+          </PaginatedResourceSection>
+        ) : (
+          <ProductListEmpty collectionTitle={collection.title} />
+        )}
       </div>
       <Analytics.CollectionView
         data={{
