@@ -16,6 +16,7 @@ import {ProductEditorialContent} from '~/components/product/ProductEditorialCont
 import {ProductFeatureIndex} from '~/components/product/ProductFeatureIndex';
 import {ProductCampaignVideo} from '~/components/product/ProductCampaignVideo';
 import {ProductTechnicalSpecs} from '~/components/product/ProductTechnicalSpecs';
+import {ProductHeroGallery} from '~/components/product/ProductHeroGallery';
 import productSilhouette from '~/assets/product/auralite/product-silhouette.svg';
 import {AURALITE_PRODUCT_DETAILS} from '~/data/productDetails';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
@@ -55,15 +56,21 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     throw new Response(null, {status: 404});
   }
 
-  if (product.images.nodes.length !== 2) {
+  if (product.images.nodes.length < 1) {
     throw new Error(
-      `Auralite product page requires exactly two product images; received ${product.images.nodes.length}.`,
+      `Auralite product page requires at least one Product Media image; received ${product.images.nodes.length}.`,
     );
   }
 
+  const secondaryImageReference = product.secondaryImage?.reference;
+  const secondaryImage =
+    secondaryImageReference?.__typename === 'MediaImage'
+      ? secondaryImageReference.image
+      : null;
+
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
-  return {product};
+  return {product, secondaryImage};
 }
 
 function loadDeferredData(_args: Route.LoaderArgs) {
@@ -71,7 +78,7 @@ function loadDeferredData(_args: Route.LoaderArgs) {
 }
 
 export default function Product() {
-  const {product} = useLoaderData<typeof loader>();
+  const {product, secondaryImage} = useLoaderData<typeof loader>();
   const heroRef = useRef<HTMLElement | null>(null);
   const purchasePanelRef = useRef<HTMLDivElement | null>(null);
   const videoBoundaryRef = useRef<HTMLElement | null>(null);
@@ -112,8 +119,7 @@ export default function Product() {
   });
 
   const {title, descriptionHtml} = product;
-  const heroImage = product.images.nodes[0]!;
-  const lifestyleImage = product.images.nodes[1]!;
+  const heroImages = product.images.nodes;
 
   useEffect(() => {
     function updatePurchasePanel() {
@@ -245,9 +251,11 @@ export default function Product() {
         aria-label="Product overview"
         ref={heroRef}
       >
-        <div className="product-hero-media">
-          <ProductImage image={heroImage} kind="hero" />
-        </div>
+        <ProductHeroGallery
+          images={heroImages}
+          key={product.id}
+          productTitle={title}
+        />
         <div
           className={`product-purchase-panel is-${purchasePanelState.mode}${
             purchasePanelState.isCollapsed ? ' is-collapsed' : ''
@@ -281,14 +289,16 @@ export default function Product() {
         </div>
       </section>
 
-      <section
-        className="product-lifestyle-showcase"
-        aria-label="Product shown from multiple angles"
-      >
-        <div className="product-lifestyle-media">
-          <ProductImage image={lifestyleImage} kind="lifestyle" />
-        </div>
-      </section>
+      {secondaryImage ? (
+        <section
+          className="product-lifestyle-showcase"
+          aria-label="Product shown from multiple angles"
+        >
+          <div className="product-lifestyle-media">
+            <ProductImage image={secondaryImage} kind="lifestyle" />
+          </div>
+        </section>
+      ) : null}
 
       <ProductFeatureIndex />
 
@@ -433,13 +443,30 @@ const PRODUCT_FRAGMENT = `#graphql
     handle
     descriptionHtml
     description
-    images(first: 2) {
+    images(first: 20) {
       nodes {
         id
         url
         altText
         width
         height
+      }
+    }
+    secondaryImage: metafield(
+      namespace: "custom"
+      key: "img"
+    ) {
+      reference {
+        __typename
+        ... on MediaImage {
+          image {
+            id
+            url
+            altText
+            width
+            height
+          }
+        }
       }
     }
     encodedVariantExistence

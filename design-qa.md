@@ -62,5 +62,28 @@ The primary product image differs from the reference because the storefront inte
 7. Moved the primary panel stop boundary from product information to the campaign video and corrected the stop calculation to use the panel’s live animated height; both expanded and collapsed states stop 12px above the video.
 8. Added the mutually exclusive Size & Fit desktop purchase panel and verified one interactive panel at a time.
 9. Added the 2:1 campaign video, reduced-motion playback handling, larger PDP typography, warm translucent form styling, and SVG hover scale treatment.
+10. Added a hero-only Shopify image carousel using the supplied mirrored PNG arrows. The carousel follows Shopify media order, loops at both ends, exposes accessible previous/next controls and a live image counter, and leaves the lower three-angle lifestyle image unchanged.
+11. Compared the supplied 1920×1297 carousel reference and the implementation at the same viewport in `/Users/poi/Workspace/shopify/tenth_athletic/outputs/product-gallery-qa/reference-vs-final.png`. The gallery is constrained to 74rem so the arrow hit areas align with the reference while the product page itself remains full width.
 
-final result: passed with the documented native-video validator limitation
+## Product gallery verification
+
+- Desktop interaction: previous/next controls are unique, keyboard-focusable buttons; next changes the hero image URL and the following next wraps back to the first image.
+- Hero-only contract: browser assertions confirmed that the lower `.product-lifestyle-media` image URL remains unchanged during hero navigation.
+- Responsive behavior: controls remain visible at 390×844, the document width remains equal to the viewport width, and the hero can be changed without affecting the mobile purchase bar.
+- Reduced motion: the hero cross-fade is disabled under `prefers-reduced-motion`.
+- Data query: the Storefront API request now fetches the first 20 product images and the Shopify schema validator reports the query as valid.
+- Current local loader data still reports two images during browser verification. The implementation renders every image returned by Shopify, but the newly uploaded media cannot be exercised locally until the running storefront loader receives the refreshed Shopify image set.
+
+## Product gallery height-stability regression
+
+- Source visual truth: `/var/folders/70/_1w6gjb95wg58934fw0p_tvr0000gn/T/codex-clipboard-6308989b-6997-4ab5-a846-90076c2d4a9a.png`.
+- Implementation screenshot: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/product-gallery-qa/height-stability-fixed-desktop.png`.
+- Combined comparison: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/product-gallery-qa/reference-vs-height-stability-fixed.png`.
+- Viewports and state: 1920×1297 desktop visual comparison; 1440×900 and 390×844 image-switch interaction checks.
+- Earlier P1 finding: images with different intrinsic aspect ratios changed `.product-hero-media` height, pushing the purchase panel and all following content during a switch.
+- Fix: the hero media stage now keeps a 16:15 aspect ratio with zero automatic minimum height and clipped overflow; every Shopify image fills that stable stage using `object-fit: contain`.
+- Post-fix evidence: on desktop and mobile, the media height, hero height, purchase-panel offset, lifestyle-section offset, and document scroll height all have a measured switch delta of exactly 0px.
+- Full-view comparison: the product, arrows, purchase panel, and lower lifestyle composition remain aligned with the existing carousel reference.
+- Focused region comparison: no crop or distortion was introduced; the current first image remains fully visible and centered in the fixed stage.
+
+final result: passed
