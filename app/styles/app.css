@@ -102,7 +102,7 @@ body {
  */
 .global-dot-matrix {
   --dot-grid-gutter: 2rem;
-  --dot-grid-step: calc((100vw - 4rem) / 4);
+  --dot-grid-step: calc((100vw - 4rem) / 8);
   inset: 0;
   mix-blend-mode: difference;
   overflow: hidden;
@@ -129,7 +129,7 @@ body {
 
 @media (min-width: 48em) {
   .global-dot-matrix {
-    --dot-grid-step: calc((100vw - 4rem) / 12);
+    --dot-grid-step: calc((100vw - 4rem) / 20);
   }
 }
 
@@ -500,7 +500,6 @@ button.reset:hover:not(:has(> *)) {
   display: block;
   height: auto;
   max-height: 1.625rem;
-  opacity: 0.55;
   width: 13.75rem;
 }
 
@@ -2181,6 +2180,8 @@ body > main:has(.home) {
 
 .product-buy-panel .product-option-select-menu,
 .product-information-buy-panel .product-option-select-menu,
+.product-purchase-panel .product-option-select-menu,
+.product-secondary-purchase-panel .product-option-select-menu,
 .product-buy-panel-mobile .product-option-select-menu {
   bottom: calc(100% + 0.25rem);
   margin-bottom: 0.25rem;
@@ -3184,7 +3185,7 @@ aside.aside-brand {
 .product-form {
   background: rgba(225, 218, 209, 0.72);
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(105, 93, 84, 0.38);
+  border: 0;
   border-radius: 0.75rem;
   box-shadow: none;
   gap: 0;
