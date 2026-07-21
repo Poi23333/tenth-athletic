@@ -62,7 +62,6 @@
   --color-copyright-bar: #efcb5b;
   --color-surface-container-low: #f3f3f4;
   --color-surface-container-highest: #e2e2e2;
-  --color-grid-dot: #ff4d4d;
   --page-gutter: clamp(1rem, 3vw, 2.5rem);
   --page-max-width: 1920px;
   --section-gap: 4rem;
@@ -83,11 +82,6 @@ img {
 
 body {
   background-color: var(--color-page);
-  background-image: var(--page-dot-matrix);
-  background-position: center top;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  background-attachment: fixed;
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: 0.875rem;
@@ -100,6 +94,43 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+}
+
+/*
+ * Nothing-style viewport grid: white dots blend against the rendered pixel
+ * beneath them, so they become black on white and the inverse over imagery.
+ */
+.global-dot-matrix {
+  --dot-grid-gutter: 2rem;
+  --dot-grid-step: calc((100vw - 4rem) / 4);
+  inset: 0;
+  mix-blend-mode: difference;
+  overflow: hidden;
+  padding: var(--dot-grid-gutter);
+  pointer-events: none;
+  position: fixed;
+  z-index: 11;
+}
+
+.global-dot-matrix-grid {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    #fff 0,
+    #fff 1px,
+    transparent 1.1px
+  );
+  background-position: 0 0;
+  background-repeat: repeat;
+  background-size: var(--dot-grid-step) var(--dot-grid-step);
+  height: calc(100% + var(--dot-grid-step));
+  transform: translate(-1px, -1px);
+  width: calc(100% + var(--dot-grid-step));
+}
+
+@media (min-width: 48em) {
+  .global-dot-matrix {
+    --dot-grid-step: calc((100vw - 4rem) / 12);
+  }
 }
 
 .site-body > .header,
@@ -203,13 +234,7 @@ body > main {
 }
 
 .overlay > aside.aside-brand {
-  /* Same fixed grid as body so drawer dots continue the page pattern */
   background-color: var(--color-light);
-  background-image: var(--page-dot-matrix);
-  background-position: center top;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  background-attachment: fixed;
   border-left: 0;
   overflow: hidden;
   position: fixed;
@@ -3371,26 +3396,12 @@ aside.aside-brand {
   width: 100vw;
 }
 
-.product-campaign-video::after {
-  background-attachment: fixed;
-  background-image: var(--page-dot-matrix);
-  background-position: center top;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  content: '';
-  inset: 0;
-  pointer-events: none;
-  position: absolute;
-  z-index: 1;
-}
-
 .product-campaign-video video {
   display: block;
   height: 100%;
   object-fit: cover;
   position: relative;
   width: 100%;
-  z-index: 0;
 }
 
 .product-information-section,

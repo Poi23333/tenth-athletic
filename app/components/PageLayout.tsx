@@ -1,14 +1,12 @@
 import {Await, Form, NavLink} from 'react-router';
 import {Suspense, useEffect, useRef} from 'react';
-import type {
-  CartApiQueryFragment,
-  HeaderQuery,
-} from 'storefrontapi.generated';
+import type {CartApiQueryFragment, HeaderQuery} from 'storefrontapi.generated';
 import {Aside, useAside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
 import {CookieConsent} from '~/components/CookieConsent';
+import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
 import {RegionBanner} from '~/components/RegionBanner';
 import type {GeoBannerData} from '~/root';
 import {
@@ -50,6 +48,7 @@ export function PageLayout({
         isLoggedIn={isLoggedIn}
         currentRegion={currentRegion}
       />
+      <GlobalDotMatrix />
       {geoBanner?.show ? (
         <RegionBanner
           currentRegion={geoBanner.currentRegion}
@@ -220,7 +219,9 @@ function LocaleAside({
       {confirmRegion ? (
         <div className="locale-confirm">
           <h3 className="locale-confirm-title">Switch field location?</h3>
-          <p className="locale-confirm-body">{formatConfirmBody(confirmRegion)}</p>
+          <p className="locale-confirm-body">
+            {formatConfirmBody(confirmRegion)}
+          </p>
           <div className="locale-confirm-actions">
             <Form method="post" action="/locale" reloadDocument>
               <input type="hidden" name="intent" value="switch" />

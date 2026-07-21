@@ -1,5 +1,4 @@
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
-import type {CSSProperties} from 'react';
 import {
   Outlet,
   useRouteError,
@@ -13,7 +12,6 @@ import {
 } from 'react-router';
 import type {Route} from './+types/root';
 import favicon from '~/assets/favicon.svg';
-import globalDotMatrix from '~/assets/global-dot-matrix.svg';
 import {REGIONS, type Region} from '~/data/regions';
 import {HEADER_QUERY, LOCALIZATION_QUERY} from '~/lib/fragments';
 import {
@@ -179,14 +177,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <Meta />
         <Links />
       </head>
-      <body
-        className="site-body"
-        style={
-          {
-            '--page-dot-matrix': `url(${globalDotMatrix})`,
-          } as CSSProperties
-        }
-      >
+      <body className="site-body">
         {children}
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
