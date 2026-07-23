@@ -22,6 +22,14 @@ import {AURALITE_PRODUCT_DETAILS} from '~/data/productDetails';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {PRODUCT_INFORMATION_SECTIONS} from '~/lib/productInformation';
 
+const DEFAULT_PRODUCT_THEME = {
+  controlsRgb: '111, 100, 92',
+  lightRgb: '225, 218, 209',
+  mainColor: '#554d48',
+} as const;
+
+const LIGHT_COLOR_WHITE_MIX = 0.8;
+
 export const meta: Route.MetaFunction = ({data}) => {
   return [
     {title: `${data?.product.title ?? ''} | TENTH Athletic`},
@@ -120,6 +128,7 @@ export default function Product() {
 
   const {title, descriptionHtml} = product;
   const heroImages = product.images.nodes;
+  const productTheme = getProductTheme(product.mainColor?.value);
 
   useEffect(() => {
     function updatePurchasePanel() {
@@ -245,6 +254,12 @@ export default function Product() {
 
   return (
     <div className="product">
+      <style>{`:root {
+        --product-main-color: ${productTheme.mainColor};
+        --product-main-color-rgb: ${productTheme.mainRgb};
+        --product-controls-color-rgb: ${productTheme.controlsRgb};
+        --product-light-color-rgb: ${productTheme.lightRgb};
+      }`}</style>
       <h1 className="sr-only">{title}</h1>
       <section
         className="product-hero"
@@ -362,6 +377,45 @@ export default function Product() {
   );
 }
 
+function getProductTheme(value: string | null | undefined) {
+  const mainRgb = parseHexColor(value);
+
+  if (!mainRgb) {
+    return {
+      ...DEFAULT_PRODUCT_THEME,
+      mainRgb: '85, 77, 72',
+    };
+  }
+
+  const lightRgb = mainRgb.map((channel) =>
+    Math.round(channel + (255 - channel) * LIGHT_COLOR_WHITE_MIX),
+  );
+  const rgbValue = mainRgb.join(', ');
+
+  return {
+    controlsRgb: rgbValue,
+    lightRgb: lightRgb.join(', '),
+    mainColor: `#${mainRgb
+      .map((channel) => channel.toString(16).padStart(2, '0'))
+      .join('')}`,
+    mainRgb: rgbValue,
+  };
+}
+
+function parseHexColor(value: string | null | undefined) {
+  const normalizedValue = value?.trim();
+
+  if (!normalizedValue || !/^#[\da-f]{6}$/i.test(normalizedValue)) {
+    return null;
+  }
+
+  return [
+    Number.parseInt(normalizedValue.slice(1, 3), 16),
+    Number.parseInt(normalizedValue.slice(3, 5), 16),
+    Number.parseInt(normalizedValue.slice(5, 7), 16),
+  ];
+}
+
 function ProductInformationAccordion({
   content,
   defaultOpen,
@@ -443,6 +497,7 @@ const PRODUCT_FRAGMENT = `#graphql
     handle
     descriptionHtml
     description
+    tags
     images(first: 20) {
       nodes {
         id
@@ -468,6 +523,9 @@ const PRODUCT_FRAGMENT = `#graphql
           }
         }
       }
+    }
+    mainColor: metafield(namespace: "main", key: "color") {
+      value
     }
     encodedVariantExistence
     encodedVariantAvailability

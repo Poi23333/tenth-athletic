@@ -138,6 +138,8 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
       cache: storefront.CacheNone(),
       variables: {
         shopMenuHandle: 'shop-menu',
+        manMenuHandle: 'man-menu',
+        womanMenuHandle: 'woman-menu',
       },
     }),
     storefront.query(LOCALIZATION_QUERY, {

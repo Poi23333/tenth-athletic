@@ -13,10 +13,35 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
   const className =
     layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
 
+  if (layout === 'aside') {
+    return (
+      <div aria-labelledby="cart-summary" className={className}>
+        <dl className="cart-total">
+          <dt id="cart-summary">Total:</dt>
+          <dd>
+            {cart?.cost?.totalAmount?.amount ? (
+              <Money data={cart.cost.totalAmount} />
+            ) : (
+              '-'
+            )}
+          </dd>
+        </dl>
+        <div className="cart-delivery-copy">
+          <p>
+            Est Delivery Time: For Express delivery: 1–3 working days. For
+            Standard delivery: 3–5 working days.
+          </p>
+          <p>Tax included. Shipping calculated at checkout.</p>
+        </div>
+        <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} />
+      </div>
+    );
+  }
+
   return (
     <div aria-labelledby="cart-summary" className={className}>
       <dl className="cart-subtotal">
-        <dt>Subtotal</dt>
+        <dt id="cart-summary">Subtotal</dt>
         <dd>
           {cart?.cost?.subtotalAmount?.amount ? (
             <Money data={cart?.cost?.subtotalAmount} />
@@ -25,12 +50,8 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
           )}
         </dd>
       </dl>
-      {layout === 'page' ? (
-        <>
-          <CartDiscounts discountCodes={cart?.discountCodes} />
-          <CartGiftCard giftCardCodes={cart?.appliedGiftCards} />
-        </>
-      ) : null}
+      <CartDiscounts discountCodes={cart?.discountCodes} />
+      <CartGiftCard giftCardCodes={cart?.appliedGiftCards} />
       <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} />
     </div>
   );

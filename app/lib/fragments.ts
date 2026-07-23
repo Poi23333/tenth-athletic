@@ -33,6 +33,7 @@ export const CART_QUERY_FRAGMENT = `#graphql
           ...Money
         }
         requiresShipping
+        sku
         title
         image {
           id
@@ -89,6 +90,7 @@ export const CART_QUERY_FRAGMENT = `#graphql
           ...Money
         }
         requiresShipping
+        sku
         title
         image {
           id
@@ -217,11 +219,19 @@ export const HEADER_QUERY = `#graphql
     $country: CountryCode
     $language: LanguageCode
     $shopMenuHandle: String!
+    $manMenuHandle: String!
+    $womanMenuHandle: String!
   ) @inContext(language: $language, country: $country) {
     shop {
       ...Shop
     }
     shopMenu: menu(handle: $shopMenuHandle) {
+      ...Menu
+    }
+    manMenu: menu(handle: $manMenuHandle) {
+      ...Menu
+    }
+    womanMenu: menu(handle: $womanMenuHandle) {
       ...Menu
     }
   }

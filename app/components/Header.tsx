@@ -1,9 +1,16 @@
-import {Await, NavLink} from 'react-router';
+import {Await, NavLink, useLocation, useMatches, useRouteLoaderData} from 'react-router';
 import {Suspense, useEffect, useLayoutEffect, useRef} from 'react';
 import {type CartViewPayload, useAnalytics} from '@shopify/hydrogen';
-import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
+import type {CartApiQueryFragment, HeaderQuery} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import {formatRegionNavLabel, type Region} from '~/data/regions';
+import {
+  getGenderFromCollectionHandle,
+  getGenderFromMenus,
+  getGenderFromProductTags,
+  type GenderMenuKey,
+} from '~/lib/menu';
+import type {RootLoader} from '~/root';
 import brandLogo from '~/assets/logo.svg';
 
 // useLayoutEffect warns during SSR; keep layout sync on the client only.
@@ -57,7 +64,10 @@ export function HeaderMenu({
 }) {
   const className = `header-menu-${viewport}`;
   const navRef = useRef<HTMLElement>(null);
-  const {open, type} = useAside();
+  const {open, type, close} = useAside();
+  const routeGender = useRouteGender();
+  const manActive = type === 'man' || routeGender === 'man';
+  const womanActive = type === 'woman' || routeGender === 'woman';
 
   useIsomorphicLayoutEffect(() => {
     if (viewport !== 'desktop') return;
@@ -86,7 +96,9 @@ export function HeaderMenu({
     window.addEventListener('resize', syncAsideWidth);
 
     const resizeObserver =
-      typeof ResizeObserver !== 'undefined' ? new ResizeObserver(syncAsideWidth) : null;
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(syncAsideWidth)
+        : null;
     if (navRef.current) resizeObserver?.observe(navRef.current);
 
     return () => {
@@ -106,31 +118,68 @@ export function HeaderMenu({
       >
         {formatRegionNavLabel(currentRegion)}
       </button>
-      <NavLink
-        className="header-menu-item"
-        prefetch="intent"
-        to="/collections/man"
+      <button
+        className={`header-menu-item reset${manActive ? ' active' : ''}`}
+        type="button"
+        onClick={() => open('man')}
       >
         Man
-      </NavLink>
-      <NavLink
-        className="header-menu-item"
-        prefetch="intent"
-        to="/collections/woman"
+      </button>
+      <button
+        className={`header-menu-item reset${womanActive ? ' active' : ''}`}
+        type="button"
+        onClick={() => open('woman')}
       >
         Woman
-      </NavLink>
+      </button>
       <AccountLink isLoggedIn={isLoggedIn} />
-      <NavLink
-        className="header-menu-item"
-        prefetch="intent"
-        to="/pages/field-index"
+      <button
+        className={`header-menu-item reset${
+          type === 'field-index' ? ' active' : ''
+        }`}
+        type="button"
+        onClick={() => open('field-index')}
       >
         Field Index
-      </NavLink>
+      </button>
       <BagToggle cart={cart} />
     </nav>
   );
+}
+
+function useRouteGender(): GenderMenuKey | null {
+  const location = useLocation();
+  const matches = useMatches();
+  const rootData = useRouteLoaderData<RootLoader>('root');
+
+  const collectionMatch = location.pathname.match(/^\/collections\/([^/?#]+)/i);
+  if (collectionMatch) {
+    const handle = decodeURIComponent(collectionMatch[1]);
+    return (
+      getGenderFromCollectionHandle(handle) ??
+      getGenderFromMenus({
+        handle,
+        manMenu: rootData?.header?.manMenu,
+        womanMenu: rootData?.header?.womanMenu,
+        primaryDomainUrl: rootData?.header?.shop?.primaryDomain?.url ?? '',
+        publicStoreDomain: rootData?.publicStoreDomain ?? '',
+      })
+    );
+  }
+
+  if (!location.pathname.startsWith('/products/')) return null;
+
+  for (const match of [...matches].reverse()) {
+    const data = match.data;
+    if (!data || typeof data !== 'object' || !('product' in data)) continue;
+
+    const product = (data as {product?: {tags?: string[] | null}}).product;
+    if (!product) continue;
+
+    return getGenderFromProductTags(product.tags);
+  }
+
+  return null;
 }
 
 function AccountLink({isLoggedIn}: {isLoggedIn: Promise<boolean>}) {
@@ -156,7 +205,7 @@ function AccountNavLink({
 }) {
   return (
     <NavLink
-      className="header-menu-item"
+      className={() => 'header-menu-item'}
       end
       onClick={onClick}
       prefetch="intent"
@@ -194,21 +243,25 @@ function BagToggle({cart}: {cart: Promise<CartApiQueryFragment | null>}) {
   return (
     <Suspense fallback={<BagBanner count={0} />}>
       <Await resolve={cart}>
-        {(resolvedCart) => <BagBanner count={resolvedCart?.totalQuantity ?? 0} />}
+        {(resolvedCart) => (
+          <BagBanner count={resolvedCart?.totalQuantity ?? 0} />
+        )}
       </Await>
     </Suspense>
   );
 }
 
 function BagBanner({count}: {count: number}) {
-  const {open} = useAside();
+  const {open, type} = useAside();
   const {publish, shop, cart: analyticsCart, prevCart} = useAnalytics();
   const hasItems = count > 0;
 
   return (
     <button
       type="button"
-      className={`header-menu-item reset header-bag${hasItems ? ' has-items' : ''}`}
+      className={`header-menu-item reset header-bag${
+        hasItems ? ' has-items' : ''
+      }${type === 'cart' ? ' active' : ''}`}
       onClick={() => {
         open('cart');
         publish('cart_viewed', {

@@ -40,22 +40,14 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   const withDiscount =
     cart &&
     Boolean(cart?.discountCodes?.filter((code) => code.applicable)?.length);
-  const className = `cart-main ${withDiscount ? 'with-discount' : ''}`;
+  const className = `cart-main cart-main-${layout} ${
+    withDiscount ? 'with-discount' : ''
+  }`;
   const cartHasItems = cart?.totalQuantity ? cart.totalQuantity > 0 : false;
   const childrenMap = getLineItemChildrenMap(cart?.lines?.nodes ?? []);
 
   return (
     <div className={className}>
-      {layout === 'aside' && cartHasItems ? (
-        <div className="cart-shipping-banner">
-          <span className="cart-shipping-banner-icon" aria-hidden="true">
-            ✓
-          </span>
-          <span>
-            You get complimentary shipping and tote bag on all orders.
-          </span>
-        </div>
-      ) : null}
       <CartEmpty hidden={linesCount} layout={layout} />
       <div className="cart-details">
         <p id="cart-lines" className="sr-only">

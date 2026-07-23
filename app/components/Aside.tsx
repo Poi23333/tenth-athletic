@@ -8,7 +8,15 @@ import {
 } from 'react';
 import type {RegionId} from '~/data/regions';
 
-type AsideType = 'cart' | 'mobile' | 'shop' | 'locale' | 'closed';
+type AsideType =
+  | 'cart'
+  | 'mobile'
+  | 'shop'
+  | 'man'
+  | 'woman'
+  | 'field-index'
+  | 'locale'
+  | 'closed';
 type AsideChrome = 'default' | 'brand';
 type AsideContextValue = {
   type: AsideType;
@@ -20,7 +28,17 @@ type AsideContextValue = {
 };
 
 function isBrandAside(type: AsideType) {
-  return type === 'shop' || type === 'locale';
+  return (
+    type === 'shop' ||
+    type === 'locale' ||
+    type === 'man' ||
+    type === 'woman' ||
+    type === 'field-index'
+  );
+}
+
+function keepsHeaderVisible(type: AsideType) {
+  return type === 'cart' || isBrandAside(type);
 }
 
 /**
@@ -85,7 +103,11 @@ export function Aside({
           <>
             <header>
               <h3>{heading}</h3>
-              <button className="close reset" onClick={close} aria-label="Close">
+              <button
+                className="close reset"
+                onClick={close}
+                aria-label="Close"
+              >
                 &times;
               </button>
             </header>
@@ -124,9 +146,16 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
   }, []);
 
   useEffect(() => {
+    document.body.classList.toggle('drawer-open', type !== 'closed');
     document.body.classList.toggle('brand-drawer-open', isBrandAside(type));
+    document.body.classList.toggle(
+      'drawer-header-visible',
+      keepsHeaderVisible(type),
+    );
     return () => {
+      document.body.classList.remove('drawer-open');
       document.body.classList.remove('brand-drawer-open');
+      document.body.classList.remove('drawer-header-visible');
     };
   }, [type]);
 

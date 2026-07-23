@@ -7,9 +7,11 @@ import {ProductItem} from '~/components/ProductItem';
 import {ProductListEmpty} from '~/components/ProductListEmpty';
 import {
   ProductListSidebar,
+  getCatalogSort,
   getCollectionSort,
   getProductListControls,
 } from '~/components/ProductListSidebar';
+import {getGenderShopAllProductTag} from '~/lib/menu';
 import type {ProductItemFragment} from 'storefrontapi.generated';
 
 export const meta: Route.MetaFunction = ({data}) => {
@@ -29,12 +31,53 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     pageBy: 16,
   });
   const {sort} = getProductListControls(request);
-  const sortInput = getCollectionSort(sort);
 
   if (!handle) {
     throw redirect('/collections');
   }
 
+  const shopAllTag = getGenderShopAllProductTag(handle);
+
+  if (shopAllTag) {
+    const collectionSort = getCollectionSort(sort);
+    const catalogSort = getCatalogSort(sort);
+
+    const [{collection, collections}, {products}] = await Promise.all([
+      storefront.query(COLLECTION_QUERY, {
+        variables: {
+          handle,
+          // Collection products are unused for Shop All; keep the query valid.
+          first: 1,
+          ...collectionSort,
+        },
+      }),
+      storefront.query(SHOP_ALL_PRODUCTS_QUERY, {
+        variables: {
+          ...paginationVariables,
+          ...catalogSort,
+          query: `tag:${shopAllTag}`,
+        },
+      }),
+    ]);
+
+    if (!collection) {
+      throw new Response(`Collection ${handle} not found`, {
+        status: 404,
+      });
+    }
+
+    redirectIfHandleIsLocalized(request, {handle, data: collection});
+
+    return {
+      collection: {
+        ...collection,
+        products,
+      },
+      collectionFilters: collections.nodes,
+    };
+  }
+
+  const sortInput = getCollectionSort(sort);
   const [{collection, collections}] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
       variables: {
@@ -183,6 +226,41 @@ const COLLECTION_QUERY = `#graphql
           endCursor
           startCursor
         }
+      }
+    }
+  }
+` as const;
+
+const SHOP_ALL_PRODUCTS_QUERY = `#graphql
+  ${PRODUCT_ITEM_FRAGMENT}
+  query ShopAllProducts(
+    $country: CountryCode
+    $language: LanguageCode
+    $first: Int
+    $last: Int
+    $startCursor: String
+    $endCursor: String
+    $sortKey: ProductSortKeys
+    $reverse: Boolean
+    $query: String!
+  ) @inContext(country: $country, language: $language) {
+    products(
+      first: $first,
+      last: $last,
+      before: $startCursor,
+      after: $endCursor,
+      sortKey: $sortKey,
+      reverse: $reverse,
+      query: $query
+    ) {
+      nodes {
+        ...ProductItem
+      }
+      pageInfo {
+        hasPreviousPage
+        hasNextPage
+        endCursor
+        startCursor
       }
     }
   }

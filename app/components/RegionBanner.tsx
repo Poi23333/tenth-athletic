@@ -1,11 +1,13 @@
 import {Form, useLocation} from 'react-router';
-import {useLayoutEffect, useRef} from 'react';
+import {useEffect, useLayoutEffect, useRef} from 'react';
 import closeCircleFill from '~/assets/close_circle_fill.png';
 import type {Region} from '~/data/regions';
 import {formatGeoBannerMessage} from '~/data/regions';
 import {useAside} from '~/components/Aside';
 
 const REGION_BANNER_HEIGHT_VAR = '--region-banner-height';
+const useIsomorphicLayoutEffect =
+  typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 export function RegionBanner({
   currentRegion,
@@ -19,7 +21,7 @@ export function RegionBanner({
   const returnTo = `${location.pathname}${location.search}`;
   const bannerRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const node = bannerRef.current;
     if (!node) return;
 

@@ -1,6 +1,10 @@
 import {Await, Form, NavLink} from 'react-router';
 import {Suspense, useEffect, useRef} from 'react';
-import type {CartApiQueryFragment, HeaderQuery} from 'storefrontapi.generated';
+import type {
+  CartApiQueryFragment,
+  HeaderQuery,
+  MenuFragment,
+} from 'storefrontapi.generated';
 import {Aside, useAside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
@@ -9,6 +13,7 @@ import {CookieConsent} from '~/components/CookieConsent';
 import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
 import {RegionBanner} from '~/components/RegionBanner';
 import type {GeoBannerData} from '~/root';
+import {isPlaceholderMenuUrl, normalizeShopifyMenuUrl, getGenderShopAllHandle} from '~/lib/menu';
 import {
   formatConfirmBody,
   formatConfirmSwitchLabel,
@@ -42,6 +47,21 @@ export function PageLayout({
     <Aside.Provider>
       <CartAside cart={cart} />
       <ShopAside header={header} publicStoreDomain={publicStoreDomain} />
+      <GenderMenuAside
+        type="man"
+        heading="Man"
+        menu={header.manMenu}
+        primaryDomainUrl={header.shop.primaryDomain?.url ?? ''}
+        publicStoreDomain={publicStoreDomain}
+      />
+      <GenderMenuAside
+        type="woman"
+        heading="Woman"
+        menu={header.womanMenu}
+        primaryDomainUrl={header.shop.primaryDomain?.url ?? ''}
+        publicStoreDomain={publicStoreDomain}
+      />
+      <FieldIndexAside />
       <LocaleAside regions={regions} currentRegion={currentRegion} />
       <MobileMenuAside
         cart={cart}
@@ -72,7 +92,7 @@ export function PageLayout({
 
 function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
   return (
-    <Aside type="cart" heading={<CartAsideHeading cart={cart} />}>
+    <Aside chrome="brand" type="cart" heading="Bag">
       <Suspense fallback={<p>Loading cart ...</p>}>
         <Await resolve={cart}>
           {(cart) => {
@@ -81,19 +101,6 @@ function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
         </Await>
       </Suspense>
     </Aside>
-  );
-}
-
-function CartAsideHeading({cart}: {cart: PageLayoutProps['cart']}) {
-  return (
-    <Suspense fallback="Your Bag">
-      <Await resolve={cart}>
-        {(resolvedCart) => {
-          const count = resolvedCart?.totalQuantity ?? 0;
-          return `Your Bag (${count})`;
-        }}
-      </Await>
-    </Suspense>
   );
 }
 
@@ -114,6 +121,149 @@ function MobileMenuAside({
         viewport="mobile"
         currentRegion={currentRegion}
       />
+    </Aside>
+  );
+}
+
+function GenderMenuAside({
+  type,
+  heading,
+  menu,
+  primaryDomainUrl,
+  publicStoreDomain,
+}: {
+  type: 'man' | 'woman';
+  heading: string;
+  menu?: MenuFragment | null;
+  primaryDomainUrl: string;
+  publicStoreDomain: string;
+}) {
+  const {close} = useAside();
+
+  return (
+    <Aside chrome="brand" type={type} heading={heading}>
+      <nav className="drawer-menu" aria-label={`${heading} collections`}>
+        <div className="drawer-menu-group">
+          <div className="drawer-list">
+            <NavLink
+              className="drawer-list-item drawer-menu-shop-all"
+              onClick={close}
+              prefetch="intent"
+              to={`/collections/${getGenderShopAllHandle(type)}`}
+            >
+              Shop All
+            </NavLink>
+          </div>
+        </div>
+        {menu?.items?.length ? (
+          menu.items.map((category) => (
+            <div className="drawer-menu-group" key={category.id}>
+              <p className="drawer-menu-heading">{category.title}</p>
+              {category.items?.length ? (
+                <div className="drawer-list">
+                  {category.items.map((item) => {
+                    if (
+                      !item.url ||
+                      isPlaceholderMenuUrl(item.url) ||
+                      !primaryDomainUrl
+                    ) {
+                      return (
+                        <span className="drawer-list-item" key={item.id}>
+                          {item.title}
+                        </span>
+                      );
+                    }
+
+                    const url = normalizeShopifyMenuUrl({
+                      primaryDomainUrl,
+                      publicStoreDomain,
+                      url: item.url,
+                    });
+                    const isExternal = !url.startsWith('/');
+
+                    return isExternal ? (
+                      <a
+                        className="drawer-list-item"
+                        href={url}
+                        key={item.id}
+                        onClick={close}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        {item.title}
+                      </a>
+                    ) : (
+                      <NavLink
+                        className="drawer-list-item"
+                        key={item.id}
+                        onClick={close}
+                        prefetch="intent"
+                        to={url}
+                      >
+                        {item.title}
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          ))
+        ) : (
+          <p className="drawer-list-empty">
+            Shopify menu handle {type}-menu is not configured.
+          </p>
+        )}
+      </nav>
+    </Aside>
+  );
+}
+
+const FIELD_INDEX_SECTIONS = [
+  {
+    heading: 'About',
+    items: ['About Tenth', 'Practice', 'People'],
+  },
+  {
+    heading: 'Systems',
+    items: [
+      'Product System',
+      'Construction',
+      'Materials',
+      'Condition Index',
+    ],
+  },
+  {
+    heading: 'Tenth Lab',
+    items: [
+      'Product Development',
+      'Objects',
+      'Spatial Systems',
+      'Collaborations',
+    ],
+  },
+  {
+    heading: 'Field Notes',
+    items: ['Running', 'Places', 'People', 'Events'],
+  },
+] as const;
+
+function FieldIndexAside() {
+  return (
+    <Aside chrome="brand" type="field-index" heading="Field Index">
+      <nav className="drawer-menu" aria-label="Field Index">
+        {FIELD_INDEX_SECTIONS.map((section) => (
+          <div className="drawer-menu-group" key={section.heading}>
+            <p className="drawer-menu-heading">{section.heading}</p>
+            <div className="drawer-list">
+              {section.items.map((item) => (
+                <span className="drawer-list-item" key={item}>
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </nav>
     </Aside>
   );
 }
@@ -262,24 +412,4 @@ function LocaleAside({
       )}
     </Aside>
   );
-}
-
-function normalizeShopifyMenuUrl({
-  primaryDomainUrl,
-  publicStoreDomain,
-  url,
-}: {
-  primaryDomainUrl: string;
-  publicStoreDomain: string;
-  url: string;
-}) {
-  const isStorefrontUrl =
-    url.includes('myshopify.com') ||
-    url.includes(publicStoreDomain) ||
-    url.includes(primaryDomainUrl);
-
-  if (!isStorefrontUrl) return url;
-
-  const parsedUrl = new URL(url);
-  return `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
 }
