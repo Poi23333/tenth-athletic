@@ -524,7 +524,7 @@ const PRODUCT_FRAGMENT = `#graphql
         }
       }
     }
-    mainColor: metafield(namespace: "main", key: "color") {
+    mainColor: metafield(namespace: "custom", key: "main_color") {
       value
     }
     encodedVariantExistence

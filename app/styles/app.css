@@ -233,7 +233,6 @@ body > main {
   top: 0;
   transition: right 200ms ease-in-out;
   width: min(var(--aside-width), 100vw);
-  z-index: 1;
 }
 
 .overlay > aside.aside-brand {
@@ -301,38 +300,28 @@ body > main {
   z-index: 1;
 }
 
-/* Stacking when a drawer is open:
- * page content (blurred) < frosted mask < dots / header / cactus */
-body.drawer-open > main,
-body.drawer-open .footer-links,
-body.drawer-open .footer-rule {
-  filter: blur(10px);
+/* Drawer stacking: page content < overlay/mask < dots (highest).
+ * Explicitly lower page chrome — several elements (header, banner,
+ * copyright) have standing z-indexes above the default overlay. */
+html:has(.overlay.expanded) .region-banner,
+html:has(.overlay.expanded) .header,
+html:has(.overlay.expanded) body > main,
+html:has(.overlay.expanded) .footer,
+html:has(.overlay.expanded) .footer-copyright-bar,
+html:has(.overlay.expanded) .cookie-consent {
+  z-index: 1;
 }
 
-body.drawer-header-visible .header {
-  z-index: 91;
+html:has(.overlay.expanded) body > main {
+  position: relative;
 }
 
-body.drawer-header-visible .global-dot-matrix {
-  z-index: 90;
+html:has(.overlay.expanded) .overlay.expanded {
+  z-index: 200;
 }
 
-body.brand-drawer-open .region-banner {
-  z-index: 120;
-}
-
-body.brand-drawer-open .footer {
-  /* Drop stacking context so the shared cactus can rise above the overlay */
-  z-index: auto;
-}
-
-body.brand-drawer-open .footer-illustration {
-  z-index: 91;
-}
-
-/* Copyright stays above drawer + mask at all times */
-body.brand-drawer-open .footer-copyright-bar {
-  z-index: 110;
+html:has(.overlay.expanded) .global-dot-matrix {
+  z-index: 210;
 }
 
 .drawer-list {
@@ -434,29 +423,30 @@ body.brand-drawer-open .footer-copyright-bar {
 }
 
 .overlay {
-  background: transparent;
+  background: rgba(26, 28, 28, 0.28);
+  backdrop-filter: none;
   bottom: 0;
   left: 0;
+  opacity: 0;
   overflow: hidden;
   pointer-events: none;
   position: fixed;
   right: 0;
   top: 0;
+  transition: opacity 400ms ease-in-out;
   visibility: hidden;
   z-index: 10;
 }
 
 .overlay .close-outside {
-  background: rgba(246, 246, 246, 0);
+  background: transparent;
   border: none;
   color: transparent;
   height: 100%;
   left: 0;
   position: absolute;
   top: 0;
-  transition: background 400ms ease-in-out;
   width: calc(100% - min(var(--aside-width), 100vw));
-  z-index: 0;
 }
 
 .overlay .light {
@@ -471,12 +461,9 @@ body.brand-drawer-open .footer-copyright-bar {
 }
 
 .overlay.expanded {
+  opacity: 1;
   pointer-events: auto;
   visibility: visible;
-}
-
-.overlay.expanded .close-outside {
-  background: rgba(246, 246, 246, 0.55);
 }
 
 .overlay:not(.expanded) {

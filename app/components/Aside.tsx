@@ -27,20 +27,6 @@ type AsideContextValue = {
   close: () => void;
 };
 
-function isBrandAside(type: AsideType) {
-  return (
-    type === 'shop' ||
-    type === 'locale' ||
-    type === 'man' ||
-    type === 'woman' ||
-    type === 'field-index'
-  );
-}
-
-function keepsHeaderVisible(type: AsideType) {
-  return type === 'cart' || isBrandAside(type);
-}
-
 /**
  * A side bar component with Overlay
  * @example
@@ -144,20 +130,6 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
   const clearLocaleConfirm = useCallback(() => {
     setLocaleConfirmRegionId(null);
   }, []);
-
-  useEffect(() => {
-    document.body.classList.toggle('drawer-open', type !== 'closed');
-    document.body.classList.toggle('brand-drawer-open', isBrandAside(type));
-    document.body.classList.toggle(
-      'drawer-header-visible',
-      keepsHeaderVisible(type),
-    );
-    return () => {
-      document.body.classList.remove('drawer-open');
-      document.body.classList.remove('brand-drawer-open');
-      document.body.classList.remove('drawer-header-visible');
-    };
-  }, [type]);
 
   useEffect(() => {
     if (type === 'closed') return;
