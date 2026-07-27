@@ -1,6 +1,6 @@
-import {redirect, useLoaderData} from 'react-router';
+import {data, redirect, useLoaderData} from 'react-router';
 import {startTransition, useEffect, useRef, useState} from 'react';
-import type {ReactNode} from 'react';
+import type {PointerEvent as ReactPointerEvent, ReactNode} from 'react';
 import type {Route} from './+types/products.$handle';
 import {
   getSelectedProductOptions,
@@ -11,6 +11,7 @@ import {
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
 import {ProductImage} from '~/components/ProductImage';
+import {ProductItem} from '~/components/ProductItem';
 import {ProductForm} from '~/components/ProductForm';
 import {ProductEditorialContent} from '~/components/product/ProductEditorialContent';
 import {ProductFeatureIndex} from '~/components/product/ProductFeatureIndex';
@@ -29,6 +30,8 @@ const DEFAULT_PRODUCT_THEME = {
 } as const;
 
 const LIGHT_COLOR_WHITE_MIX = 0.8;
+const RECENTLY_EXPLORED_COOKIE = 'tenth_recently_explored';
+const MERCHANDISING_PRODUCT_LIMIT = 8;
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
@@ -43,7 +46,16 @@ export const meta: Route.MetaFunction = ({data}) => {
 export async function loader(args: Route.LoaderArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
-  return {...deferredData, ...criticalData};
+  return data(
+    {...deferredData, ...criticalData.data},
+    {
+      headers: {
+        'Set-Cookie': createRecentlyExploredCookie(
+          criticalData.recentlyExploredHandles,
+        ),
+      },
+    },
+  );
 }
 
 async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
@@ -76,9 +88,48 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
       ? secondaryImageReference.image
       : null;
 
+  const recentlyExploredHandles = getRecentlyExploredHandles(request, handle);
+  const {productRecommendations, recentlyExplored} = await storefront.query(
+    PRODUCT_MERCHANDISING_QUERY,
+    {
+      variables: {
+        productId: product.id,
+        recentlyExploredQuery: recentlyExploredHandles
+          .map((recentHandle) => `handle:${recentHandle}`)
+          .join(' OR '),
+      },
+    },
+  );
+  type MerchandisingProduct = (typeof recentlyExplored.nodes)[number];
+  const recentlyExploredByHandle = new Map(
+    recentlyExplored.nodes.map((recentProduct: MerchandisingProduct) => [
+      recentProduct.handle,
+      recentProduct,
+    ]),
+  );
+
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
-  return {product, secondaryImage};
+  return {
+    data: {
+      completeTheSystem:
+        productRecommendations?.filter(
+          (
+            recommendedProduct: MerchandisingProduct | null,
+          ): recommendedProduct is MerchandisingProduct =>
+            recommendedProduct !== null && recommendedProduct.id !== product.id,
+        ) ?? [],
+      product,
+      recentlyExplored: recentlyExploredHandles
+        .map((recentHandle) => recentlyExploredByHandle.get(recentHandle))
+        .filter(
+          (recentProduct): recentProduct is MerchandisingProduct =>
+            recentProduct !== undefined,
+        ),
+      secondaryImage,
+    },
+    recentlyExploredHandles,
+  };
 }
 
 function loadDeferredData(_args: Route.LoaderArgs) {
@@ -86,7 +137,8 @@ function loadDeferredData(_args: Route.LoaderArgs) {
 }
 
 export default function Product() {
-  const {product, secondaryImage} = useLoaderData<typeof loader>();
+  const {completeTheSystem, product, recentlyExplored, secondaryImage} =
+    useLoaderData<typeof loader>();
   const heroRef = useRef<HTMLElement | null>(null);
   const purchasePanelRef = useRef<HTMLDivElement | null>(null);
   const videoBoundaryRef = useRef<HTMLElement | null>(null);
@@ -358,6 +410,11 @@ export default function Product() {
 
       <ProductTechnicalSpecs sku={selectedVariant?.sku} />
 
+      <div className="product-merchandising">
+        <ProductRail products={completeTheSystem} title="Complete the System" />
+        <ProductRail products={recentlyExplored} title="Recently Explored" />
+      </div>
+
       <Analytics.ProductView
         data={{
           products: [
@@ -375,6 +432,194 @@ export default function Product() {
       />
     </div>
   );
+}
+
+function ProductRail({
+  products,
+  title,
+}: {
+  products: Array<Parameters<typeof ProductItem>[0]['product']>;
+  title: string;
+}) {
+  const titleId = `product-rail-${slugify(title)}`;
+
+  return (
+    <section className="product-rail" aria-labelledby={titleId}>
+      <h2 className="product-rail-title" id={titleId}>
+        {title}
+      </h2>
+      <ProductRailScroller products={products} title={title} />
+    </section>
+  );
+}
+
+function ProductRailScroller({
+  products,
+  title,
+}: {
+  products: Array<Parameters<typeof ProductItem>[0]['product']>;
+  title: string;
+}) {
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const dragStateRef = useRef<{pointerX: number; scrollLeft: number} | null>(
+    null,
+  );
+  const [scrollbar, setScrollbar] = useState({
+    isVisible: false,
+    thumbLeft: 0,
+    thumbWidth: 100,
+  });
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    const updateScrollbar = () => {
+      const clientWidth = scroller.clientWidth;
+      const scrollWidth = scroller.scrollWidth;
+      const maxScrollLeft = scrollWidth - clientWidth;
+      const isVisible = maxScrollLeft > 1;
+      const thumbWidth = isVisible ? (clientWidth / scrollWidth) * 100 : 100;
+      const thumbLeft = isVisible
+        ? (scroller.scrollLeft / maxScrollLeft) * (100 - thumbWidth)
+        : 0;
+
+      setScrollbar((current) =>
+        current.isVisible === isVisible &&
+        Math.abs(current.thumbLeft - thumbLeft) < 0.05 &&
+        Math.abs(current.thumbWidth - thumbWidth) < 0.05
+          ? current
+          : {isVisible, thumbLeft, thumbWidth},
+      );
+    };
+
+    updateScrollbar();
+    const resizeObserver = new ResizeObserver(updateScrollbar);
+    resizeObserver.observe(scroller);
+    const productList = scroller.firstElementChild;
+    if (productList) resizeObserver.observe(productList);
+    scroller.addEventListener('scroll', updateScrollbar, {passive: true});
+
+    return () => {
+      resizeObserver.disconnect();
+      scroller.removeEventListener('scroll', updateScrollbar);
+    };
+  }, [products]);
+
+  function scrollFromTrack(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.target !== event.currentTarget) return;
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    const track = event.currentTarget.getBoundingClientRect();
+    const thumbWidth = (scrollbar.thumbWidth / 100) * track.width;
+    const availableTrack = track.width - thumbWidth;
+    const position = Math.min(
+      Math.max(event.clientX - track.left - thumbWidth / 2, 0),
+      availableTrack,
+    );
+    scroller.scrollLeft =
+      (position / availableTrack) *
+      (scroller.scrollWidth - scroller.clientWidth);
+  }
+
+  function startThumbDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragStateRef.current = {
+      pointerX: event.clientX,
+      scrollLeft: scroller.scrollLeft,
+    };
+  }
+
+  function dragThumb(event: ReactPointerEvent<HTMLDivElement>) {
+    const scroller = scrollerRef.current;
+    const dragState = dragStateRef.current;
+    const track = event.currentTarget.parentElement;
+    if (!scroller || !dragState || !track) return;
+
+    const thumbWidth = (scrollbar.thumbWidth / 100) * track.clientWidth;
+    const availableTrack = track.clientWidth - thumbWidth;
+    const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+    scroller.scrollLeft =
+      dragState.scrollLeft +
+      ((event.clientX - dragState.pointerX) / availableTrack) * maxScrollLeft;
+  }
+
+  function stopThumbDrag() {
+    dragStateRef.current = null;
+  }
+
+  return (
+    <div className="product-rail-scroller-shell">
+      <div
+        aria-label={`${title} products`}
+        className="product-rail-scroller"
+        ref={scrollerRef}
+        role="region"
+      >
+        <div className="product-rail-list">
+          {products.map((railProduct) => (
+            <ProductItem key={railProduct.id} product={railProduct} />
+          ))}
+        </div>
+      </div>
+      {scrollbar.isVisible ? (
+        <div
+          aria-hidden="true"
+          className="product-rail-scrollbar"
+          onPointerDown={scrollFromTrack}
+        >
+          <div
+            className="product-rail-scrollbar-thumb"
+            onPointerCancel={stopThumbDrag}
+            onPointerDown={startThumbDrag}
+            onPointerMove={dragThumb}
+            onPointerUp={stopThumbDrag}
+            style={{
+              left: `${scrollbar.thumbLeft}%`,
+              width: `${scrollbar.thumbWidth}%`,
+            }}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function getRecentlyExploredHandles(request: Request, currentHandle: string) {
+  const cookie = request.headers
+    .get('Cookie')
+    ?.split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${RECENTLY_EXPLORED_COOKIE}=`));
+  const storedHandles = cookie
+    ? cookie.slice(RECENTLY_EXPLORED_COOKIE.length + 1).split(',')
+    : [];
+
+  return [currentHandle, ...storedHandles]
+    .filter(
+      (handle, index, handles) =>
+        /^[a-z0-9][a-z0-9-]*$/i.test(handle) &&
+        handles.indexOf(handle) === index,
+    )
+    .slice(0, MERCHANDISING_PRODUCT_LIMIT);
+}
+
+function createRecentlyExploredCookie(handles: string[]) {
+  return `${RECENTLY_EXPLORED_COOKIE}=${handles.join(
+    ',',
+  )}; Path=/; Max-Age=2592000; HttpOnly; SameSite=Lax`;
 }
 
 function getProductTheme(value: string | null | undefined) {
@@ -572,4 +817,82 @@ const PRODUCT_QUERY = `#graphql
     }
   }
   ${PRODUCT_FRAGMENT}
+` as const;
+
+const PRODUCT_MERCHANDISING_FRAGMENT = `#graphql
+  fragment ProductMerchandisingItem on Product {
+    id
+    handle
+    title
+    productType
+    featuredImage {
+      id
+      altText
+      url
+      width
+      height
+    }
+    fullImage: metafield(namespace: "custom", key: "full") {
+      reference {
+        __typename
+        ... on MediaImage {
+          image {
+            id
+            altText
+            url
+            width
+            height
+          }
+        }
+      }
+    }
+    options {
+      name
+      optionValues {
+        name
+      }
+    }
+    variants(first: 50) {
+      nodes {
+        availableForSale
+        quantityAvailable
+        selectedOptions {
+          name
+          value
+        }
+      }
+    }
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+      maxVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+  }
+` as const;
+
+const PRODUCT_MERCHANDISING_QUERY = `#graphql
+  query ProductMerchandising(
+    $country: CountryCode
+    $language: LanguageCode
+    $productId: ID!
+    $recentlyExploredQuery: String!
+  ) @inContext(country: $country, language: $language) {
+    productRecommendations(productId: $productId, intent: COMPLEMENTARY) {
+      ...ProductMerchandisingItem
+    }
+    recentlyExplored: products(
+      first: 8
+      query: $recentlyExploredQuery
+    ) {
+      nodes {
+        ...ProductMerchandisingItem
+      }
+    }
+  }
+  ${PRODUCT_MERCHANDISING_FRAGMENT}
 ` as const;

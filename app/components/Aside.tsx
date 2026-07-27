@@ -16,6 +16,7 @@ type AsideType =
   | 'woman'
   | 'field-index'
   | 'locale'
+  | 'filter'
   | 'closed';
 type AsideChrome = 'default' | 'brand';
 type AsideContextValue = {

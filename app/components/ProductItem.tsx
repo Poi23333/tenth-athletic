@@ -6,36 +6,83 @@ import type {
 } from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 
+type ProductCardFragment = CollectionItemFragment | ProductItemFragment;
+type ProductCardSizeOption = {
+  name: string;
+  available: boolean;
+};
+
 export function ProductItem({
   product,
   loading,
 }: {
-  product: CollectionItemFragment | ProductItemFragment;
+  product: ProductCardFragment;
   loading?: 'eager' | 'lazy';
 }) {
   const variantUrl = useVariantUrl(product.handle);
   const image = product.featuredImage;
+  const fullImageReference = product.fullImage?.reference;
+  const hoverImage =
+    fullImageReference?.__typename === 'MediaImage'
+      ? fullImageReference.image
+      : null;
+  const hasHoverImage = Boolean(hoverImage);
+  const sizeOptions = getSizeOptions(product);
+  const hasSizeOptions = sizeOptions.length > 0;
   const {title, color} = getProductDisplayParts(product.title);
 
   return (
     <Link
-      className="product-item"
+      className={`product-item${hasSizeOptions ? ' product-item--has-sizes' : ''}`}
       key={product.id}
       prefetch="intent"
       to={variantUrl}
     >
       {image && (
-        <div className="product-item-media">
+        <div
+          className={`product-item-media${hasHoverImage ? ' product-item-media--swap' : ''}`}
+        >
           <Image
             alt={image.altText || product.title}
+            className="product-item-image product-item-image--primary"
             data={image}
             loading={loading}
             sizes="(min-width: 48em) 25vw, 50vw"
           />
+          {hoverImage ? (
+            <Image
+              alt={hoverImage.altText || product.title}
+              className="product-item-image product-item-image--secondary"
+              data={hoverImage}
+              loading="lazy"
+              sizes="(min-width: 48em) 25vw, 50vw"
+            />
+          ) : null}
         </div>
       )}
-      <h4>{title}</h4>
-      {color ? <p className="product-item-color">{color}</p> : null}
+      <div className="product-item-copy product-item-copy--default">
+        <h4>{title}</h4>
+        {color ? <p className="product-item-color">{color}</p> : null}
+      </div>
+      {hasSizeOptions ? (
+        <div
+          className="product-item-copy product-item-copy--sizes"
+          aria-hidden="true"
+        >
+          <p className="product-item-sizes">
+            {sizeOptions.map((size) => (
+              <span
+                className={`product-item-size${
+                  size.available ? '' : ' product-item-size--unavailable'
+                }`}
+                key={size.name}
+              >
+                {size.name}
+              </span>
+            ))}
+          </p>
+        </div>
+      ) : null}
       <div className="product-item-price">
         <Money data={product.priceRange.minVariantPrice} />
       </div>
@@ -82,4 +129,45 @@ function getProductDisplayParts(title: string) {
 
 function isColorName(value: string) {
   return COLOR_NAMES.includes(value.trim().toLowerCase());
+}
+
+function getSizeOptions(product: ProductCardFragment) {
+  const sizeOption = product.options.find(
+    (option: ProductCardFragment['options'][number]) =>
+      option.name.trim().toLowerCase() === 'size',
+  );
+
+  if (!sizeOption) {
+    return [];
+  }
+
+  const availabilityBySize = new Map<string, boolean>();
+
+  for (const variant of product.variants.nodes as ProductCardFragment['variants']['nodes']) {
+    const sizeValue = variant.selectedOptions.find(
+      (option: (typeof variant.selectedOptions)[number]) =>
+        option.name.trim().toLowerCase() === 'size',
+    )?.value;
+
+    if (!sizeValue) {
+      continue;
+    }
+
+    availabilityBySize.set(
+      sizeValue,
+      Boolean(availabilityBySize.get(sizeValue)) ||
+        (typeof variant.quantityAvailable === 'number'
+          ? variant.quantityAvailable > 0
+          : variant.availableForSale),
+    );
+  }
+
+  return sizeOption.optionValues.map(
+    (
+      value: ProductCardFragment['options'][number]['optionValues'][number],
+    ): ProductCardSizeOption => ({
+      name: value.name,
+      available: availabilityBySize.get(value.name) ?? false,
+    }),
+  );
 }

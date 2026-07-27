@@ -7,11 +7,10 @@ import {ProductItem} from '~/components/ProductItem';
 import {ProductListEmpty} from '~/components/ProductListEmpty';
 import {
   ProductListSidebar,
-  getCatalogSort,
   getCollectionSort,
   getProductListControls,
 } from '~/components/ProductListSidebar';
-import {getGenderShopAllProductTag} from '~/lib/menu';
+import {filterProductList} from '~/lib/productListFilters';
 import type {ProductItemFragment} from 'storefrontapi.generated';
 
 export const meta: Route.MetaFunction = ({data}) => {
@@ -30,63 +29,27 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 16,
   });
-  const {sort} = getProductListControls(request);
+  const {sort, sizes, fits} = getProductListControls(request);
 
   if (!handle) {
     throw redirect('/collections');
   }
 
-  const shopAllTag = getGenderShopAllProductTag(handle);
-
-  if (shopAllTag) {
-    const collectionSort = getCollectionSort(sort);
-    const catalogSort = getCatalogSort(sort);
-
-    const [{collection, collections}, {products}] = await Promise.all([
-      storefront.query(COLLECTION_QUERY, {
-        variables: {
-          handle,
-          // Collection products are unused for Shop All; keep the query valid.
-          first: 1,
-          ...collectionSort,
-        },
-      }),
-      storefront.query(SHOP_ALL_PRODUCTS_QUERY, {
-        variables: {
-          ...paginationVariables,
-          ...catalogSort,
-          query: `tag:${shopAllTag}`,
-        },
-      }),
-    ]);
-
-    if (!collection) {
-      throw new Response(`Collection ${handle} not found`, {
-        status: 404,
-      });
-    }
-
-    redirectIfHandleIsLocalized(request, {handle, data: collection});
-
-    return {
-      collection: {
-        ...collection,
-        products,
-      },
-      collectionFilters: collections.nodes,
-    };
-  }
-
   const sortInput = getCollectionSort(sort);
-  const [{collection, collections}] = await Promise.all([
-    storefront.query(COLLECTION_QUERY, {
-      variables: {
-        handle,
-        ...paginationVariables,
-        ...sortInput,
-      },
-    }),
-  ]);
+  const hasCustomFilters = sizes.length > 0 || fits.length > 0;
+  const {collection} = await storefront.query(COLLECTION_QUERY, {
+    variables: hasCustomFilters
+      ? {
+          handle,
+          first: 250,
+          ...sortInput,
+        }
+      : {
+          handle,
+          ...paginationVariables,
+          ...sortInput,
+        },
+  });
 
   if (!collection) {
     throw new Response(`Collection ${handle} not found`, {
@@ -96,9 +59,24 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
 
   redirectIfHandleIsLocalized(request, {handle, data: collection});
 
+  const filteredCollection = hasCustomFilters
+    ? {
+        ...collection,
+        products: {
+          ...collection.products,
+          nodes: filterProductList(collection.products.nodes, {sizes, fits}),
+          pageInfo: {
+            hasNextPage: false,
+            hasPreviousPage: false,
+            startCursor: null,
+            endCursor: null,
+          },
+        },
+      }
+    : collection;
+
   return {
-    collection,
-    collectionFilters: collections.nodes,
+    collection: filteredCollection,
   };
 }
 
@@ -107,16 +85,10 @@ function loadDeferredData(_args: Route.LoaderArgs) {
 }
 
 export default function Collection() {
-  const {collection, collectionFilters} = useLoaderData<typeof loader>();
+  const {collection} = useLoaderData<typeof loader>();
 
   return (
     <div className="collection product-list-page">
-      <aside className="product-list-sidebar" aria-label="Filters and information">
-        <ProductListSidebar
-          collectionFilters={collectionFilters}
-          selectedCollectionHandle={collection.handle}
-        />
-      </aside>
       <div className="product-list-main">
         <header className="product-list-heading">
           <h1>{collection.title}</h1>
@@ -124,9 +96,8 @@ export default function Collection() {
             <p className="collection-description">{collection.description}</p>
           ) : null}
         </header>
-        <div className="product-list-mobile-toolbar" aria-hidden="true">
-          <span className="product-list-sidebar-heading">Filter</span>
-          <span className="product-list-sidebar-heading">Sort</span>
+        <div className="product-list-toolbar">
+          <ProductListSidebar productCount={collection.products.nodes.length} />
         </div>
         {collection.products.nodes.length > 0 ? (
           <PaginatedResourceSection<ProductItemFragment>
@@ -174,6 +145,36 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
       width
       height
     }
+    fullImage: metafield(namespace: "custom", key: "full") {
+      reference {
+        __typename
+        ... on MediaImage {
+          image {
+            id
+            altText
+            url
+            width
+            height
+          }
+        }
+      }
+    }
+    options {
+      name
+      optionValues {
+        name
+      }
+    }
+    variants(first: 50) {
+      nodes {
+        availableForSale
+        quantityAvailable
+        selectedOptions {
+          name
+          value
+        }
+      }
+    }
     priceRange {
       minVariantPrice {
         ...MoneyProductItem
@@ -198,12 +199,6 @@ const COLLECTION_QUERY = `#graphql
     $sortKey: ProductCollectionSortKeys
     $reverse: Boolean
   ) @inContext(country: $country, language: $language) {
-    collections(first: 250) {
-      nodes {
-        handle
-        title
-      }
-    }
     collection(handle: $handle) {
       id
       handle
@@ -226,41 +221,6 @@ const COLLECTION_QUERY = `#graphql
           endCursor
           startCursor
         }
-      }
-    }
-  }
-` as const;
-
-const SHOP_ALL_PRODUCTS_QUERY = `#graphql
-  ${PRODUCT_ITEM_FRAGMENT}
-  query ShopAllProducts(
-    $country: CountryCode
-    $language: LanguageCode
-    $first: Int
-    $last: Int
-    $startCursor: String
-    $endCursor: String
-    $sortKey: ProductSortKeys
-    $reverse: Boolean
-    $query: String!
-  ) @inContext(country: $country, language: $language) {
-    products(
-      first: $first,
-      last: $last,
-      before: $startCursor,
-      after: $endCursor,
-      sortKey: $sortKey,
-      reverse: $reverse,
-      query: $query
-    ) {
-      nodes {
-        ...ProductItem
-      }
-      pageInfo {
-        hasPreviousPage
-        hasNextPage
-        endCursor
-        startCursor
       }
     }
   }

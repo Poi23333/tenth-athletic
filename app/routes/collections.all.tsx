@@ -6,9 +6,10 @@ import {ProductItem} from '~/components/ProductItem';
 import {ProductListEmpty} from '~/components/ProductListEmpty';
 import {
   ProductListSidebar,
-  getCatalogSort,
+  getCollectionSort,
   getProductListControls,
 } from '~/components/ProductListSidebar';
+import {filterProductList} from '~/lib/productListFilters';
 import type {CollectionItemFragment} from 'storefrontapi.generated';
 
 export const meta: Route.MetaFunction = () => {
@@ -34,21 +35,41 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 15,
   });
-  const {sort} = getProductListControls(request);
-  const sortInput = getCatalogSort(sort);
+  const {sort, sizes, fits} = getProductListControls(request);
+  const sortInput = getCollectionSort(sort);
+  const hasCustomFilters = sizes.length > 0 || fits.length > 0;
 
-  const [{products, collections}] = await Promise.all([
-    storefront.query(CATALOG_QUERY, {
-      variables: {
-        ...paginationVariables,
-        ...sortInput,
-      },
-    }),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
+  const {collection} = await storefront.query(CATALOG_QUERY, {
+    variables: hasCustomFilters
+      ? {
+          first: 250,
+          ...sortInput,
+        }
+      : {
+          ...paginationVariables,
+          ...sortInput,
+        },
+  });
+
+  if (!collection) {
+    throw new Response('Collection all not found', {status: 404});
+  }
+
+  const products = hasCustomFilters
+    ? {
+        ...collection.products,
+        nodes: filterProductList(collection.products.nodes, {sizes, fits}),
+        pageInfo: {
+          hasNextPage: false,
+          hasPreviousPage: false,
+          startCursor: null,
+          endCursor: null,
+        },
+      }
+    : collection.products;
+
   return {
     products,
-    collectionFilters: collections.nodes,
   };
 }
 
@@ -62,21 +83,17 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 }
 
 export default function Collection() {
-  const {products, collectionFilters} = useLoaderData<typeof loader>();
+  const {products} = useLoaderData<typeof loader>();
 
   return (
     <div className="collection product-list-page">
-      <aside className="product-list-sidebar" aria-label="Filters and information">
-        <ProductListSidebar collectionFilters={collectionFilters} />
-      </aside>
       <div className="product-list-main">
         <header className="product-list-heading">
           <p>System inventory</p>
           <h1>Products</h1>
         </header>
-        <div className="product-list-mobile-toolbar" aria-hidden="true">
-          <span className="product-list-sidebar-heading">Filter</span>
-          <span className="product-list-sidebar-heading">Sort</span>
+        <div className="product-list-toolbar">
+          <ProductListSidebar productCount={products.nodes.length} />
         </div>
         {products.nodes.length > 0 ? (
           <PaginatedResourceSection<CollectionItemFragment>
@@ -116,6 +133,36 @@ const COLLECTION_ITEM_FRAGMENT = `#graphql
       width
       height
     }
+    fullImage: metafield(namespace: "custom", key: "full") {
+      reference {
+        __typename
+        ... on MediaImage {
+          image {
+            id
+            altText
+            url
+            width
+            height
+          }
+        }
+      }
+    }
+    options {
+      name
+      optionValues {
+        name
+      }
+    }
+    variants(first: 50) {
+      nodes {
+        availableForSale
+        quantityAvailable
+        selectedOptions {
+          name
+          value
+        }
+      }
+    }
     priceRange {
       minVariantPrice {
         ...MoneyCollectionItem
@@ -136,31 +183,27 @@ const CATALOG_QUERY = `#graphql
     $last: Int
     $startCursor: String
     $endCursor: String
-    $sortKey: ProductSortKeys
+    $sortKey: ProductCollectionSortKeys
     $reverse: Boolean
   ) @inContext(country: $country, language: $language) {
-    collections(first: 250) {
-      nodes {
-        handle
-        title
-      }
-    }
-    products(
-      first: $first,
-      last: $last,
-      before: $startCursor,
-      after: $endCursor,
-      sortKey: $sortKey,
-      reverse: $reverse
-    ) {
-      nodes {
-        ...CollectionItem
-      }
-      pageInfo {
-        hasPreviousPage
-        hasNextPage
-        startCursor
-        endCursor
+    collection(handle: "all") {
+      products(
+        first: $first,
+        last: $last,
+        before: $startCursor,
+        after: $endCursor,
+        sortKey: $sortKey,
+        reverse: $reverse
+      ) {
+        nodes {
+          ...CollectionItem
+        }
+        pageInfo {
+          hasPreviousPage
+          hasNextPage
+          startCursor
+          endCursor
+        }
       }
     }
   }
