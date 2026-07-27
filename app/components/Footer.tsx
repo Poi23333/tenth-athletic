@@ -1,4 +1,5 @@
 import {NavLink} from 'react-router';
+import conditionHeat from '~/assets/product/auralite/condition-heat.svg';
 
 type FooterLink = {
   label: string;
@@ -47,6 +48,16 @@ export function Footer() {
               </ul>
             ))}
           </div>
+        </div>
+        <div className="footer-aside" aria-hidden="true">
+          <img
+            className="footer-illustration"
+            src={conditionHeat}
+            alt=""
+            width={128}
+            height={288}
+            decoding="async"
+          />
         </div>
       </div>
       <div className="footer-copyright-bar">

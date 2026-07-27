@@ -301,10 +301,9 @@ body > main {
 }
 
 /* Drawer stacking: page content < overlay/mask < dots (highest).
- * Explicitly lower page chrome — several elements (header, banner,
+ * Explicitly lower page chrome — several elements (banner, footer,
  * copyright) have standing z-indexes above the default overlay. */
 html:has(.overlay.expanded) .region-banner,
-html:has(.overlay.expanded) .header,
 html:has(.overlay.expanded) body > main,
 html:has(.overlay.expanded) .footer,
 html:has(.overlay.expanded) .footer-copyright-bar,
@@ -322,6 +321,26 @@ html:has(.overlay.expanded) .overlay.expanded {
 
 html:has(.overlay.expanded) .global-dot-matrix {
   z-index: 210;
+}
+
+/* Keep the desktop navigation and copyright bar available above branded and
+ * cart drawers. Mobile menu and filter drawers retain their modal chrome. */
+html:has(.overlay.expanded:not(.overlay-mobile):not(.overlay-filter)) .header {
+  z-index: 220;
+}
+
+html:has(.overlay.expanded:not(.overlay-mobile):not(.overlay-filter)) .footer {
+  z-index: auto;
+}
+
+html:has(.overlay.expanded:not(.overlay-mobile):not(.overlay-filter))
+  .footer-illustration {
+  z-index: 205;
+}
+
+html:has(.overlay.expanded:not(.overlay-mobile):not(.overlay-filter))
+  .footer-copyright-bar {
+  z-index: 230;
 }
 
 .drawer-list {
@@ -392,6 +411,15 @@ html:has(.overlay.expanded) .global-dot-matrix {
 .drawer-menu .drawer-list-item {
   border-bottom: 0;
   padding: 0.4rem 0;
+}
+
+.drawer-menu a.drawer-list-item {
+  transition: color 150ms ease;
+}
+
+.drawer-menu a.drawer-list-item:hover,
+.drawer-menu a.drawer-list-item:focus-visible {
+  color: #b3b3b3;
 }
 
 .drawer-menu-shop-all {
@@ -849,7 +877,7 @@ button.header-menu-item.reset.active:focus {
   /* Design @1440: links block ~756px fixed; cactus side grows with viewport */
   --footer-gutter: clamp(2rem, 2.5vw, 3.25rem);
   --footer-links-width: 47.25rem;
-  --footer-illustration-width: clamp(7.5rem, 10.5vw, 9.25rem);
+  --footer-illustration-width: clamp(6.525rem, 9vw, 8.1rem);
   --footer-copyright-height: 1.5rem;
   background: transparent;
   border-top: 0;
@@ -4214,6 +4242,10 @@ aside.aside-brand {
 
 .footer-inner {
   padding-bottom: 1.25rem;
+}
+
+.footer-illustration {
+  bottom: -1.25rem;
 }
 
 .footer-links {
