@@ -46,6 +46,8 @@
 
 :root {
   --aside-width: 31.75rem;
+  /* Shared drawer width: a slightly larger midpoint-based panel. */
+  --drawer-width: 42rem;
   --cart-aside-summary-height-with-discount: 300px;
   --cart-aside-summary-height: 250px;
   --grid-item-width: 355px;
@@ -229,10 +231,10 @@ body > main {
   height: 100vh;
   position: fixed;
   /* Slide with `right`, not transform — transform breaks background-attachment: fixed */
-  right: calc(-1 * min(var(--aside-width), 100vw));
+  right: calc(-1 * min(var(--drawer-width), 100vw));
   top: 0;
   transition: right 200ms ease-in-out;
-  width: min(var(--aside-width), 100vw);
+  width: min(var(--drawer-width), 100vw);
 }
 
 .overlay > aside.aside-brand {
@@ -469,7 +471,7 @@ html:has(.overlay.expanded:not(.overlay-mobile):not(.overlay-filter))
   left: 0;
   position: absolute;
   top: 0;
-  width: calc(100% - min(var(--aside-width), 100vw));
+  width: calc(100% - min(var(--drawer-width), 100vw));
 }
 
 .overlay .light {
@@ -776,7 +778,7 @@ button.header-menu-item.reset {
   cursor: pointer;
   display: inline-flex;
   font-family: var(--font-display);
-  font-size: 0.875rem;
+  font-size: 1.1rem;
   font-weight: 400;
   height: auto;
   letter-spacing: 0;
@@ -1640,11 +1642,17 @@ body > main:has(.home) {
   flex-direction: column;
   gap: var(--gutter-desktop);
   margin: 0 auto;
-  max-width: var(--page-max-width);
+  /*max-width: var(--page-max-width);*/
   min-height: 100vh;
-  padding: var(--section-gap) var(--page-gutter);
+  padding: var(--section-gap) clamp(2rem, 2.5vw, 3.25rem);
   position: relative;
   width: 100%;
+}
+
+@media (max-width: 42em) {
+  .product-list-page {
+    padding-inline: var(--page-gutter);
+  }
 }
 
 .product-list-toolbar {
@@ -1668,12 +1676,12 @@ body > main:has(.home) {
 }
 
 .overlay-filter > aside {
-  right: calc(-1 * min(50vw, 42rem));
-  width: min(50vw, 42rem);
+  right: calc(-1 * min(var(--drawer-width), 100vw));
+  width: min(var(--drawer-width), 100vw);
 }
 
 .overlay-filter .close-outside {
-  width: calc(100% - min(50vw, 42rem));
+  width: calc(100% - min(var(--drawer-width), 100vw));
 }
 
 .overlay-filter > aside > header {
@@ -1845,12 +1853,12 @@ body > main:has(.home) {
 
 @media (max-width: 47.99em) {
   .overlay-filter > aside {
-    right: -100vw;
-    width: 100vw;
+    right: calc(-1 * min(var(--drawer-width), 100vw));
+    width: min(var(--drawer-width), 100vw);
   }
 
   .overlay-filter .close-outside {
-    width: 0;
+    width: calc(100% - min(var(--drawer-width), 100vw));
   }
 
   .filter-drawer-actions {
@@ -3258,12 +3266,12 @@ aside.aside-brand {
 
 /* Cart drawer — brand layout from the supplied UI reference. */
 .overlay-cart > aside {
-  right: calc(-1 * min(46vw, 46rem));
-  width: min(46vw, 46rem);
+  right: calc(-1 * min(var(--drawer-width), 100vw));
+  width: min(var(--drawer-width), 100vw);
 }
 
 .overlay-cart .close-outside {
-  width: calc(100% - min(46vw, 46rem));
+  width: calc(100% - min(var(--drawer-width), 100vw));
 }
 
 .overlay-cart .aside-brand-main {
@@ -3533,12 +3541,12 @@ aside.aside-brand {
   }
 
   .overlay-cart > aside {
-    right: -100vw;
-    width: 100vw;
+    right: calc(-1 * min(var(--drawer-width), 100vw));
+    width: min(var(--drawer-width), 100vw);
   }
 
   .overlay-cart .close-outside {
-    width: 0;
+    width: calc(100% - min(var(--drawer-width), 100vw));
   }
 
   .overlay-cart .aside-brand-main {

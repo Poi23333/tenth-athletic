@@ -77,7 +77,7 @@ export function HeaderMenu({
       const firstItem = nav?.querySelector<HTMLElement>('.header-menu-item');
       if (!firstItem) return;
 
-      // Match header nav span, then widen slightly so the drawer isn't flush to UK/GBP.
+      // Keep product-side panels aligned with the header nav span.
       const navSpan = Math.round(
         window.innerWidth - firstItem.getBoundingClientRect().left,
       );
