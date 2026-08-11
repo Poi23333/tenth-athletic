@@ -5,6 +5,7 @@ import {
   Money,
   type OptimisticCartLine,
 } from '@shopify/hydrogen';
+import {RiBookmarkLine} from '@remixicon/react';
 import {useVariantUrl} from '~/lib/variants';
 import {Link, useFetcher} from 'react-router';
 import {useEffect, useState} from 'react';
@@ -88,13 +89,23 @@ export function CartLineItem({
                 </div>
               ))}
             </dl>
+          </div>
 
-            <div className="cart-line-purchase-row">
-              <div className="cart-line-item-price">
-                <span>{price.currencyCode}</span>
-                <Money data={price} withoutCurrency withoutTrailingZeros />
-              </div>
-              <CartLineQuantity line={line} layout={layout} />
+          <div className="cart-line-purchase-row">
+            <div className="cart-line-item-price">
+              <span>{price.currencyCode}</span>
+              <Money data={price} withoutCurrency withoutTrailingZeros />
+            </div>
+            <CartLineQuantity line={line} layout={layout} />
+            <div className="cart-line-secondary-actions">
+              <CartLineRemoveButton
+                lineIds={[id]}
+                disabled={!!line.isOptimistic}
+              />
+              <RiBookmarkLine
+                aria-hidden="true"
+                className="cart-line-bookmark"
+              />
             </div>
           </div>
         </div>

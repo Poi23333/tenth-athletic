@@ -1,4 +1,5 @@
 import {useOptimisticCart} from '@shopify/hydrogen';
+import {RiCloseLine} from '@remixicon/react';
 import {Link} from 'react-router';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
@@ -48,6 +49,9 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
 
   return (
     <div className={className}>
+      {layout === 'aside' ? (
+        <CartDrawerHeader totalQuantity={cart?.totalQuantity ?? 0} />
+      ) : null}
       <CartEmpty hidden={linesCount} layout={layout} />
       <div className="cart-details">
         <p id="cart-lines" className="sr-only">
@@ -74,6 +78,26 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
         {cartHasItems && <CartSummary cart={cart} layout={layout} />}
       </div>
     </div>
+  );
+}
+
+function CartDrawerHeader({totalQuantity}: {totalQuantity: number}) {
+  const {close} = useAside();
+
+  return (
+    <header className="cart-drawer-header">
+      <h2>
+        Bag<span>({totalQuantity})</span>
+      </h2>
+      <button
+        aria-label="Close cart"
+        className="cart-drawer-close"
+        onClick={close}
+        type="button"
+      >
+        <RiCloseLine aria-hidden="true" />
+      </button>
+    </header>
   );
 }
 

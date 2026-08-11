@@ -87,3 +87,139 @@ The primary product image differs from the reference because the storefront inte
 - Focused region comparison: no crop or distortion was introduced; the current first image remains fully visible and centered in the fixed stage.
 
 final result: passed
+
+---
+
+# Cart Drawer Design QA
+
+## Validation context
+
+- Source visual truth: `/var/folders/70/_1w6gjb95wg58934fw0p_tvr0000gn/T/codex-clipboard-fa562593-b52f-4504-b00a-f6a4c0a694d6.png`.
+- Desktop implementation evidence: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/cart-drawer-final-target.png`.
+- Summary implementation evidence: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/cart-drawer-final-summary.png`.
+- Mobile implementation evidence: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/cart-drawer-mobile.png`.
+- Full top-region comparison: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/comparison-top.png`.
+- Focused summary comparison: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/comparison-summary.png`.
+- Source pixels: 770×1664 at 1× density. The implementation intentionally retains the existing 42rem drawer width, which measures 672×1664 CSS px in the 1440×1664 desktop validation viewport.
+- Browser screenshot evidence is 1× PNG. The in-app browser capture surface returns the first 1278 px of the 1664 px CSS viewport, so the top region and bottom summary were captured separately and compared at native density without stretching either drawer.
+- State: Bag(3), three distinct Shopify cart lines, GBP locale, drawer open, no focused control.
+
+## Full-view comparison evidence
+
+- `comparison-top.png` places the 770 px source beside the retained 672 px implementation at the same 1194 px vertical crop. After accounting for the explicit width constraint, the normalized header, image, information, price, quantity, Remove, bookmark, and three-row positions align.
+- At the 1664 px CSS viewport, the implementation summary rule starts at 1193.6 px versus 1195 px in the source. The third product ends at 922.7 px versus approximately 906 px in the source, leaving the intended open whitespace before the summary.
+- The implementation uses the project Avenir files, the existing black/white tokens, live Shopify product imagery, and the real cart total/currency rather than substituting screenshot content.
+
+## Focused region comparison
+
+- `comparison-summary.png` compares the complete 470 px source summary with the 458 px implementation summary aligned to their top rules. Packaging copy, delivery copy, tax copy, Total, the 92 px Checkout action, and the centered View your basket link follow the same hierarchy and spacing.
+- The source and implementation use different product names, images, prices, and totals because the implementation renders live Shopify cart data. This is an intentional content/data difference, not a layout mismatch.
+- No additional focused crop was needed for the header or product controls because all typography and icons are legible at native size in `comparison-top.png`.
+
+## Required fidelity surfaces
+
+- Fonts and typography: Avenir is used throughout; title, metadata, option labels, prices, actions, and summary weights and line heights match the reference hierarchy. No unexpected truncation is present.
+- Spacing and layout rhythm: the existing 42rem drawer width is unchanged. Header top/side offsets, product row intervals, summary rule, checkout height, and bottom-link placement match the reference after width normalization.
+- Colors and tokens: the drawer uses the existing white canvas, shared global dot-matrix layer, and black/secondary text tokens with no added cart-specific gradients, radii, shadows, or fallback colors.
+- Image quality and assets: live Shopify images render through Hydrogen `Image` with contain sizing. The close and `bookmark_line` assets come from Remix Icon; no handcrafted SVG, CSS drawing, glyph substitution, or placeholder is used.
+- Copy and content: Bag count, option labels, packaging statement, delivery estimate, tax text, Total, Checkout, and View your basket match the requested structure. Product-specific copy and money remain data-driven.
+
+## Interaction, responsiveness, and console checks
+
+- Desktop open/close, quantity increase/decrease, Remove, cart-count updates, and internal list scrolling were exercised successfully. The two temporary QA cart lines were recreated for final three-line visual evidence, then removed again so the original one-line cart state was restored.
+- The 390×844 mobile state measures 390 px for both document and drawer width, with no horizontal overflow. Actions reflow below product information and the line-items region scrolls independently above the fixed summary.
+- Checkout and View your basket expose the correct live links. Checkout was not followed because that would leave the local storefront for Shopify checkout.
+- Fresh development loads still log the project's existing root-level React hydration/Suspense warnings. No console error references the cart drawer components or the Remix Icon components.
+
+## Comparison history
+
+1. Earlier P1: the site header remained above the new cart header because an existing branded-drawer stacking selector had higher specificity. Fix: added a cart-specific stacking rule and removed the cart from the shared site-header close control. Post-fix evidence: `comparison-top.png` shows a clean Bag header with only the internal title and close icon.
+2. Earlier P2: the summary rule began about 44 px too high at the 1664 px target height. Fix: reduced the packaging-to-delivery gap and summary bottom padding. Post-fix measurements are 1193.6 px for the rule versus 1195 px in the source, 1499 px for Checkout top versus 1500 px, and 1591 px for Checkout bottom versus 1592 px.
+3. Post-fix visual comparison found no actionable P0, P1, or P2 differences. Remaining product-image scale variation is determined by each Shopify asset's intrinsic transparent whitespace and is acceptable data-specific behavior.
+
+## Engineering checks
+
+- `pnpm typecheck`: passed.
+- Targeted ESLint for CartMain, CartLineItem, CartSummary, and Header: passed.
+- `pnpm build`: passed.
+- `git diff --check`: passed.
+
+final result: passed
+
+---
+
+# Cart Drawer Follow-up Design QA
+
+## Validation context
+
+- Source visual truth for the retained treatment: the live Man drawer at `http://localhost:3080`, captured in `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/other-drawer-dot-reference.png`.
+- Updated desktop implementation: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/cart-drawer-followup-current.png`.
+- Updated mobile implementation: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/cart-drawer-followup-mobile.png`.
+- Combined comparison input: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/followup-dot-matrix-comparison.png`.
+- Desktop source and implementation captures are 1280×720 px at 1× density and the same open-drawer interaction state. Mobile is 390×844 px at 1× density.
+
+## Full-view and focused comparison evidence
+
+- The combined comparison shows the existing global dot matrix at the same pitch, size, blend mode, and stacking position over both the reference drawer and the updated Bag drawer.
+- The Bag drawer remains 672 px wide (`42rem`) in the 1280 px desktop viewport.
+- The updated desktop header measures 100 px high with 32 px top and bottom padding. The 28 px title and 36 px close target are vertically centered and aligned to the same horizontal gutter.
+- At 390×844, the title starts 24 px from the top, the close control stays in the matching top-right position, the drawer occupies exactly 390 px, and no horizontal overflow is visible.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the existing Avenir hierarchy, weights, and title/count sizing are unchanged.
+- Spacing and layout rhythm: the excessive desktop header height was removed without changing the drawer width or cart content geometry; mobile header padding was tightened proportionally.
+- Colors and visual tokens: the existing global black-on-white dot-matrix treatment is restored instead of introducing a cart-specific approximation.
+- Image quality and assets: product imagery and Remix Icon close/bookmark assets are unchanged and remain sharp at both tested densities.
+- Copy and content: all live cart copy, price, quantity, Remove, total, and action labels remain data-driven and unchanged.
+
+## Comparison history
+
+1. User-reported P2: the first cart pass suppressed the global dot matrix that other drawers retain. Fix: removed only the cart-specific dot-matrix stacking override, allowing the shared `z-index: 210` layer to remain visible. Post-fix evidence: the combined comparison shows identical dot placement in both drawer states.
+2. User-reported P2: the Bag header had too much vertical space above the title and an unbalanced overall height. Fix: reduced desktop padding to `clamp(2rem, 3.25vh, 3.25rem)` above and `clamp(2rem, 3vh, 3rem)` below; mobile now uses 24 px above and 32 px below. Post-fix evidence: the desktop header is 100 px at 1280×720 and the mobile header is visibly compact without crowding either control.
+3. Post-fix visual comparison found no actionable P0, P1, or P2 differences for this follow-up scope.
+
+## Interaction and engineering checks
+
+- Bag open/close was exercised on desktop; the mobile menu-to-Bag path was exercised at 390×844.
+- The existing development console still reports the project-level root hydration mismatch and background-video power-saving warning documented above. No new error references the cart drawer or these CSS changes.
+- `pnpm typecheck`: passed.
+- `pnpm build`: passed.
+- `git diff --check`: passed.
+
+final result: passed
+
+---
+
+# Cart Drawer Title Width Follow-up QA
+
+## Validation context
+
+- Reported source screenshot: `/var/folders/70/_1w6gjb95wg58934fw0p_tvr0000gn/T/codex-clipboard-60e8fee5-afa7-40e4-b0a4-f4e188fa9ea4.png` (1076×2048 px).
+- Desktop implementation screenshot: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/cart-title-nowrap-desktop.png` (1280×720 px at 1× density, 672 px drawer).
+- Mobile implementation screenshot: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/cart-title-layout-mobile.png` (390×844 px at 1× density).
+- Combined focused comparison: `/Users/poi/Workspace/shopify/tenth_athletic/outputs/cart-drawer/cart-title-width-comparison.png`.
+- State: Bag open with the live `MAAP Pink Wave Cycling Jersey` line at size XS for the desktop measurement; original one-line AuraLite cart state restored after capture.
+
+## Findings and comparison history
+
+1. User-reported P2: the three-column desktop grid reserved a `max-content` track for price, quantity, Remove, and bookmark, shrinking the product-information track enough to wrap the 227 px title while unused drawer width remained visible.
+2. Fix: changed the item grid to image plus one flexible content column. The purchase controls now occupy the second row of that same content column, align right on desktop, and align left at the mobile breakpoint. The product image spans both rows so the item does not become unnecessarily taller.
+3. Post-fix evidence: at the unchanged 672 px drawer width, the information track measures 403.2 px and the 227 px product-title link renders in one 16.8 px line. The actions remain fully visible at 403.2 px wide and right-aligned.
+4. Mobile regression evidence: at 390×844, the document and drawer both measure 390 px, the content track is 230.6 px, actions reflow to two rows as intended, and no horizontal overflow is present.
+
+## Required fidelity surfaces
+
+- Fonts and typography: font family, size, weight, and line height are unchanged; only available inline width was corrected.
+- Spacing and layout rhythm: drawer width and outer gutters are unchanged. The image spans the information and action rows to retain compact item height.
+- Colors and visual tokens: unchanged, including the restored global dot matrix.
+- Image quality and assets: product image sizing and Remix Icon bookmark asset are unchanged.
+- Copy and content: all product, variant, price, quantity, Remove, and summary content remains data-driven.
+
+## Engineering checks
+
+- `pnpm typecheck`: passed.
+- `pnpm build`: passed.
+- `git diff --check`: passed.
+
+final result: passed

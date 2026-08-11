@@ -2,7 +2,8 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {CartLayout} from '~/components/CartMain';
 import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
 import {useEffect, useRef} from 'react';
-import {useFetcher} from 'react-router';
+import {Link, useFetcher} from 'react-router';
+import {useAside} from './Aside';
 
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
@@ -16,8 +17,22 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
   if (layout === 'aside') {
     return (
       <div aria-labelledby="cart-summary" className={className}>
+        <div className="cart-packaging-copy">
+          <p>
+            Every TENTH order is packed in durable, reusable packaging designed
+            for delivery and returns. Sending it to someone else? Add a personal
+            note at checkout.
+          </p>
+        </div>
+        <div className="cart-delivery-copy">
+          <p>
+            Est Delivery Time: For Express delivery: 1–3 working days. For
+            Standard delivery: 3–5 working days.
+          </p>
+          <p>Tax included. Shipping calculated at checkout.</p>
+        </div>
         <dl className="cart-total">
-          <dt id="cart-summary">Total:</dt>
+          <dt id="cart-summary">Total</dt>
           <dd>
             {cart?.cost?.totalAmount?.amount ? (
               <Money data={cart.cost.totalAmount} />
@@ -26,14 +41,8 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
             )}
           </dd>
         </dl>
-        <div className="cart-delivery-copy">
-          <p>
-            Est Delivery Time: For Express delivery: 1–3 working days. For
-            Standard delivery: 3–5 working days.
-          </p>
-          <p>Tax included. Shipping calculated at checkout.</p>
-        </div>
         <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} />
+        <CartViewBasket />
       </div>
     );
   }
@@ -57,12 +66,22 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
   );
 }
 
+function CartViewBasket() {
+  const {close} = useAside();
+
+  return (
+    <Link className="cart-view-basket" onClick={close} to="/cart">
+      View your basket
+    </Link>
+  );
+}
+
 function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
   if (!checkoutUrl) return null;
 
   return (
     <a className="cart-checkout-button" href={checkoutUrl} target="_self">
-      Checkout
+      <span style={{marginTop: '-20px'}}>Checkout</span>
     </a>
   );
 }
