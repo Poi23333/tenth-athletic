@@ -4,9 +4,12 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import type {RegionId} from '~/data/regions';
+
+const DRAWER_TRANSITION_MS = 300;
 
 type AsideType =
   | 'cart'
@@ -51,6 +54,34 @@ export function Aside({
   const {type: activeType, close} = useAside();
   const expanded = type === activeType;
   const isBrand = chrome === 'brand';
+  const [renderedOpen, setRenderedOpen] = useState(expanded);
+  const opening = expanded && !renderedOpen;
+  const closing = !expanded && renderedOpen;
+  const transitionFrameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (expanded) {
+      if (renderedOpen) return;
+
+      transitionFrameRef.current = window.requestAnimationFrame(() => {
+        setRenderedOpen(true);
+      });
+
+      return () => {
+        if (transitionFrameRef.current !== null) {
+          window.cancelAnimationFrame(transitionFrameRef.current);
+        }
+      };
+    }
+
+    if (!renderedOpen) return;
+
+    const timeout = window.setTimeout(() => {
+      setRenderedOpen(false);
+    }, DRAWER_TRANSITION_MS);
+
+    return () => window.clearTimeout(timeout);
+  }, [expanded, renderedOpen]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -72,11 +103,20 @@ export function Aside({
   return (
     <div
       aria-modal
-      className={`overlay overlay-${type} ${expanded ? 'expanded' : ''}`}
+      aria-hidden={!expanded}
+      className={`overlay overlay-${type}${
+        opening
+          ? ' opening'
+          : expanded
+            ? ' expanded'
+            : closing
+              ? ' closing'
+              : ''
+      }`}
       data-aside-type={type}
       role="dialog"
     >
-      <button className="close-outside" onClick={close} />
+      <button className="close-outside" disabled={!expanded} onClick={close} />
       <aside
         className={isBrand ? 'aside-brand' : undefined}
         aria-label={typeof heading === 'string' ? heading : undefined}

@@ -1,11 +1,12 @@
-import {useLoaderData, data, type HeadersFunction} from 'react-router';
+import {Link, useLoaderData, data, type HeadersFunction} from 'react-router';
 import type {Route} from './+types/cart';
 import type {CartQueryDataReturn} from '@shopify/hydrogen';
 import {CartForm} from '@shopify/hydrogen';
 import {CartMain} from '~/components/CartMain';
+import brandLogo from '~/assets/logo.svg';
 
 export const meta: Route.MetaFunction = () => {
-  return [{title: `Hydrogen | Cart`}];
+  return [{title: `Basket | Tenth Athletic`}];
 };
 
 export const headers: HeadersFunction = ({actionHeaders}) => actionHeaders;
@@ -105,9 +106,86 @@ export default function Cart() {
   const cart = useLoaderData<typeof loader>();
 
   return (
-    <div className="cart">
-      <h1>Cart</h1>
-      <CartMain layout="page" cart={cart} />
+    <div className="cart-page">
+      <header className="cart-page-header">
+        <Link to="/" aria-label="Tenth Athletic home">
+          <img src={brandLogo} alt="Tenth Athletic" />
+        </Link>
+        <ol className="cart-checkout-progress" aria-label="Checkout progress">
+          <li aria-current="step">
+            <span>1</span> Basket
+          </li>
+          <li>
+            <span>2</span> Details
+          </li>
+          <li>
+            <span>3</span> Shipping
+          </li>
+          <li>
+            <span>4</span> Payment
+          </li>
+        </ol>
+      </header>
+      <div className="cart-page-grid">
+        <CartMain layout="page" cart={cart} />
+        <CartSupport />
+      </div>
     </div>
+  );
+}
+
+function CartSupport() {
+  return (
+    <aside className="cart-support" aria-labelledby="cart-support-title">
+      <div className="cart-support-contact">
+        <h2 id="cart-support-title">Support for the miles ahead →</h2>
+        <p>
+          <strong>Need Help?</strong>
+        </p>
+        <a href="mailto:clientservices@tenthathletic.com">
+          Clientservices@tenthathletic.com
+        </a>
+        <h3>UK delivery &amp; returns</h3>
+        <p>Free standard delivery on UK orders over £150.</p>
+        <p>Free returns on all UK orders.</p>
+      </div>
+      <SupportItem
+        image="/images/cart/returns-30-days.svg"
+        title="30-Day Returns"
+      >
+        Free within the UK. International return shipping applies.
+      </SupportItem>
+      <SupportItem
+        image="/images/cart/complimentary-delivery.svg"
+        title="Complimentary UK Delivery"
+      >
+        On orders over £150. International shipping is calculated at checkout.
+      </SupportItem>
+      <SupportItem
+        image="/images/cart/distance-programme.svg"
+        title="Back to Distance Programme"
+      >
+        Damaged your equipment in an accident? We&apos;ll help get you back out
+        there.
+      </SupportItem>
+    </aside>
+  );
+}
+
+function SupportItem({
+  image,
+  title,
+  children,
+}: {
+  image: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="cart-support-item">
+      <img src={image} alt="" aria-hidden="true" />
+      <h3>{title}</h3>
+      <p>{children}</p>
+    </section>
   );
 }

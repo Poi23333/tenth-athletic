@@ -49,21 +49,40 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
 
   return (
     <div aria-labelledby="cart-summary" className={className}>
-      <dl className="cart-subtotal">
-        <dt id="cart-summary">Subtotal</dt>
+      <dl className="cart-cost-breakdown">
+        <div>
+          <dt id="cart-summary">Subtotal</dt>
+          <dd><CartMoney cart={cart} /></dd>
+        </div>
+        <div>
+          <dt>Tax &amp; duty</dt>
+          <dd>Included</dd>
+        </div>
+        <div>
+          <dt>Shipping</dt>
+          <dd>Calculated at checkout</dd>
+        </div>
+      </dl>
+      <dl className="cart-page-total">
+        <dt>Total</dt>
         <dd>
-          {cart?.cost?.subtotalAmount?.amount ? (
-            <Money data={cart?.cost?.subtotalAmount} />
-          ) : (
-            '-'
-          )}
+          <CartMoney cart={cart} total />
         </dd>
       </dl>
-      <CartDiscounts discountCodes={cart?.discountCodes} />
-      <CartGiftCard giftCardCodes={cart?.appliedGiftCards} />
       <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} />
     </div>
   );
+}
+
+function CartMoney({
+  cart,
+  total = false,
+}: {
+  cart: OptimisticCart<CartApiQueryFragment | null>;
+  total?: boolean;
+}) {
+  const money = total ? cart?.cost?.totalAmount : cart?.cost?.subtotalAmount;
+  return money?.amount ? <Money data={money} /> : '-';
 }
 
 function CartViewBasket() {
@@ -81,7 +100,7 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
 
   return (
     <a className="cart-checkout-button" href={checkoutUrl} target="_self">
-      <span style={{marginTop: '-20px'}}>Checkout</span>
+      <span>Checkout</span>
     </a>
   );
 }

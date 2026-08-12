@@ -181,6 +181,7 @@ export default function Product() {
   const {title, descriptionHtml} = product;
   const heroImages = product.images.nodes;
   const productTheme = getProductTheme(product.mainColor?.value);
+  const productFooterMainColor = normalizeHexColor(product.mainColor?.value);
 
   useEffect(() => {
     function updatePurchasePanel() {
@@ -311,6 +312,7 @@ export default function Product() {
         --product-main-color-rgb: ${productTheme.mainRgb};
         --product-controls-color-rgb: ${productTheme.controlsRgb};
         --product-light-color-rgb: ${productTheme.lightRgb};
+        ${productFooterMainColor ? `--product-footer-main-color: ${productFooterMainColor};` : ''}
       }`}</style>
       <h1 className="sr-only">{title}</h1>
       <section
@@ -648,9 +650,9 @@ function getProductTheme(value: string | null | undefined) {
 }
 
 function parseHexColor(value: string | null | undefined) {
-  const normalizedValue = value?.trim();
+  const normalizedValue = normalizeHexColor(value);
 
-  if (!normalizedValue || !/^#[\da-f]{6}$/i.test(normalizedValue)) {
+  if (!normalizedValue) {
     return null;
   }
 
@@ -659,6 +661,14 @@ function parseHexColor(value: string | null | undefined) {
     Number.parseInt(normalizedValue.slice(3, 5), 16),
     Number.parseInt(normalizedValue.slice(5, 7), 16),
   ];
+}
+
+function normalizeHexColor(value: string | null | undefined) {
+  const normalizedValue = value?.trim();
+
+  return normalizedValue && /^#[\da-f]{6}$/i.test(normalizedValue)
+    ? normalizedValue
+    : null;
 }
 
 function ProductInformationAccordion({

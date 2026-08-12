@@ -22,6 +22,9 @@ import {
   type Region,
 } from '~/data/regions';
 
+const DEFAULT_FOOTER_MAIN_COLOR = '#554d48';
+const CSS_HEX_COLOR_PATTERN = /^#(?:[\da-f]{3}|[\da-f]{6}|[\da-f]{8})$/i;
+
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
   header: HeaderQuery;
@@ -43,6 +46,12 @@ export function PageLayout({
   currentRegion,
   geoBanner,
 }: PageLayoutProps) {
+  const shopMainColor = header.globalMainColor?.color?.value?.trim();
+  const footerMainColor =
+    shopMainColor && CSS_HEX_COLOR_PATTERN.test(shopMainColor)
+      ? shopMainColor
+      : DEFAULT_FOOTER_MAIN_COLOR;
+
   return (
     <Aside.Provider>
       <CartAside cart={cart} />
@@ -84,7 +93,7 @@ export function PageLayout({
         />
       )}
       <main>{children}</main>
-      <Footer />
+      <Footer mainColor={footerMainColor} />
       <CookieConsent />
     </Aside.Provider>
   );

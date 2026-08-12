@@ -334,6 +334,9 @@ export type HeaderQuery = {
       }>;
     }>;
   };
+  globalMainColor?: StorefrontAPI.Maybe<{
+    color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  }>;
   shopMenu?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Menu, 'id'> & {
       items: Array<
@@ -412,6 +415,186 @@ export type StoreRobotsQueryVariables = StorefrontAPI.Exact<{
 }>;
 
 export type StoreRobotsQuery = {shop: Pick<StorefrontAPI.Shop, 'id'>};
+
+export type HomepageCurrentReleaseQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+  first: StorefrontAPI.Scalars['Int']['input'];
+}>;
+
+export type HomepageCurrentReleaseQuery = {
+  banners: {
+    nodes: Array<
+      Pick<StorefrontAPI.Metaobject, 'id'> & {
+        backgroundImage?: StorefrontAPI.Maybe<{
+          reference?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Collection'
+                  | 'GenericFile'
+                  | 'Metaobject'
+                  | 'Model3d'
+                  | 'Page'
+                  | 'Product'
+                  | 'ProductVariant'
+                  | 'Video';
+              }
+            | ({__typename: 'MediaImage'} & {
+                image?: StorefrontAPI.Maybe<
+                  Pick<
+                    StorefrontAPI.Image,
+                    'altText' | 'height' | 'url' | 'width'
+                  >
+                >;
+              })
+          >;
+        }>;
+        mobileImage?: StorefrontAPI.Maybe<{
+          reference?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Collection'
+                  | 'GenericFile'
+                  | 'Metaobject'
+                  | 'Model3d'
+                  | 'Page'
+                  | 'Product'
+                  | 'ProductVariant'
+                  | 'Video';
+              }
+            | ({__typename: 'MediaImage'} & {
+                image?: StorefrontAPI.Maybe<
+                  Pick<
+                    StorefrontAPI.Image,
+                    'altText' | 'height' | 'url' | 'width'
+                  >
+                >;
+              })
+          >;
+        }>;
+        logoFile?: StorefrontAPI.Maybe<{
+          reference?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Collection'
+                  | 'Metaobject'
+                  | 'Model3d'
+                  | 'Page'
+                  | 'Product'
+                  | 'ProductVariant'
+                  | 'Video';
+              }
+            | ({__typename: 'GenericFile'} & Pick<
+                StorefrontAPI.GenericFile,
+                'alt' | 'mimeType' | 'url'
+              >)
+            | ({__typename: 'MediaImage'} & {
+                image?: StorefrontAPI.Maybe<
+                  Pick<StorefrontAPI.Image, 'altText' | 'url'>
+                >;
+              })
+          >;
+        }>;
+        logoText?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        slogan?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        buttonText?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        buttonLink?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        sortOrder?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+      }
+    >;
+  };
+  categories: {
+    nodes: Array<
+      Pick<StorefrontAPI.Metaobject, 'id'> & {
+        image?: StorefrontAPI.Maybe<{
+          reference?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Collection'
+                  | 'GenericFile'
+                  | 'Metaobject'
+                  | 'Model3d'
+                  | 'Page'
+                  | 'Product'
+                  | 'ProductVariant'
+                  | 'Video';
+              }
+            | ({__typename: 'MediaImage'} & {
+                image?: StorefrontAPI.Maybe<
+                  Pick<
+                    StorefrontAPI.Image,
+                    'altText' | 'height' | 'url' | 'width'
+                  >
+                >;
+              })
+          >;
+        }>;
+        label?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        link?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        sortOrder?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+      }
+    >;
+  };
+  products: {
+    nodes: Array<
+      Pick<StorefrontAPI.Product, 'id' | 'handle' | 'title'> & {
+        featuredImage?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.Image, 'altText' | 'url' | 'width' | 'height'>
+        >;
+        fullImage?: StorefrontAPI.Maybe<{
+          reference?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Collection'
+                  | 'GenericFile'
+                  | 'Metaobject'
+                  | 'Model3d'
+                  | 'Page'
+                  | 'Product'
+                  | 'ProductVariant'
+                  | 'Video';
+              }
+            | ({__typename: 'MediaImage'} & {
+                image?: StorefrontAPI.Maybe<
+                  Pick<
+                    StorefrontAPI.Image,
+                    'altText' | 'url' | 'width' | 'height'
+                  >
+                >;
+              })
+          >;
+        }>;
+        priceRange: {
+          minVariantPrice: Pick<
+            StorefrontAPI.MoneyV2,
+            'amount' | 'currencyCode'
+          >;
+        };
+      }
+    >;
+  };
+};
 
 export type ArticleQueryVariables = StorefrontAPI.Exact<{
   articleHandle: StorefrontAPI.Scalars['String']['input'];
@@ -1447,7 +1630,7 @@ export type ProductMerchandisingQuery = {
 };
 
 interface GeneratedQueryTypes {
-  '#graphql\n  fragment Shop on Shop {\n    id\n    name\n    description\n    primaryDomain {\n      url\n    }\n    brand {\n      logo {\n        image {\n          url\n        }\n      }\n    }\n  }\n  query Header(\n    $country: CountryCode\n    $language: LanguageCode\n    $shopMenuHandle: String!\n    $manMenuHandle: String!\n    $womanMenuHandle: String!\n  ) @inContext(language: $language, country: $country) {\n    shop {\n      ...Shop\n    }\n    shopMenu: menu(handle: $shopMenuHandle) {\n      ...Menu\n    }\n    manMenu: menu(handle: $manMenuHandle) {\n      ...Menu\n    }\n    womanMenu: menu(handle: $womanMenuHandle) {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
+  '#graphql\n  fragment Shop on Shop {\n    id\n    name\n    description\n    primaryDomain {\n      url\n    }\n    brand {\n      logo {\n        image {\n          url\n        }\n      }\n    }\n  }\n  query Header(\n    $country: CountryCode\n    $language: LanguageCode\n    $shopMenuHandle: String!\n    $manMenuHandle: String!\n    $womanMenuHandle: String!\n  ) @inContext(language: $language, country: $country) {\n    shop {\n      ...Shop\n    }\n    globalMainColor: metaobject(\n      handle: {type: "main_color", handle: "global"}\n    ) {\n      color: field(key: "color") {\n        value\n      }\n    }\n    shopMenu: menu(handle: $shopMenuHandle) {\n      ...Menu\n    }\n    manMenu: menu(handle: $manMenuHandle) {\n      ...Menu\n    }\n    womanMenu: menu(handle: $womanMenuHandle) {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
     return: HeaderQuery;
     variables: HeaderQueryVariables;
   };
@@ -1458,6 +1641,10 @@ interface GeneratedQueryTypes {
   '#graphql\n  query StoreRobots($country: CountryCode, $language: LanguageCode)\n   @inContext(country: $country, language: $language) {\n    shop {\n      id\n    }\n  }\n': {
     return: StoreRobotsQuery;
     variables: StoreRobotsQueryVariables;
+  };
+  '#graphql\n  query HomepageCurrentRelease(\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int!\n  ) @inContext(country: $country, language: $language) {\n    banners: metaobjects(type: "homepage_banner", first: 20) {\n      nodes {\n        id\n        backgroundImage: field(key: "image") {\n          reference {\n            __typename\n            ... on MediaImage {\n              image {\n                altText\n                height\n                url\n                width\n              }\n            }\n          }\n        }\n        mobileImage: field(key: "mobile_image") {\n          reference {\n            __typename\n            ... on MediaImage {\n              image {\n                altText\n                height\n                url\n                width\n              }\n            }\n          }\n        }\n        logoFile: field(key: "logo_file") {\n          reference {\n            __typename\n            ... on GenericFile {\n              alt\n              mimeType\n              url\n            }\n            ... on MediaImage {\n              image {\n                altText\n                url\n              }\n            }\n          }\n        }\n        logoText: field(key: "logo_text") {\n          value\n        }\n        slogan: field(key: "slogan") {\n          value\n        }\n        buttonText: field(key: "button_text") {\n          value\n        }\n        buttonLink: field(key: "button_link") {\n          value\n        }\n        sortOrder: field(key: "sort_order") {\n          value\n        }\n      }\n    }\n    categories: metaobjects(type: "homepage_category", first: 10) {\n      nodes {\n        id\n        image: field(key: "image") {\n          reference {\n            __typename\n            ... on MediaImage {\n              image {\n                altText\n                height\n                url\n                width\n              }\n            }\n          }\n        }\n        label: field(key: "label") {\n          value\n        }\n        link: field(key: "link") {\n          value\n        }\n        sortOrder: field(key: "sort_order") {\n          value\n        }\n      }\n    }\n    products(first: $first, sortKey: CREATED_AT, reverse: true) {\n      nodes {\n        id\n        handle\n        title\n        featuredImage {\n          altText\n          url\n          width\n          height\n        }\n        fullImage: metafield(namespace: "custom", key: "full") {\n          reference {\n            __typename\n            ... on MediaImage {\n              image {\n                altText\n                url\n                width\n                height\n              }\n            }\n          }\n        }\n        priceRange {\n          minVariantPrice {\n            amount\n            currencyCode\n          }\n        }\n      }\n    }\n  }\n': {
+    return: HomepageCurrentReleaseQuery;
+    variables: HomepageCurrentReleaseQueryVariables;
   };
   '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n      }\n    }\n  }\n': {
     return: ArticleQuery;

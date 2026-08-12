@@ -68,6 +68,22 @@ export function HeaderMenu({
   const routeGender = useRouteGender();
   const manActive = type === 'man' || routeGender === 'man';
   const womanActive = type === 'woman' || routeGender === 'woman';
+  const hasSharedHeaderDrawer =
+    viewport === 'desktop' &&
+    (type === 'shop' ||
+      type === 'man' ||
+      type === 'woman' ||
+      type === 'field-index' ||
+      type === 'locale');
+
+  function toggleAside(nextType: 'locale' | 'man' | 'woman' | 'field-index') {
+    if (type === nextType) {
+      close();
+      return;
+    }
+
+    open(nextType);
+  }
 
   useIsomorphicLayoutEffect(() => {
     if (viewport !== 'desktop') return;
@@ -114,21 +130,21 @@ export function HeaderMenu({
           type === 'locale' ? ' active' : ''
         }`}
         type="button"
-        onClick={() => open('locale')}
+        onClick={() => toggleAside('locale')}
       >
         {formatRegionNavLabel(currentRegion)}
       </button>
       <button
         className={`header-menu-item reset${manActive ? ' active' : ''}`}
         type="button"
-        onClick={() => open('man')}
+        onClick={() => toggleAside('man')}
       >
         Man
       </button>
       <button
         className={`header-menu-item reset${womanActive ? ' active' : ''}`}
         type="button"
-        onClick={() => open('woman')}
+        onClick={() => toggleAside('woman')}
       >
         Woman
       </button>
@@ -138,11 +154,21 @@ export function HeaderMenu({
           type === 'field-index' ? ' active' : ''
         }`}
         type="button"
-        onClick={() => open('field-index')}
+        onClick={() => toggleAside('field-index')}
       >
         Field Index
       </button>
       <BagToggle cart={cart} />
+      {hasSharedHeaderDrawer ? (
+        <button
+          aria-label="Close drawer"
+          className="header-drawer-close reset"
+          onClick={close}
+          type="button"
+        >
+          &times;
+        </button>
+      ) : null}
     </nav>
   );
 }
@@ -252,7 +278,7 @@ function BagToggle({cart}: {cart: Promise<CartApiQueryFragment | null>}) {
 }
 
 function BagBanner({count}: {count: number}) {
-  const {open, type} = useAside();
+  const {close, open, type} = useAside();
   const {publish, shop, cart: analyticsCart, prevCart} = useAnalytics();
   const hasItems = count > 0;
 
@@ -263,6 +289,11 @@ function BagBanner({count}: {count: number}) {
         hasItems ? ' has-items' : ''
       }${type === 'cart' ? ' active' : ''}`}
       onClick={() => {
+        if (type === 'cart') {
+          close();
+          return;
+        }
+
         open('cart');
         publish('cart_viewed', {
           cart: analyticsCart,

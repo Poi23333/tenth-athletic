@@ -29,9 +29,6 @@ export function CartLineItem({
   const {close} = useAside();
   const lineItemChildren = childrenMap[id];
   const childrenLabelId = `cart-line-children-${id}`;
-  const variantLabel = selectedOptions
-    .map((option) => `${option.name}: ${option.value}`)
-    .join(' | ');
   const lineItemChildrenMarkup = lineItemChildren ? (
     <div>
       <p id={childrenLabelId} className="sr-only">
@@ -115,36 +112,50 @@ export function CartLineItem({
   }
 
   return (
-    <li key={id} className="cart-line">
+    <li key={id} className="cart-line cart-line-page">
       <div className="cart-line-inner">
         {image && (
-          <div className="cart-line-image">
-            <Image alt={title} data={image} loading="lazy" sizes="96px" />
-          </div>
+          <Link className="cart-line-image" prefetch="intent" to={lineItemUrl}>
+            <Image alt={title} data={image} loading="lazy" sizes="110px" />
+          </Link>
         )}
 
         <div className="cart-line-details">
-          <div className="cart-line-header">
+          <div className="cart-line-heading">
             <p className="cart-line-title">
               <Link prefetch="intent" to={lineItemUrl}>
                 {product.title}
               </Link>
             </p>
-            {line?.cost?.totalAmount ? (
-              <div className="cart-line-price">
-                <Money data={line.cost.totalAmount} />
-              </div>
-            ) : null}
+            {sku ? <p className="cart-line-sku">{sku}</p> : null}
           </div>
-          {variantLabel ? (
-            <p className="cart-line-variant">{variantLabel}</p>
+          <dl className="cart-line-options">
+            {selectedOptions.map((option) => (
+              <div className="cart-line-option" key={option.name}>
+                <dt>{option.name}</dt>
+                <dd>{option.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <div className="cart-line-purchase-row">
+          {line?.cost?.totalAmount ? (
+            <div className="cart-line-item-price">
+              <span>{line.cost.totalAmount.currencyCode}</span>
+              <Money
+                data={line.cost.totalAmount}
+                withoutCurrency
+                withoutTrailingZeros
+              />
+            </div>
           ) : null}
-          <div className="cart-line-footer">
-            <CartLineQuantity line={line} layout={layout} />
+          <CartLineQuantity line={line} layout={layout} />
+          <div className="cart-line-secondary-actions">
             <CartLineRemoveButton
               lineIds={[id]}
               disabled={!!line.isOptimistic}
             />
+            <RiBookmarkLine aria-hidden="true" className="cart-line-bookmark" />
           </div>
         </div>
       </div>
@@ -214,11 +225,6 @@ function CartLineQuantity({
 
   return (
     <div className="cart-line-quantity-group">
-      <div
-        className={layout === 'aside' ? 'sr-only' : 'cart-line-quantity-label'}
-      >
-        Quantity
-      </div>
       <div className="cart-line-quantity">
         <button
           aria-label="Decrease quantity"

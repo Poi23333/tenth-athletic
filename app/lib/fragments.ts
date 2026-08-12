@@ -225,6 +225,13 @@ export const HEADER_QUERY = `#graphql
     shop {
       ...Shop
     }
+    globalMainColor: metaobject(
+      handle: {type: "main_color", handle: "global"}
+    ) {
+      color: field(key: "color") {
+        value
+      }
+    }
     shopMenu: menu(handle: $shopMenuHandle) {
       ...Menu
     }
