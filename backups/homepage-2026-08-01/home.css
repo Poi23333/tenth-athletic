@@ -1,0 +1,83 @@
+body > main:has(.home) {
+  margin: 0;
+}
+
+.home {
+  background: transparent;
+  color: var(--color-text);
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin: 0 auto;
+  max-width: var(--page-max-width);
+  padding: clamp(1.5rem, 3.5vw, 2.75rem) clamp(2.5rem, 5.5vw, 5rem)
+    clamp(2.5rem, 5.5vw, 5rem);
+  width: 100%;
+}
+
+.home-hero {
+  align-items: start;
+  display: grid;
+  flex: 0 0 auto;
+  gap: clamp(2.5rem, 5vw, 5rem);
+  grid-template-columns: 1fr;
+  width: 100%;
+}
+
+@media (min-width: 48em) {
+  .home-hero {
+    align-items: center;
+    grid-template-columns: minmax(320px, 0.95fr) minmax(280px, 1fr);
+  }
+}
+
+.home-hero-illustration {
+  max-width: 44rem;
+  width: 100%;
+}
+
+.home-hero-illustration img {
+  border-radius: 0;
+  display: block;
+  height: auto;
+  image-rendering: pixelated;
+  width: 100%;
+}
+
+.home-hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  max-width: 36rem;
+  padding-top: 0.25rem;
+}
+
+.home-hero-tagline {
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.home-hero-heading {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.home-hero-body {
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  margin: 0;
+  max-width: 36rem;
+}
