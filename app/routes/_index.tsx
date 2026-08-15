@@ -8,6 +8,7 @@ import {
 } from '~/components/HomeBanner';
 import {useAside} from '~/components/Aside';
 import {getGenderFromCollectionHandle, type GenderMenuKey} from '~/lib/menu';
+import {WishlistButton} from '~/components/WishlistButton';
 
 const ENABLE_CATEGORY_CARD_LINKS: boolean = false;
 
@@ -76,47 +77,54 @@ export default function Homepage() {
             const hoverImage = getHoverImage(product);
 
             return (
-              <Link
-                className="home-release-card"
-                key={product.id}
-                prefetch="intent"
-                to={`/products/${product.handle}`}
-              >
-                <div className="home-release-card-media">
-                  {product.featuredImage ? (
-                    <div
-                      className={`home-release-card-image-stack${
-                        hoverImage ? ' home-release-card-image-stack--swap' : ''
-                      }`}
-                    >
-                      <img
-                        alt={product.featuredImage.altText || product.title}
-                        className="home-release-card-image home-release-card-image--primary"
-                        decoding="async"
-                        height={product.featuredImage.height ?? undefined}
-                        loading={index < 2 ? 'eager' : 'lazy'}
-                        src={product.featuredImage.url}
-                        width={product.featuredImage.width ?? undefined}
-                      />
-                      {hoverImage ? (
+              <article className="home-release-card" key={product.id}>
+                <Link
+                  className="home-release-card-link"
+                  prefetch="intent"
+                  to={`/products/${product.handle}`}
+                >
+                  <div className="home-release-card-media">
+                    {product.featuredImage ? (
+                      <div
+                        className={`home-release-card-image-stack${
+                          hoverImage
+                            ? ' home-release-card-image-stack--swap'
+                            : ''
+                        }`}
+                      >
                         <img
-                          alt={hoverImage.altText || product.title}
-                          className="home-release-card-image home-release-card-image--secondary"
+                          alt={product.featuredImage.altText || product.title}
+                          className="home-release-card-image home-release-card-image--primary"
                           decoding="async"
-                          height={hoverImage.height ?? undefined}
-                          loading="lazy"
-                          src={hoverImage.url}
-                          width={hoverImage.width ?? undefined}
+                          height={product.featuredImage.height ?? undefined}
+                          loading={index < 2 ? 'eager' : 'lazy'}
+                          src={product.featuredImage.url}
+                          width={product.featuredImage.width ?? undefined}
                         />
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-                <div className="home-release-card-copy">
-                  <p>{product.title}</p>
-                  <p>{formatPrice(product.priceRange.minVariantPrice)}</p>
-                </div>
-              </Link>
+                        {hoverImage ? (
+                          <img
+                            alt={hoverImage.altText || product.title}
+                            className="home-release-card-image home-release-card-image--secondary"
+                            decoding="async"
+                            height={hoverImage.height ?? undefined}
+                            loading="lazy"
+                            src={hoverImage.url}
+                            width={hoverImage.width ?? undefined}
+                          />
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="home-release-card-copy">
+                    <p>{product.title}</p>
+                    <p>{formatPrice(product.priceRange.minVariantPrice)}</p>
+                  </div>
+                </Link>
+                <WishlistButton
+                  className="home-release-card-wishlist"
+                  productId={product.id}
+                />
+              </article>
             );
           })}
         </div>

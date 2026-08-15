@@ -5,6 +5,7 @@ import type {
   CollectionItemFragment,
 } from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
+import {WishlistButton} from '~/components/WishlistButton';
 
 type ProductCardFragment = CollectionItemFragment | ProductItemFragment;
 type ProductCardSizeOption = {
@@ -32,61 +33,65 @@ export function ProductItem({
   const {title, color} = getProductDisplayParts(product.title);
 
   return (
-    <Link
+    <article
       className={`product-item${hasSizeOptions ? ' product-item--has-sizes' : ''}`}
       key={product.id}
-      prefetch="intent"
-      to={variantUrl}
     >
-      {image && (
-        <div
-          className={`product-item-media${hasHoverImage ? ' product-item-media--swap' : ''}`}
-        >
-          <Image
-            alt={image.altText || product.title}
-            className="product-item-image product-item-image--primary"
-            data={image}
-            loading={loading}
-            sizes="(min-width: 48em) 25vw, 50vw"
-          />
-          {hoverImage ? (
+      <Link className="product-item-link" prefetch="intent" to={variantUrl}>
+        {image && (
+          <div
+            className={`product-item-media${hasHoverImage ? ' product-item-media--swap' : ''}`}
+          >
             <Image
-              alt={hoverImage.altText || product.title}
-              className="product-item-image product-item-image--secondary"
-              data={hoverImage}
-              loading="lazy"
+              alt={image.altText || product.title}
+              className="product-item-image product-item-image--primary"
+              data={image}
+              loading={loading}
               sizes="(min-width: 48em) 25vw, 50vw"
             />
-          ) : null}
+            {hoverImage ? (
+              <Image
+                alt={hoverImage.altText || product.title}
+                className="product-item-image product-item-image--secondary"
+                data={hoverImage}
+                loading="lazy"
+                sizes="(min-width: 48em) 25vw, 50vw"
+              />
+            ) : null}
+          </div>
+        )}
+        <div className="product-item-copy product-item-copy--default">
+          <h4>{title}</h4>
+          {color ? <p className="product-item-color">{color}</p> : null}
         </div>
-      )}
-      <div className="product-item-copy product-item-copy--default">
-        <h4>{title}</h4>
-        {color ? <p className="product-item-color">{color}</p> : null}
-      </div>
-      {hasSizeOptions ? (
-        <div
-          className="product-item-copy product-item-copy--sizes"
-          aria-hidden="true"
-        >
-          <p className="product-item-sizes">
-            {sizeOptions.map((size) => (
-              <span
-                className={`product-item-size${
-                  size.available ? '' : ' product-item-size--unavailable'
-                }`}
-                key={size.name}
-              >
-                {size.name}
-              </span>
-            ))}
-          </p>
+        {hasSizeOptions ? (
+          <div
+            className="product-item-copy product-item-copy--sizes"
+            aria-hidden="true"
+          >
+            <p className="product-item-sizes">
+              {sizeOptions.map((size) => (
+                <span
+                  className={`product-item-size${
+                    size.available ? '' : ' product-item-size--unavailable'
+                  }`}
+                  key={size.name}
+                >
+                  {size.name}
+                </span>
+              ))}
+            </p>
+          </div>
+        ) : null}
+        <div className="product-item-price">
+          <Money data={product.priceRange.minVariantPrice} />
         </div>
-      ) : null}
-      <div className="product-item-price">
-        <Money data={product.priceRange.minVariantPrice} />
-      </div>
-    </Link>
+      </Link>
+      <WishlistButton
+        className="product-item-wishlist"
+        productId={product.id}
+      />
+    </article>
   );
 }
 
@@ -143,7 +148,8 @@ function getSizeOptions(product: ProductCardFragment) {
 
   const availabilityBySize = new Map<string, boolean>();
 
-  for (const variant of product.variants.nodes as ProductCardFragment['variants']['nodes']) {
+  for (const variant of product.variants
+    .nodes as ProductCardFragment['variants']['nodes']) {
     const sizeValue = variant.selectedOptions.find(
       (option: (typeof variant.selectedOptions)[number]) =>
         option.name.trim().toLowerCase() === 'size',

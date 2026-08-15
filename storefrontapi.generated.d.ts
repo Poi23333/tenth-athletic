@@ -596,6 +596,127 @@ export type HomepageCurrentReleaseQuery = {
   };
 };
 
+export type WishlistProductsQueryVariables = StorefrontAPI.Exact<{
+  ids:
+    | Array<StorefrontAPI.Scalars['ID']['input']>
+    | StorefrontAPI.Scalars['ID']['input'];
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type WishlistProductsQuery = {
+  nodes: Array<
+    StorefrontAPI.Maybe<
+      | {
+          __typename:
+            | 'AppliedGiftCard'
+            | 'Article'
+            | 'Blog'
+            | 'Cart'
+            | 'CartLine'
+            | 'Collection'
+            | 'Comment'
+            | 'Company'
+            | 'CompanyContact'
+            | 'CompanyLocation'
+            | 'ComponentizableCartLine'
+            | 'ExternalVideo'
+            | 'GenericFile'
+            | 'Location'
+            | 'MailingAddress'
+            | 'Market'
+            | 'MediaImage'
+            | 'MediaPresentation'
+            | 'Menu'
+            | 'MenuItem';
+        }
+      | {
+          __typename:
+            | 'Metafield'
+            | 'Metaobject'
+            | 'Model3d'
+            | 'Order'
+            | 'Page'
+            | 'ProductOption'
+            | 'ProductOptionValue'
+            | 'ProductVariant'
+            | 'Shop'
+            | 'ShopPayInstallmentsFinancingPlan'
+            | 'ShopPayInstallmentsFinancingPlanTerm'
+            | 'ShopPayInstallmentsProductVariantPricing'
+            | 'ShopPolicy'
+            | 'TaxonomyCategory'
+            | 'UrlRedirect'
+            | 'Video';
+        }
+      | ({__typename: 'Product'} & Pick<
+          StorefrontAPI.Product,
+          'id' | 'handle' | 'title' | 'productType'
+        > & {
+            featuredImage?: StorefrontAPI.Maybe<
+              Pick<
+                StorefrontAPI.Image,
+                'id' | 'altText' | 'url' | 'width' | 'height'
+              >
+            >;
+            fullImage?: StorefrontAPI.Maybe<{
+              reference?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Collection'
+                      | 'GenericFile'
+                      | 'Metaobject'
+                      | 'Model3d'
+                      | 'Page'
+                      | 'Product'
+                      | 'ProductVariant'
+                      | 'Video';
+                  }
+                | ({__typename: 'MediaImage'} & {
+                    image?: StorefrontAPI.Maybe<
+                      Pick<
+                        StorefrontAPI.Image,
+                        'id' | 'altText' | 'url' | 'width' | 'height'
+                      >
+                    >;
+                  })
+              >;
+            }>;
+            options: Array<
+              Pick<StorefrontAPI.ProductOption, 'name'> & {
+                optionValues: Array<
+                  Pick<StorefrontAPI.ProductOptionValue, 'name'>
+                >;
+              }
+            >;
+            variants: {
+              nodes: Array<
+                Pick<
+                  StorefrontAPI.ProductVariant,
+                  'availableForSale' | 'quantityAvailable'
+                > & {
+                  selectedOptions: Array<
+                    Pick<StorefrontAPI.SelectedOption, 'name' | 'value'>
+                  >;
+                }
+              >;
+            };
+            priceRange: {
+              minVariantPrice: Pick<
+                StorefrontAPI.MoneyV2,
+                'amount' | 'currencyCode'
+              >;
+              maxVariantPrice: Pick<
+                StorefrontAPI.MoneyV2,
+                'amount' | 'currencyCode'
+              >;
+            };
+          })
+    >
+  >;
+};
+
 export type ArticleQueryVariables = StorefrontAPI.Exact<{
   articleHandle: StorefrontAPI.Scalars['String']['input'];
   blogHandle: StorefrontAPI.Scalars['String']['input'];
@@ -1645,6 +1766,10 @@ interface GeneratedQueryTypes {
   '#graphql\n  query HomepageCurrentRelease(\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int!\n  ) @inContext(country: $country, language: $language) {\n    banners: metaobjects(type: "homepage_banner", first: 20) {\n      nodes {\n        id\n        backgroundImage: field(key: "image") {\n          reference {\n            __typename\n            ... on MediaImage {\n              image {\n                altText\n                height\n                url\n                width\n              }\n            }\n          }\n        }\n        mobileImage: field(key: "mobile_image") {\n          reference {\n            __typename\n            ... on MediaImage {\n              image {\n                altText\n                height\n                url\n                width\n              }\n            }\n          }\n        }\n        logoFile: field(key: "logo_file") {\n          reference {\n            __typename\n            ... on GenericFile {\n              alt\n              mimeType\n              url\n            }\n            ... on MediaImage {\n              image {\n                altText\n                url\n              }\n            }\n          }\n        }\n        logoText: field(key: "logo_text") {\n          value\n        }\n        slogan: field(key: "slogan") {\n          value\n        }\n        buttonText: field(key: "button_text") {\n          value\n        }\n        buttonLink: field(key: "button_link") {\n          value\n        }\n        sortOrder: field(key: "sort_order") {\n          value\n        }\n      }\n    }\n    categories: metaobjects(type: "homepage_category", first: 10) {\n      nodes {\n        id\n        image: field(key: "image") {\n          reference {\n            __typename\n            ... on MediaImage {\n              image {\n                altText\n                height\n                url\n                width\n              }\n            }\n          }\n        }\n        label: field(key: "label") {\n          value\n        }\n        link: field(key: "link") {\n          value\n        }\n        sortOrder: field(key: "sort_order") {\n          value\n        }\n      }\n    }\n    products(first: $first, sortKey: CREATED_AT, reverse: true) {\n      nodes {\n        id\n        handle\n        title\n        featuredImage {\n          altText\n          url\n          width\n          height\n        }\n        fullImage: metafield(namespace: "custom", key: "full") {\n          reference {\n            __typename\n            ... on MediaImage {\n              image {\n                altText\n                url\n                width\n                height\n              }\n            }\n          }\n        }\n        priceRange {\n          minVariantPrice {\n            amount\n            currencyCode\n          }\n        }\n      }\n    }\n  }\n': {
     return: HomepageCurrentReleaseQuery;
     variables: HomepageCurrentReleaseQueryVariables;
+  };
+  '#graphql\n  query WishlistProducts(\n    $ids: [ID!]!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      __typename\n      ... on Product {\n        id\n        handle\n        title\n        productType\n        featuredImage {\n          id\n          altText\n          url\n          width\n          height\n        }\n        fullImage: metafield(namespace: "custom", key: "full") {\n          reference {\n            __typename\n            ... on MediaImage {\n              image {\n                id\n                altText\n                url\n                width\n                height\n              }\n            }\n          }\n        }\n        options {\n          name\n          optionValues { name }\n        }\n        variants(first: 50) {\n          nodes {\n            availableForSale\n            quantityAvailable\n            selectedOptions { name value }\n          }\n        }\n        priceRange {\n          minVariantPrice { amount currencyCode }\n          maxVariantPrice { amount currencyCode }\n        }\n      }\n    }\n  }\n': {
+    return: WishlistProductsQuery;
+    variables: WishlistProductsQueryVariables;
   };
   '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n      }\n    }\n  }\n': {
     return: ArticleQuery;

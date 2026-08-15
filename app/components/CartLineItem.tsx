@@ -5,12 +5,12 @@ import {
   Money,
   type OptimisticCartLine,
 } from '@shopify/hydrogen';
-import {RiBookmarkLine} from '@remixicon/react';
 import {useVariantUrl} from '~/lib/variants';
 import {Link, useFetcher} from 'react-router';
 import {useEffect, useState} from 'react';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
+import {WishlistButton} from '~/components/WishlistButton';
 
 export type CartLine = OptimisticCartLine<CartApiQueryFragment>;
 
@@ -99,9 +99,9 @@ export function CartLineItem({
                 lineIds={[id]}
                 disabled={!!line.isOptimistic}
               />
-              <RiBookmarkLine
-                aria-hidden="true"
+              <WishlistButton
                 className="cart-line-bookmark"
+                productId={product.id}
               />
             </div>
           </div>
@@ -155,7 +155,10 @@ export function CartLineItem({
               lineIds={[id]}
               disabled={!!line.isOptimistic}
             />
-            <RiBookmarkLine aria-hidden="true" className="cart-line-bookmark" />
+            <WishlistButton
+              className="cart-line-bookmark"
+              productId={product.id}
+            />
           </div>
         </div>
       </div>

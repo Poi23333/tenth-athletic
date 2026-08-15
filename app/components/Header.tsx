@@ -1,4 +1,10 @@
-import {Await, NavLink, useLocation, useMatches, useRouteLoaderData} from 'react-router';
+import {
+  Await,
+  NavLink,
+  useLocation,
+  useMatches,
+  useRouteLoaderData,
+} from 'react-router';
 import {Suspense, useEffect, useLayoutEffect, useRef} from 'react';
 import {type CartViewPayload, useAnalytics} from '@shopify/hydrogen';
 import type {CartApiQueryFragment, HeaderQuery} from 'storefrontapi.generated';
@@ -12,6 +18,8 @@ import {
 } from '~/lib/menu';
 import type {RootLoader} from '~/root';
 import brandLogo from '~/assets/logo.svg';
+import {RiBookmarkFill} from '@remixicon/react';
+import {useWishlist} from '~/components/WishlistProvider';
 
 // useLayoutEffect warns during SSR; keep layout sync on the client only.
 const useIsomorphicLayoutEffect =
@@ -158,6 +166,7 @@ export function HeaderMenu({
       >
         Field Index
       </button>
+      <WishlistLink />
       <BagToggle cart={cart} />
       {hasSharedHeaderDrawer ? (
         <button
@@ -170,6 +179,26 @@ export function HeaderMenu({
         </button>
       ) : null}
     </nav>
+  );
+}
+
+function WishlistLink() {
+  const {close} = useAside();
+  const {productIds} = useWishlist();
+
+  return (
+    <NavLink
+      aria-label={`Wishlist with ${productIds.length} items`}
+      className={({isActive}) =>
+        `header-menu-item header-wishlist${isActive ? ' active' : ''}`
+      }
+      onClick={close}
+      prefetch="intent"
+      to="/wishlist"
+    >
+      <RiBookmarkFill aria-hidden="true" />
+      <span className="sr-only">Wishlist ({productIds.length})</span>
+    </NavLink>
   );
 }
 
