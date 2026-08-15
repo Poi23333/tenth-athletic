@@ -18,7 +18,7 @@ import {
 } from '~/lib/menu';
 import type {RootLoader} from '~/root';
 import brandLogo from '~/assets/logo.svg';
-import {RiBookmarkFill} from '@remixicon/react';
+import {RiBookmarkFill, RiSearchLine} from '@remixicon/react';
 import {useWishlist} from '~/components/WishlistProvider';
 
 // useLayoutEffect warns during SSR; keep layout sync on the client only.
@@ -133,6 +133,7 @@ export function HeaderMenu({
 
   return (
     <nav className={className} ref={navRef} role="navigation">
+      {viewport === 'desktop' ? <SearchLink viewport="desktop" /> : null}
       <button
         className={`header-menu-item reset header-locale${
           type === 'locale' ? ' active' : ''
@@ -274,8 +275,29 @@ function AccountNavLink({
 function HeaderCtas() {
   return (
     <nav className="header-ctas" role="navigation">
+      <SearchLink viewport="mobile" />
       <HeaderMenuMobileToggle />
     </nav>
+  );
+}
+
+function SearchLink({viewport}: {viewport: Viewport}) {
+  const {close} = useAside();
+
+  return (
+    <NavLink
+      aria-label="Search"
+      className={({isActive}) =>
+        `header-menu-item header-search-link header-search-link--${viewport}${
+          isActive ? ' active' : ''
+        }`
+      }
+      onClick={close}
+      prefetch="intent"
+      to="/search"
+    >
+      <RiSearchLine aria-hidden="true" />
+    </NavLink>
   );
 }
 

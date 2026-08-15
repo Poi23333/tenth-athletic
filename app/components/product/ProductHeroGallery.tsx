@@ -1,4 +1,3 @@
-import {useState} from 'react';
 import {ProductImage} from '~/components/ProductImage';
 
 type ProductGalleryImage = {
@@ -17,18 +16,9 @@ export function ProductHeroGallery({
   images: ProductGalleryImage[];
   productTitle: string;
 }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeImage = images[activeIndex]!;
-
-  function showPreviousImage() {
-    setActiveIndex((currentIndex) =>
-      currentIndex === 0 ? images.length - 1 : currentIndex - 1,
-    );
-  }
-
-  function showNextImage() {
-    setActiveIndex((currentIndex) =>
-      currentIndex === images.length - 1 ? 0 : currentIndex + 1,
+  if (images.length !== 6) {
+    throw new Error(
+      `Product hero gallery requires exactly six images; received ${images.length}.`,
     );
   }
 
@@ -36,40 +26,23 @@ export function ProductHeroGallery({
     <div
       aria-label={`${productTitle} image gallery`}
       className="product-hero-gallery"
-      role="group"
+      role="list"
     >
-      <button
-        aria-label="Previous product image"
-        className="product-hero-gallery-arrow product-hero-gallery-arrow--previous"
-        onClick={showPreviousImage}
-        type="button"
-      >
-        <img
-          alt=""
-          aria-hidden="true"
-          src="/images/product-arrow-left.png"
-        />
-      </button>
+      {images.map((image, index) => {
+        const group = index < 3 ? 'product' : 'model';
+        const groupIndex = (index % 3) + 1;
 
-      <div className="product-hero-media" aria-live="polite">
-        <ProductImage image={activeImage} key={activeImage.id} kind="hero" />
-        <span className="sr-only">
-          Image {activeIndex + 1} of {images.length}
-        </span>
-      </div>
-
-      <button
-        aria-label="Next product image"
-        className="product-hero-gallery-arrow product-hero-gallery-arrow--next"
-        onClick={showNextImage}
-        type="button"
-      >
-        <img
-          alt=""
-          aria-hidden="true"
-          src="/images/product-arrow-right.png"
-        />
-      </button>
+        return (
+          <div
+            aria-label={`${group === 'product' ? 'Product' : 'Model'} image ${groupIndex} of 3`}
+            className={`product-hero-media product-hero-media--${group}`}
+            key={image.id ?? image.url}
+            role="listitem"
+          >
+            <ProductImage image={image} kind="hero" />
+          </div>
+        );
+      })}
     </div>
   );
 }

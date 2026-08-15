@@ -70,11 +70,17 @@ export function CartLineItem({
 
           <div className="cart-line-details">
             <div className="cart-line-heading">
-              <p className="cart-line-title">
-                <Link prefetch="intent" to={lineItemUrl} onClick={close}>
-                  {product.title}
-                </Link>
-              </p>
+              <div className="cart-line-title-row">
+                <p className="cart-line-title">
+                  <Link prefetch="intent" to={lineItemUrl} onClick={close}>
+                    {product.title}
+                  </Link>
+                </p>
+                <WishlistButton
+                  className="cart-line-bookmark"
+                  productId={product.id}
+                />
+              </div>
               {sku ? <p className="cart-line-sku">{sku}</p> : null}
             </div>
 
@@ -99,10 +105,6 @@ export function CartLineItem({
                 lineIds={[id]}
                 disabled={!!line.isOptimistic}
               />
-              <WishlistButton
-                className="cart-line-bookmark"
-                productId={product.id}
-              />
             </div>
           </div>
         </div>
@@ -122,11 +124,17 @@ export function CartLineItem({
 
         <div className="cart-line-details">
           <div className="cart-line-heading">
-            <p className="cart-line-title">
-              <Link prefetch="intent" to={lineItemUrl}>
-                {product.title}
-              </Link>
-            </p>
+            <div className="cart-line-title-row">
+              <p className="cart-line-title">
+                <Link prefetch="intent" to={lineItemUrl}>
+                  {product.title}
+                </Link>
+              </p>
+              <WishlistButton
+                className="cart-line-bookmark"
+                productId={product.id}
+              />
+            </div>
             {sku ? <p className="cart-line-sku">{sku}</p> : null}
           </div>
           <dl className="cart-line-options">
@@ -154,10 +162,6 @@ export function CartLineItem({
             <CartLineRemoveButton
               lineIds={[id]}
               disabled={!!line.isOptimistic}
-            />
-            <WishlistButton
-              className="cart-line-bookmark"
-              productId={product.id}
             />
           </div>
         </div>

@@ -27,9 +27,6 @@ export async function loader({context}: Route.LoaderArgs) {
   return {
     banners: banners.nodes
       .map(normalizeBanner)
-      .filter((banner): banner is HomeBannerSlide & {sortOrder: number} =>
-        Boolean(banner),
-      )
       .sort(
         (firstBanner, secondBanner) =>
           firstBanner.sortOrder - secondBanner.sortOrder,
@@ -79,7 +76,7 @@ export default function Homepage() {
             return (
               <article className="home-release-card" key={product.id}>
                 <Link
-                  className="home-release-card-link"
+                  className="home-release-card-media-link"
                   prefetch="intent"
                   to={`/products/${product.handle}`}
                 >
@@ -115,15 +112,21 @@ export default function Homepage() {
                       </div>
                     ) : null}
                   </div>
-                  <div className="home-release-card-copy">
+                </Link>
+                <div className="home-release-card-info">
+                  <Link
+                    className="home-release-card-copy"
+                    prefetch="intent"
+                    to={`/products/${product.handle}`}
+                  >
                     <p>{product.title}</p>
                     <p>{formatPrice(product.priceRange.minVariantPrice)}</p>
-                  </div>
-                </Link>
-                <WishlistButton
-                  className="home-release-card-wishlist"
-                  productId={product.id}
-                />
+                  </Link>
+                  <WishlistButton
+                    className="home-release-card-wishlist"
+                    productId={product.id}
+                  />
+                </div>
               </article>
             );
           })}
@@ -224,11 +227,19 @@ function normalizeCategory(
 
 function normalizeBanner(
   banner: HomepageBannerMetaobject,
-): (HomeBannerSlide & {sortOrder: number}) | null {
+): HomeBannerSlide & {sortOrder: number} {
   const backgroundImage = getImage(banner.backgroundImage);
   const sortOrder = getRequiredInteger(banner.sortOrder?.value);
 
-  if (!backgroundImage || sortOrder === null) return null;
+  if (!backgroundImage) {
+    throw new Error(`Homepage banner ${banner.id} requires an image.`);
+  }
+
+  if (sortOrder === null) {
+    throw new Error(
+      `Homepage banner ${banner.id} requires an integer sort order.`,
+    );
+  }
 
   const logoFile = getFile(banner.logoFile);
   const logoText = getTrimmedValue(banner.logoText?.value);
@@ -246,10 +257,37 @@ function normalizeBanner(
         ? {kind: 'text', value: logoText}
         : null,
     slogan,
-    button:
-      buttonLabel && buttonUrl ? {label: buttonLabel, url: buttonUrl} : null,
+    button: getBannerButton(banner.id, buttonLabel, buttonUrl),
     sortOrder,
   };
+}
+
+function getBannerButton(
+  bannerId: string,
+  label: string | null,
+  url: string | null,
+) {
+  if (!url) return null;
+
+  if (!label) {
+    throw new Error(
+      `Homepage banner ${bannerId} has a button link but no button text.`,
+    );
+  }
+
+  return {label, url: getHydrogenBannerUrl(url)};
+}
+
+function getHydrogenBannerUrl(url: string) {
+  if (url.startsWith('/')) return url;
+
+  const parsedUrl = new URL(url);
+
+  if (parsedUrl.hostname.endsWith('.myshopify.com')) {
+    return `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
+  }
+
+  return url;
 }
 
 function getImage(

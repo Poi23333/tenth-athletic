@@ -1,4 +1,4 @@
-import {data, redirect, useLoaderData} from 'react-router';
+import {data, Link, useLoaderData} from 'react-router';
 import {startTransition, useEffect, useRef, useState} from 'react';
 import type {PointerEvent as ReactPointerEvent, ReactNode} from 'react';
 import type {Route} from './+types/products.$handle';
@@ -8,10 +8,10 @@ import {
   useOptimisticVariant,
   getProductOptions,
   getAdjacentAndFirstAvailableVariants,
+  Image,
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
 import {ProductImage} from '~/components/ProductImage';
-import {ProductItem} from '~/components/ProductItem';
 import {ProductForm} from '~/components/ProductForm';
 import {ProductEditorialContent} from '~/components/product/ProductEditorialContent';
 import {ProductFeatureIndex} from '~/components/product/ProductFeatureIndex';
@@ -19,9 +19,13 @@ import {ProductCampaignVideo} from '~/components/product/ProductCampaignVideo';
 import {ProductTechnicalSpecs} from '~/components/product/ProductTechnicalSpecs';
 import {ProductHeroGallery} from '~/components/product/ProductHeroGallery';
 import productSilhouette from '~/assets/product/auralite/product-silhouette.svg';
-import {AURALITE_PRODUCT_DETAILS} from '~/data/productDetails';
+import {getProductFeaturePreset} from '~/data/productDetails';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {PRODUCT_INFORMATION_SECTIONS} from '~/lib/productInformation';
+import type {
+  ProductFragment,
+  ProductMerchandisingItemFragment,
+} from 'storefrontapi.generated';
 
 const DEFAULT_PRODUCT_THEME = {
   controlsRgb: '111, 100, 92',
@@ -76,11 +80,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     throw new Response(null, {status: 404});
   }
 
-  if (product.images.nodes.length < 1) {
-    throw new Error(
-      `Auralite product page requires at least one Product Media image; received ${product.images.nodes.length}.`,
-    );
-  }
+  const pdp = normalizeProductPdp(product);
 
   const secondaryImageReference = product.secondaryImage?.reference;
   const secondaryImage =
@@ -120,6 +120,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
             recommendedProduct !== null && recommendedProduct.id !== product.id,
         ) ?? [],
       product,
+      pdp,
       recentlyExplored: recentlyExploredHandles
         .map((recentHandle) => recentlyExploredByHandle.get(recentHandle))
         .filter(
@@ -137,32 +138,19 @@ function loadDeferredData(_args: Route.LoaderArgs) {
 }
 
 export default function Product() {
-  const {completeTheSystem, product, recentlyExplored, secondaryImage} =
+  const {completeTheSystem, pdp, product, recentlyExplored, secondaryImage} =
     useLoaderData<typeof loader>();
-  const heroRef = useRef<HTMLElement | null>(null);
+  const productRef = useRef<HTMLDivElement | null>(null);
   const purchasePanelRef = useRef<HTMLDivElement | null>(null);
   const videoBoundaryRef = useRef<HTMLElement | null>(null);
-  const informationSectionRef = useRef<HTMLElement | null>(null);
   const lastScrollYRef = useRef(0);
   const [purchasePanelState, setPurchasePanelState] = useState<{
-    fixedLeft: number;
     isCollapsed: boolean;
-    isDesktop: boolean;
     mode: 'embedded' | 'fixed' | 'stopped';
-    panelWidth: number;
-    primaryVisible: boolean;
-    secondaryVisible: boolean;
-    stoppedLeft: number;
     stoppedTop: number;
   }>({
-    fixedLeft: 0,
     isCollapsed: false,
-    isDesktop: false,
-    mode: 'embedded',
-    panelWidth: 0,
-    primaryVisible: true,
-    secondaryVisible: false,
-    stoppedLeft: 0,
+    mode: 'fixed',
     stoppedTop: 0,
   });
 
@@ -178,19 +166,38 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml} = product;
-  const heroImages = product.images.nodes;
+  const {title} = product;
+  const selectedColor = selectedVariant.selectedOptions.find(
+    (option) => option.name.trim().toLowerCase() === 'color',
+  )?.value;
+
+  if (!selectedColor) {
+    throw new Error(`Product "${product.handle}" has no selected Color value.`);
+  }
+
+  const selectedGallery = pdp.colorGalleries.find(
+    (gallery) =>
+      gallery.colorName.trim().toLowerCase() ===
+      selectedColor.trim().toLowerCase(),
+  );
+
+  if (!selectedGallery) {
+    throw new Error(
+      `Product "${product.handle}" has no six-image gallery for Color "${selectedColor}".`,
+    );
+  }
+
+  const heroImages = selectedGallery.images;
   const productTheme = getProductTheme(product.mainColor?.value);
   const productFooterMainColor = normalizeHexColor(product.mainColor?.value);
 
   useEffect(() => {
     function updatePurchasePanel() {
-      const hero = heroRef.current;
+      const productElement = productRef.current;
       const purchasePanel = purchasePanelRef.current;
       const videoBoundary = videoBoundaryRef.current;
-      const informationSection = informationSectionRef.current;
 
-      if (!hero || !purchasePanel || !videoBoundary || !informationSection) {
+      if (!productElement || !purchasePanel || !videoBoundary) {
         return;
       }
 
@@ -198,19 +205,12 @@ export default function Product() {
         lastScrollYRef.current = window.scrollY;
         startTransition(() => {
           setPurchasePanelState((currentState) =>
-            currentState.mode === 'embedded' &&
-            !currentState.isCollapsed &&
-            !currentState.isDesktop &&
-            currentState.primaryVisible &&
-            !currentState.secondaryVisible
+            currentState.mode === 'embedded' && !currentState.isCollapsed
               ? currentState
               : {
                   ...currentState,
                   isCollapsed: false,
-                  isDesktop: false,
                   mode: 'embedded',
-                  primaryVisible: true,
-                  secondaryVisible: false,
                 },
           );
         });
@@ -219,54 +219,33 @@ export default function Product() {
 
       const bottomGap = 12;
       const viewportBottomLine = window.innerHeight - bottomGap;
-      const heroRect = hero.getBoundingClientRect();
+      const productRect = productElement.getBoundingClientRect();
       const videoBoundaryRect = videoBoundary.getBoundingClientRect();
-      const informationSectionRect = informationSection.getBoundingClientRect();
-      const panelWidth = Math.min(508, heroRect.width);
       const measuredPanelHeight = purchasePanel.getBoundingClientRect().height;
-      const hasReachedFixedPosition = heroRect.bottom <= viewportBottomLine;
       const hasReachedStopBoundary =
         videoBoundaryRect.top <= viewportBottomLine;
-      const nextMode: 'embedded' | 'fixed' | 'stopped' =
-        !hasReachedFixedPosition
-          ? 'embedded'
-          : hasReachedStopBoundary
-            ? 'stopped'
-            : 'fixed';
+      const nextMode: 'embedded' | 'fixed' | 'stopped' = hasReachedStopBoundary
+        ? 'stopped'
+        : 'fixed';
       const scrollDelta = window.scrollY - lastScrollYRef.current;
       const isScrollingDown = scrollDelta > 4;
       const isScrollingUp = scrollDelta < -4;
-      const primaryVisible =
-        nextMode !== 'stopped' ||
-        videoBoundaryRect.top > measuredPanelHeight + bottomGap;
-      const secondaryVisible =
-        !primaryVisible &&
-        informationSectionRect.top <= window.innerHeight * 0.7;
 
       lastScrollYRef.current = window.scrollY;
 
       startTransition(() => {
         setPurchasePanelState((currentState) => {
-          const nextCollapsed =
-            nextMode === 'embedded'
+          const nextCollapsed = isScrollingDown
+            ? true
+            : isScrollingUp
               ? false
-              : isScrollingDown
-                ? true
-                : isScrollingUp
-                  ? false
-                  : currentState.isCollapsed;
+              : currentState.isCollapsed;
           const nextState = {
-            fixedLeft: heroRect.left + (heroRect.width - panelWidth) / 2,
             isCollapsed: nextCollapsed,
-            isDesktop: true,
             mode: nextMode,
-            panelWidth,
-            primaryVisible,
-            secondaryVisible,
-            stoppedLeft: (heroRect.width - panelWidth) / 2,
             stoppedTop:
-              videoBoundary.offsetTop -
-              hero.offsetTop -
+              videoBoundaryRect.top -
+              productRect.top -
               measuredPanelHeight -
               bottomGap,
           };
@@ -274,12 +253,6 @@ export default function Product() {
           if (
             currentState.mode === nextState.mode &&
             currentState.isCollapsed === nextState.isCollapsed &&
-            currentState.isDesktop === nextState.isDesktop &&
-            Math.abs(currentState.fixedLeft - nextState.fixedLeft) < 1 &&
-            Math.abs(currentState.panelWidth - nextState.panelWidth) < 1 &&
-            currentState.primaryVisible === nextState.primaryVisible &&
-            currentState.secondaryVisible === nextState.secondaryVisible &&
-            Math.abs(currentState.stoppedLeft - nextState.stoppedLeft) < 1 &&
             Math.abs(currentState.stoppedTop - nextState.stoppedTop) < 1
           ) {
             return currentState;
@@ -293,7 +266,7 @@ export default function Product() {
     lastScrollYRef.current = window.scrollY;
     updatePurchasePanel();
     const resizeObserver = new ResizeObserver(updatePurchasePanel);
-    resizeObserver.observe(heroRef.current!);
+    resizeObserver.observe(productRef.current!);
     resizeObserver.observe(purchasePanelRef.current!);
     window.addEventListener('resize', updatePurchasePanel);
     window.addEventListener('scroll', updatePurchasePanel, {passive: true});
@@ -306,7 +279,7 @@ export default function Product() {
   }, []);
 
   return (
-    <div className="product">
+    <div className="product" ref={productRef}>
       <style>{`:root {
         --product-main-color: ${productTheme.mainColor};
         --product-main-color-rgb: ${productTheme.mainRgb};
@@ -315,48 +288,35 @@ export default function Product() {
         ${productFooterMainColor ? `--product-footer-main-color: ${productFooterMainColor};` : ''}
       }`}</style>
       <h1 className="sr-only">{title}</h1>
-      <section
-        className="product-hero"
-        aria-label="Product overview"
-        ref={heroRef}
-      >
+      <section className="product-hero" aria-label="Product overview">
         <ProductHeroGallery
           images={heroImages}
-          key={product.id}
+          key={selectedGallery.colorName}
           productTitle={title}
         />
-        <div
-          className={`product-purchase-panel is-${purchasePanelState.mode}${
-            purchasePanelState.isCollapsed ? ' is-collapsed' : ''
-          }${purchasePanelState.primaryVisible ? ' is-visible' : ' is-hidden'}`}
-          ref={purchasePanelRef}
-          role="region"
-          aria-label="Product purchase options"
-          aria-hidden={!purchasePanelState.primaryVisible}
-          style={
-            purchasePanelState.mode === 'fixed'
-              ? {
-                  left: `${purchasePanelState.fixedLeft}px`,
-                  width: `${purchasePanelState.panelWidth}px`,
-                }
-              : purchasePanelState.mode === 'stopped'
-                ? {
-                    left: `${purchasePanelState.stoppedLeft}px`,
-                    top: `${purchasePanelState.stoppedTop}px`,
-                    width: `${purchasePanelState.panelWidth}px`,
-                  }
-                : undefined
-          }
-        >
-          <ProductForm
-            icon={productSilhouette}
-            productTitle={title}
-            productOptions={productOptions}
-            selectedVariant={selectedVariant}
-            summary={AURALITE_PRODUCT_DETAILS.summary}
-          />
-        </div>
       </section>
+
+      <div
+        className={`product-purchase-panel is-${purchasePanelState.mode}${
+          purchasePanelState.isCollapsed ? ' is-collapsed' : ''
+        }`}
+        ref={purchasePanelRef}
+        role="region"
+        aria-label="Product purchase options"
+        style={
+          purchasePanelState.mode === 'stopped'
+            ? {top: `${purchasePanelState.stoppedTop}px`}
+            : undefined
+        }
+      >
+        <ProductForm
+          icon={productSilhouette}
+          productTitle={title}
+          productOptions={productOptions}
+          selectedVariant={selectedVariant}
+          summary={pdp.summary}
+        />
+      </div>
 
       {secondaryImage ? (
         <section
@@ -369,16 +329,13 @@ export default function Product() {
         </section>
       ) : null}
 
-      <ProductFeatureIndex />
+      <ProductFeatureIndex productType={product.productType} />
 
-      <ProductEditorialContent html={descriptionHtml} />
+      <ProductEditorialContent blocks={pdp.editorialBlocks} />
 
       <ProductCampaignVideo ref={videoBoundaryRef} />
 
-      <section
-        className="product-information-section"
-        ref={informationSectionRef}
-      >
+      <section className="product-information-section">
         <div className="product-accordions">
           {PRODUCT_INFORMATION_SECTIONS.map((item, index) => (
             <ProductInformationAccordion
@@ -392,25 +349,11 @@ export default function Product() {
         </div>
       </section>
 
-      {purchasePanelState.isDesktop ? (
-        <aside
-          aria-hidden={!purchasePanelState.secondaryVisible}
-          aria-label="Product purchase options"
-          className={`product-secondary-purchase-panel${
-            purchasePanelState.secondaryVisible ? ' is-visible' : ''
-          }`}
-        >
-          <ProductForm
-            icon={productSilhouette}
-            productTitle={title}
-            productOptions={productOptions}
-            selectedVariant={selectedVariant}
-            summary={AURALITE_PRODUCT_DETAILS.summary}
-          />
-        </aside>
-      ) : null}
-
-      <ProductTechnicalSpecs sku={selectedVariant?.sku} />
+      <ProductTechnicalSpecs
+        careInstructions={pdp.careInstructions}
+        sku={selectedVariant?.sku}
+        specifications={pdp.specifications}
+      />
 
       <div className="product-merchandising">
         <ProductRail products={completeTheSystem} title="Complete the System" />
@@ -440,7 +383,7 @@ function ProductRail({
   products,
   title,
 }: {
-  products: Array<Parameters<typeof ProductItem>[0]['product']>;
+  products: ProductMerchandisingItemFragment[];
   title: string;
 }) {
   const titleId = `product-rail-${slugify(title)}`;
@@ -459,7 +402,7 @@ function ProductRailScroller({
   products,
   title,
 }: {
-  products: Array<Parameters<typeof ProductItem>[0]['product']>;
+  products: ProductMerchandisingItemFragment[];
   title: string;
 }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
@@ -565,7 +508,7 @@ function ProductRailScroller({
       >
         <div className="product-rail-list">
           {products.map((railProduct) => (
-            <ProductItem key={railProduct.id} product={railProduct} />
+            <ProductRailImage key={railProduct.id} product={railProduct} />
           ))}
         </div>
       </div>
@@ -592,11 +535,355 @@ function ProductRailScroller({
   );
 }
 
+function ProductRailImage({
+  product,
+}: {
+  product: ProductMerchandisingItemFragment;
+}) {
+  const fullImageReference = product.fullImage?.reference;
+  const hoverImage =
+    fullImageReference?.__typename === 'MediaImage'
+      ? fullImageReference.image
+      : null;
+  const image = product.featuredImage;
+
+  return (
+    <Link
+      aria-label={product.title}
+      className="product-rail-image-link"
+      prefetch="intent"
+      to={`/products/${product.handle}`}
+    >
+      {image ? (
+        <div
+          className={`product-rail-image-media${
+            hoverImage ? ' product-rail-image-media--swap' : ''
+          }`}
+        >
+          <Image
+            alt={image.altText || product.title}
+            className="product-rail-image product-rail-image--primary"
+            data={image}
+            sizes="(min-width: 48em) 20vw, 72vw"
+          />
+          {hoverImage ? (
+            <Image
+              alt={hoverImage.altText || product.title}
+              className="product-rail-image product-rail-image--secondary"
+              data={hoverImage}
+              loading="lazy"
+              sizes="(min-width: 48em) 20vw, 72vw"
+            />
+          ) : null}
+        </div>
+      ) : null}
+    </Link>
+  );
+}
+
 function slugify(value: string) {
   return value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+}
+
+function normalizeProductPdp(product: ProductFragment) {
+  getProductFeaturePreset(product.productType);
+
+  const summary = parseRequiredStringList(
+    product.pdpSummary?.value,
+    `${product.handle}: custom.pdp_summary`,
+    1,
+    4,
+  );
+  const galleryReferences = product.colorGalleries?.references?.nodes;
+
+  if (!galleryReferences?.length) {
+    throw new Error(
+      `Product "${product.handle}" requires custom.color_galleries.`,
+    );
+  }
+
+  const colorGalleries = galleryReferences.map((galleryReference) => {
+    if (galleryReference.__typename !== 'Metaobject') {
+      throw new Error(
+        `Product "${product.handle}" has a non-metaobject color gallery reference.`,
+      );
+    }
+
+    const colorName = requireMetafieldValue(
+      galleryReference.colorName,
+      `${galleryReference.handle}: color_name`,
+    );
+    const imageReferences = galleryReference.images?.references?.nodes;
+
+    if (imageReferences?.length !== 6) {
+      throw new Error(
+        `Color gallery "${galleryReference.handle}" requires exactly six images; received ${imageReferences?.length ?? 0}.`,
+      );
+    }
+
+    const images = imageReferences.map((imageReference) => {
+      if (imageReference.__typename !== 'MediaImage') {
+        throw new Error(
+          `Color gallery "${galleryReference.handle}" contains a non-image file reference.`,
+        );
+      }
+
+      if (!imageReference.image) {
+        throw new Error(
+          `Color gallery "${galleryReference.handle}" contains an image reference without image data.`,
+        );
+      }
+
+      return imageReference.image;
+    });
+
+    return {
+      colorName,
+      id: galleryReference.id,
+      images,
+    };
+  });
+  const galleryKeys = colorGalleries.map((gallery) =>
+    gallery.colorName.trim().toLowerCase(),
+  );
+
+  if (new Set(galleryKeys).size !== galleryKeys.length) {
+    throw new Error(
+      `Product "${product.handle}" has duplicate Color gallery names.`,
+    );
+  }
+
+  const colorOption = product.options.find(
+    (option) => option.name.trim().toLowerCase() === 'color',
+  );
+
+  if (!colorOption) {
+    throw new Error(`Product "${product.handle}" requires a Color option.`);
+  }
+
+  for (const optionValue of colorOption.optionValues) {
+    if (!galleryKeys.includes(optionValue.name.trim().toLowerCase())) {
+      throw new Error(
+        `Product "${product.handle}" is missing a six-image gallery for Color "${optionValue.name}".`,
+      );
+    }
+  }
+
+  const editorialReferences = product.editorialBlocks?.references?.nodes;
+
+  if (editorialReferences?.length !== 2) {
+    throw new Error(
+      `Product "${product.handle}" requires exactly two custom.editorial_blocks; received ${editorialReferences?.length ?? 0}.`,
+    );
+  }
+
+  const editorialBlocks = editorialReferences.map((editorialReference) => {
+    if (editorialReference.__typename !== 'Metaobject') {
+      throw new Error(
+        `Product "${product.handle}" has a non-metaobject editorial reference.`,
+      );
+    }
+
+    const imageReference = editorialReference.image?.reference;
+
+    if (imageReference?.__typename !== 'MediaImage') {
+      throw new Error(
+        `Editorial block "${editorialReference.id}" requires one image.`,
+      );
+    }
+
+    if (!imageReference.image) {
+      throw new Error(
+        `Editorial block "${editorialReference.id}" has no image data.`,
+      );
+    }
+
+    return {
+      body: requireMetafieldValue(
+        editorialReference.body,
+        `${editorialReference.id}: body`,
+      ),
+      heading: requireMetafieldValue(
+        editorialReference.heading,
+        `${editorialReference.id}: heading`,
+      ),
+      id: editorialReference.id,
+      image: imageReference.image,
+    };
+  });
+
+  const specifications = [
+    {
+      label: 'Product Weight',
+      logo: getOptionalMetafieldImage(
+        product.productWeightLogo,
+        `${product.handle}: custom.spec_product_weight_logo`,
+      ),
+      value: requireMetafieldValue(
+        product.productWeight,
+        `${product.handle}: custom.spec_product_weight`,
+      ),
+    },
+    {
+      label: 'Main Fabric Content',
+      logo: getOptionalMetafieldImage(
+        product.fabricContentLogo,
+        `${product.handle}: custom.spec_main_fabric_content_logo`,
+      ),
+      value: requireMetafieldValue(
+        product.fabricContent,
+        `${product.handle}: custom.spec_main_fabric_content`,
+      ),
+    },
+    {
+      label: 'Fit',
+      logo: getOptionalMetafieldImage(
+        product.fitLogo,
+        `${product.handle}: custom.spec_fit_logo`,
+      ),
+      value: requireMetafieldValue(
+        product.fit,
+        `${product.handle}: custom.spec_fit`,
+      ),
+    },
+    {
+      label: 'Temperature Range',
+      logo: getOptionalMetafieldImage(
+        product.temperatureRangeLogo,
+        `${product.handle}: custom.spec_temperature_range_logo`,
+      ),
+      value: requireMetafieldValue(
+        product.temperatureRange,
+        `${product.handle}: custom.spec_temperature_range`,
+      ),
+    },
+    {
+      label: 'Riding Conditions',
+      logo: getOptionalMetafieldImage(
+        product.ridingConditionsLogo,
+        `${product.handle}: custom.spec_riding_conditions_logo`,
+      ),
+      value: requireMetafieldValue(
+        product.ridingConditions,
+        `${product.handle}: custom.spec_riding_conditions`,
+      ),
+    },
+  ];
+  const careReferences = product.careInstructions?.references?.nodes;
+
+  if (!careReferences?.length) {
+    throw new Error(
+      `Product "${product.handle}" requires at least one custom.care_instructions selection.`,
+    );
+  }
+
+  const careInstructions = careReferences.map((careReference) => {
+    if (careReference.__typename !== 'Metaobject') {
+      throw new Error(
+        `Product "${product.handle}" has a non-metaobject care instruction reference.`,
+      );
+    }
+
+    const iconReference = careReference.icon?.reference;
+
+    if (iconReference?.__typename !== 'MediaImage') {
+      throw new Error(
+        `Care instruction "${careReference.id}" requires one icon.`,
+      );
+    }
+
+    if (!iconReference.image) {
+      throw new Error(
+        `Care instruction "${careReference.id}" has no icon image data.`,
+      );
+    }
+
+    return {
+      icon: iconReference.image,
+      id: careReference.id,
+      name: requireMetafieldValue(
+        careReference.name,
+        `${careReference.id}: name`,
+      ),
+    };
+  });
+
+  return {
+    careInstructions,
+    colorGalleries,
+    editorialBlocks,
+    specifications,
+    summary,
+  };
+}
+
+function requireMetafieldValue(
+  metafield: {value?: string | null} | null | undefined,
+  label: string,
+) {
+  const value = metafield?.value?.trim();
+
+  if (!value) {
+    throw new Error(`Missing required PDP field ${label}.`);
+  }
+
+  return value;
+}
+
+function getOptionalMetafieldImage(
+  metafield: ProductFragment['productWeightLogo'],
+  label: string,
+) {
+  if (!metafield) return null;
+
+  const reference = metafield.reference;
+
+  if (reference?.__typename !== 'MediaImage') {
+    throw new Error(`${label} must reference an image or SVG.`);
+  }
+
+  if (!reference.image) {
+    throw new Error(`${label} has no image data.`);
+  }
+
+  return reference.image;
+}
+
+function parseRequiredStringList(
+  rawValue: string | null | undefined,
+  label: string,
+  minimum: number,
+  maximum: number,
+) {
+  if (!rawValue) {
+    throw new Error(`Missing required PDP field ${label}.`);
+  }
+
+  let parsedValue: unknown;
+
+  try {
+    parsedValue = JSON.parse(rawValue);
+  } catch (error) {
+    throw new Error(`${label} is not valid JSON.`, {cause: error});
+  }
+
+  if (
+    !Array.isArray(parsedValue) ||
+    parsedValue.length < minimum ||
+    parsedValue.length > maximum ||
+    parsedValue.some(
+      (value) => typeof value !== 'string' || value.trim().length === 0,
+    )
+  ) {
+    throw new Error(
+      `${label} requires ${minimum}–${maximum} non-empty text values.`,
+    );
+  }
+
+  return (parsedValue as string[]).map((value) => value.trim());
 }
 
 function getRecentlyExploredHandles(request: Request, currentHandle: string) {
@@ -744,12 +1031,25 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
   }
 ` as const;
 
+const PDP_MEDIA_IMAGE_FRAGMENT = `#graphql
+  fragment PdpMediaImage on MediaImage {
+    image {
+      id
+      url
+      altText
+      width
+      height
+    }
+  }
+` as const;
+
 const PRODUCT_FRAGMENT = `#graphql
   fragment Product on Product {
     id
     title
     vendor
     handle
+    productType
     descriptionHtml
     description
     tags
@@ -782,6 +1082,150 @@ const PRODUCT_FRAGMENT = `#graphql
     mainColor: metafield(namespace: "custom", key: "main_color") {
       value
     }
+    pdpSummary: metafield(namespace: "custom", key: "pdp_summary") {
+      value
+    }
+    colorGalleries: metafield(
+      namespace: "custom"
+      key: "color_galleries"
+    ) {
+      references(first: 20) {
+        nodes {
+          __typename
+          ... on Metaobject {
+            id
+            handle
+            colorName: field(key: "color_name") {
+              value
+            }
+            images: field(key: "images") {
+              references(first: 6) {
+                nodes {
+                  __typename
+                  ...PdpMediaImage
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    editorialBlocks: metafield(
+      namespace: "custom"
+      key: "editorial_blocks"
+    ) {
+      references(first: 2) {
+        nodes {
+          __typename
+          ... on Metaobject {
+            id
+            heading: field(key: "heading") {
+              value
+            }
+            body: field(key: "body") {
+              value
+            }
+            image: field(key: "image") {
+              reference {
+                __typename
+                ...PdpMediaImage
+              }
+            }
+          }
+        }
+      }
+    }
+    productWeight: metafield(
+      namespace: "custom"
+      key: "spec_product_weight"
+    ) {
+      value
+    }
+    productWeightLogo: metafield(
+      namespace: "custom"
+      key: "spec_product_weight_logo"
+    ) {
+      reference {
+        __typename
+        ...PdpMediaImage
+      }
+    }
+    fabricContent: metafield(
+      namespace: "custom"
+      key: "spec_main_fabric_content"
+    ) {
+      value
+    }
+    fabricContentLogo: metafield(
+      namespace: "custom"
+      key: "spec_main_fabric_content_logo"
+    ) {
+      reference {
+        __typename
+        ...PdpMediaImage
+      }
+    }
+    fit: metafield(namespace: "custom", key: "spec_fit") {
+      value
+    }
+    fitLogo: metafield(namespace: "custom", key: "spec_fit_logo") {
+      reference {
+        __typename
+        ...PdpMediaImage
+      }
+    }
+    temperatureRange: metafield(
+      namespace: "custom"
+      key: "spec_temperature_range"
+    ) {
+      value
+    }
+    temperatureRangeLogo: metafield(
+      namespace: "custom"
+      key: "spec_temperature_range_logo"
+    ) {
+      reference {
+        __typename
+        ...PdpMediaImage
+      }
+    }
+    ridingConditions: metafield(
+      namespace: "custom"
+      key: "spec_riding_conditions"
+    ) {
+      value
+    }
+    ridingConditionsLogo: metafield(
+      namespace: "custom"
+      key: "spec_riding_conditions_logo"
+    ) {
+      reference {
+        __typename
+        ...PdpMediaImage
+      }
+    }
+    careInstructions: metafield(
+      namespace: "custom"
+      key: "care_instructions"
+    ) {
+      references(first: 20) {
+        nodes {
+          __typename
+          ... on Metaobject {
+            id
+            name: field(key: "name") {
+              value
+            }
+            icon: field(key: "icon") {
+              reference {
+                __typename
+                ...PdpMediaImage
+              }
+            }
+          }
+        }
+      }
+    }
     encodedVariantExistence
     encodedVariantAvailability
     options {
@@ -813,6 +1257,7 @@ const PRODUCT_FRAGMENT = `#graphql
     }
   }
   ${PRODUCT_VARIANT_FRAGMENT}
+  ${PDP_MEDIA_IMAGE_FRAGMENT}
 ` as const;
 
 const PRODUCT_QUERY = `#graphql

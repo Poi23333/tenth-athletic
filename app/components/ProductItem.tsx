@@ -3,11 +3,15 @@ import {Image, Money} from '@shopify/hydrogen';
 import type {
   ProductItemFragment,
   CollectionItemFragment,
+  SearchProductItemFragment,
 } from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import {WishlistButton} from '~/components/WishlistButton';
 
-type ProductCardFragment = CollectionItemFragment | ProductItemFragment;
+type ProductCardFragment =
+  | CollectionItemFragment
+  | ProductItemFragment
+  | SearchProductItemFragment;
 type ProductCardSizeOption = {
   name: string;
   available: boolean;
@@ -16,11 +20,19 @@ type ProductCardSizeOption = {
 export function ProductItem({
   product,
   loading,
+  trackingParameters,
 }: {
   product: ProductCardFragment;
   loading?: 'eager' | 'lazy';
+  trackingParameters?: string | null;
 }) {
   const variantUrl = useVariantUrl(product.handle);
+  const trackingSearch = new URLSearchParams(
+    trackingParameters ?? '',
+  ).toString();
+  const productUrl = trackingSearch
+    ? `${variantUrl}${variantUrl.includes('?') ? '&' : '?'}${trackingSearch}`
+    : variantUrl;
   const image = product.featuredImage;
   const fullImageReference = product.fullImage?.reference;
   const hoverImage =
@@ -37,7 +49,11 @@ export function ProductItem({
       className={`product-item${hasSizeOptions ? ' product-item--has-sizes' : ''}`}
       key={product.id}
     >
-      <Link className="product-item-link" prefetch="intent" to={variantUrl}>
+      <Link
+        className="product-item-media-link"
+        prefetch="intent"
+        to={productUrl}
+      >
         {image && (
           <div
             className={`product-item-media${hasHoverImage ? ' product-item-media--swap' : ''}`}
@@ -60,37 +76,45 @@ export function ProductItem({
             ) : null}
           </div>
         )}
-        <div className="product-item-copy product-item-copy--default">
-          <h4>{title}</h4>
-          {color ? <p className="product-item-color">{color}</p> : null}
-        </div>
-        {hasSizeOptions ? (
-          <div
-            className="product-item-copy product-item-copy--sizes"
-            aria-hidden="true"
-          >
-            <p className="product-item-sizes">
-              {sizeOptions.map((size) => (
-                <span
-                  className={`product-item-size${
-                    size.available ? '' : ' product-item-size--unavailable'
-                  }`}
-                  key={size.name}
-                >
-                  {size.name}
-                </span>
-              ))}
-            </p>
-          </div>
-        ) : null}
-        <div className="product-item-price">
-          <Money data={product.priceRange.minVariantPrice} />
-        </div>
       </Link>
-      <WishlistButton
-        className="product-item-wishlist"
-        productId={product.id}
-      />
+      <div className="product-item-info">
+        <Link
+          className="product-item-details-link"
+          prefetch="intent"
+          to={productUrl}
+        >
+          <div className="product-item-copy product-item-copy--default">
+            <h4>{title}</h4>
+            {color ? <p className="product-item-color">{color}</p> : null}
+          </div>
+          {hasSizeOptions ? (
+            <div
+              className="product-item-copy product-item-copy--sizes"
+              aria-hidden="true"
+            >
+              <p className="product-item-sizes">
+                {sizeOptions.map((size) => (
+                  <span
+                    className={`product-item-size${
+                      size.available ? '' : ' product-item-size--unavailable'
+                    }`}
+                    key={size.name}
+                  >
+                    {size.name}
+                  </span>
+                ))}
+              </p>
+            </div>
+          ) : null}
+          <div className="product-item-price">
+            <Money data={product.priceRange.minVariantPrice} />
+          </div>
+        </Link>
+        <WishlistButton
+          className="product-item-wishlist"
+          productId={product.id}
+        />
+      </div>
     </article>
   );
 }

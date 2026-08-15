@@ -1,3 +1,5 @@
+import {Link} from 'react-router';
+import {RiPauseFill, RiPlayFill} from '@remixicon/react';
 import {useEffect, useState, type CSSProperties} from 'react';
 
 const AUTOPLAY_DURATION_MS = 6000;
@@ -24,10 +26,11 @@ export type HomeBannerImage = {
 export function HomeBanner({slides}: {slides: HomeBannerSlide[]}) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [cycle, setCycle] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const hasMultipleSlides = slides.length > 1;
 
   useEffect(() => {
-    if (!hasMultipleSlides) return;
+    if (!hasMultipleSlides || isPaused) return;
 
     const timeout = window.setTimeout(() => {
       setActiveIndex((currentIndex) => (currentIndex + 1) % slides.length);
@@ -35,9 +38,12 @@ export function HomeBanner({slides}: {slides: HomeBannerSlide[]}) {
     }, AUTOPLAY_DURATION_MS);
 
     return () => window.clearTimeout(timeout);
-  }, [activeIndex, cycle, hasMultipleSlides, slides.length]);
+  }, [activeIndex, cycle, hasMultipleSlides, isPaused, slides.length]);
 
   if (slides.length === 0) return null;
+
+  const activeSlide = slides[activeIndex] ?? slides[0];
+  const mobileImage = activeSlide.mobileImage ?? activeSlide.backgroundImage;
 
   const selectSlide = (index: number) => {
     if (index === activeIndex) return;
@@ -45,13 +51,28 @@ export function HomeBanner({slides}: {slides: HomeBannerSlide[]}) {
     setCycle((currentCycle) => currentCycle + 1);
   };
 
+  const toggleAutoplay = () => {
+    if (isPaused) {
+      setCycle((currentCycle) => currentCycle + 1);
+    }
+
+    setIsPaused((currentValue) => !currentValue);
+  };
+
   return (
     <section
-      className="home-banner"
+      className={`home-banner${isPaused ? ' is-paused' : ''}`}
       aria-roledescription="carousel"
       aria-label="Featured collections"
       style={
-        {'--home-banner-duration': `${AUTOPLAY_DURATION_MS}ms`} as CSSProperties
+        {
+          '--home-banner-aspect-ratio': getAspectRatio(
+            activeSlide.backgroundImage,
+          ),
+          '--home-banner-duration': `${AUTOPLAY_DURATION_MS}ms`,
+          '--home-banner-mobile-aspect-ratio': getAspectRatio(mobileImage),
+          '--home-banner-offset': `${activeIndex * -100}%`,
+        } as CSSProperties
       }
     >
       <div className="home-banner-slides" aria-live="off">
@@ -72,10 +93,10 @@ export function HomeBanner({slides}: {slides: HomeBannerSlide[]}) {
                   />
                 ) : null}
                 <img
+                  {...(index === 0 ? {fetchpriority: 'high'} : {})}
                   alt={slide.backgroundImage.altText}
                   className="home-banner-image"
                   decoding="async"
-                  fetchPriority={index === 0 ? 'high' : 'auto'}
                   height={slide.backgroundImage.height ?? undefined}
                   loading={index === 0 ? 'eager' : 'lazy'}
                   src={slide.backgroundImage.url}
@@ -99,9 +120,15 @@ export function HomeBanner({slides}: {slides: HomeBannerSlide[]}) {
                   <p className="home-banner-slogan">{slide.slogan}</p>
                 ) : null}
                 {slide.button ? (
-                  <a className="home-banner-button" href={slide.button.url}>
-                    {slide.button.label}
-                  </a>
+                  isInternalPath(slide.button.url) ? (
+                    <Link className="home-banner-button" to={slide.button.url}>
+                      {slide.button.label}
+                    </Link>
+                  ) : (
+                    <a className="home-banner-button" href={slide.button.url}>
+                      {slide.button.label}
+                    </a>
+                  )
                 ) : null}
               </div>
             </article>
@@ -110,30 +137,60 @@ export function HomeBanner({slides}: {slides: HomeBannerSlide[]}) {
       </div>
 
       {hasMultipleSlides ? (
-        <div className="home-banner-pagination" aria-label="Select banner">
-          {slides.map((slide, index) => {
-            const isActive = index === activeIndex;
+        <>
+          <div className="home-banner-pagination" aria-label="Select banner">
+            {slides.map((slide, index) => {
+              const isActive = index === activeIndex;
 
-            return (
-              <button
-                aria-label={`Show banner ${index + 1}`}
-                aria-current={isActive ? 'true' : undefined}
-                className={`home-banner-pagination-item${
-                  isActive ? ' is-active' : ''
-                }`}
-                key={slide.id}
-                onClick={() => selectSlide(index)}
-                type="button"
-              >
-                <span
-                  className="home-banner-pagination-progress"
-                  key={isActive ? `${slide.id}-${cycle}` : slide.id}
-                />
-              </button>
-            );
-          })}
-        </div>
+              return (
+                <button
+                  aria-label={`Show banner ${index + 1}`}
+                  aria-current={isActive ? 'true' : undefined}
+                  className={`home-banner-pagination-item${
+                    isActive ? ' is-active' : ''
+                  }`}
+                  key={slide.id}
+                  onClick={() => selectSlide(index)}
+                  type="button"
+                >
+                  <span
+                    className="home-banner-pagination-progress"
+                    key={isActive ? `${slide.id}-${cycle}` : slide.id}
+                  />
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            aria-label={isPaused ? '开始自动轮播' : '暂停自动轮播'}
+            aria-pressed={isPaused}
+            className="home-banner-autoplay"
+            onClick={toggleAutoplay}
+            type="button"
+          >
+            {isPaused ? (
+              <RiPlayFill aria-hidden="true" />
+            ) : (
+              <RiPauseFill aria-hidden="true" />
+            )}
+          </button>
+        </>
       ) : null}
     </section>
   );
+}
+
+function getAspectRatio(image: HomeBannerImage) {
+  if (!image.width || !image.height) {
+    throw new Error(
+      `Banner image is missing intrinsic dimensions: ${image.url}`,
+    );
+  }
+
+  return `${image.width} / ${image.height}`;
+}
+
+function isInternalPath(url: string) {
+  return url.startsWith('/');
 }
