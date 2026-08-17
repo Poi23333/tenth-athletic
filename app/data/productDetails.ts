@@ -1,6 +1,7 @@
 import conditionHeat from '~/assets/product/auralite/condition-heat.svg';
 import fitContour from '~/assets/product/auralite/fit-contour.svg';
 import precisionCut from '~/assets/product/auralite/precision-cut.svg';
+import recycledPolyester from '~/assets/product/auralite/recycled-polyester.svg';
 import targetedAirflow from '~/assets/product/auralite/targeted-airflow.svg';
 import ultralightConstruction from '~/assets/product/auralite/ultralight-construction.svg';
 
@@ -56,6 +57,14 @@ const PERFORMANCE_TOP_PRESET: ProductFeaturePreset = {
       subtitle: 'Laser / Clean Construction',
       description:
         'Laser-cut components create precise edges, reduce unnecessary bulk, and enable clean integration of functional openings and construction details.',
+    },
+    {
+      id: 'recycled-polyester',
+      icon: recycledPolyester,
+      title: 'Recycled Polyester',
+      subtitle: 'Repurposed Material / Performance Retained',
+      description:
+        'Constructed with recycled polyester fibres to reduce reliance on virgin material while maintaining the durability, lightweight feel, and performance required for movement.',
     },
   ],
 };

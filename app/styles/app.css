@@ -3225,6 +3225,7 @@ body > main:has(.home) {
 
 .product-item-media {
   aspect-ratio: 4 / 5;
+  background: transparent;
   margin-bottom: 1rem;
   overflow: hidden;
   position: relative;
@@ -5869,7 +5870,7 @@ html:has(
 
 .product-editorial-media {
   aspect-ratio: 1;
-  background: var(--color-surface-container-low);
+  background: transparent;
   min-width: 0;
   overflow: hidden;
 }
@@ -5926,40 +5927,27 @@ html:has(
 
 .product-specs-logo {
   display: block;
-  height: 3.5rem;
+  height: auto;
+  max-height: 2rem;
+  max-width: 100%;
   object-fit: contain;
   object-position: left center;
-  width: 3.5rem;
+  width: auto;
 }
 
 .product-care-instructions {
-  display: flex;
   flex: 1;
-  flex-wrap: wrap;
-  gap: 1.5rem;
   min-width: 0;
 }
 
-.product-care-instruction {
-  align-items: flex-start;
-  display: flex;
-  flex: 0 1 8rem;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.product-care-instruction img {
+.product-care-instructions-image {
   display: block;
-  height: 3.5rem;
+  height: auto;
+  max-height: 2rem;
+  max-width: 100%;
   object-fit: contain;
   object-position: left center;
-  width: 3.5rem;
-}
-
-.product-care-instruction span {
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  line-height: 1.4;
+  width: auto;
 }
 
 .product-rail-image-link {
@@ -5972,7 +5960,7 @@ html:has(
 
 .product-rail-image-media {
   aspect-ratio: 2 / 3;
-  background: var(--color-surface-container-low);
+  background: transparent;
   overflow: hidden;
   position: relative;
 }

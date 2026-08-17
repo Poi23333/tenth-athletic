@@ -1478,6 +1478,31 @@ export type ProductFragment = Pick<
         })
     >;
   }>;
+  fabric?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+  fabricLogo?: StorefrontAPI.Maybe<{
+    reference?: StorefrontAPI.Maybe<
+      | {
+          __typename:
+            | 'Article'
+            | 'Collection'
+            | 'GenericFile'
+            | 'Metaobject'
+            | 'Model3d'
+            | 'Page'
+            | 'Product'
+            | 'ProductVariant'
+            | 'Video';
+        }
+      | ({__typename: 'MediaImage'} & {
+          image?: StorefrontAPI.Maybe<
+            Pick<
+              StorefrontAPI.Image,
+              'id' | 'url' | 'altText' | 'width' | 'height'
+            >
+          >;
+        })
+    >;
+  }>;
   fit?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
   fitLogo?: StorefrontAPI.Maybe<{
     reference?: StorefrontAPI.Maybe<
@@ -1557,52 +1582,57 @@ export type ProductFragment = Pick<
         })
     >;
   }>;
+  construction?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+  constructionLogo?: StorefrontAPI.Maybe<{
+    reference?: StorefrontAPI.Maybe<
+      | {
+          __typename:
+            | 'Article'
+            | 'Collection'
+            | 'GenericFile'
+            | 'Metaobject'
+            | 'Model3d'
+            | 'Page'
+            | 'Product'
+            | 'ProductVariant'
+            | 'Video';
+        }
+      | ({__typename: 'MediaImage'} & {
+          image?: StorefrontAPI.Maybe<
+            Pick<
+              StorefrontAPI.Image,
+              'id' | 'url' | 'altText' | 'width' | 'height'
+            >
+          >;
+        })
+    >;
+  }>;
   careInstructions?: StorefrontAPI.Maybe<{
-    references?: StorefrontAPI.Maybe<{
-      nodes: Array<
-        | {
-            __typename:
-              | 'Article'
-              | 'Collection'
-              | 'GenericFile'
-              | 'MediaImage'
-              | 'Model3d'
-              | 'Page'
-              | 'Product'
-              | 'ProductVariant'
-              | 'Video';
-          }
-        | ({__typename: 'Metaobject'} & Pick<StorefrontAPI.Metaobject, 'id'> & {
-              name?: StorefrontAPI.Maybe<
-                Pick<StorefrontAPI.MetaobjectField, 'value'>
-              >;
-              icon?: StorefrontAPI.Maybe<{
-                reference?: StorefrontAPI.Maybe<
-                  | {
-                      __typename:
-                        | 'Article'
-                        | 'Collection'
-                        | 'GenericFile'
-                        | 'Metaobject'
-                        | 'Model3d'
-                        | 'Page'
-                        | 'Product'
-                        | 'ProductVariant'
-                        | 'Video';
-                    }
-                  | ({__typename: 'MediaImage'} & {
-                      image?: StorefrontAPI.Maybe<
-                        Pick<
-                          StorefrontAPI.Image,
-                          'id' | 'url' | 'altText' | 'width' | 'height'
-                        >
-                      >;
-                    })
-                >;
-              }>;
-            })
-      >;
-    }>;
+    reference?: StorefrontAPI.Maybe<
+      | {
+          __typename:
+            | 'Article'
+            | 'Collection'
+            | 'Metaobject'
+            | 'Model3d'
+            | 'Page'
+            | 'Product'
+            | 'ProductVariant'
+            | 'Video';
+        }
+      | ({__typename: 'GenericFile'} & Pick<
+          StorefrontAPI.GenericFile,
+          'alt' | 'mimeType' | 'url'
+        >)
+      | ({__typename: 'MediaImage'} & {
+          image?: StorefrontAPI.Maybe<
+            Pick<
+              StorefrontAPI.Image,
+              'id' | 'url' | 'altText' | 'width' | 'height'
+            >
+          >;
+        })
+    >;
   }>;
   options: Array<
     Pick<StorefrontAPI.ProductOption, 'name'> & {
@@ -1913,6 +1943,31 @@ export type ProductQuery = {
             })
         >;
       }>;
+      fabric?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+      fabricLogo?: StorefrontAPI.Maybe<{
+        reference?: StorefrontAPI.Maybe<
+          | {
+              __typename:
+                | 'Article'
+                | 'Collection'
+                | 'GenericFile'
+                | 'Metaobject'
+                | 'Model3d'
+                | 'Page'
+                | 'Product'
+                | 'ProductVariant'
+                | 'Video';
+            }
+          | ({__typename: 'MediaImage'} & {
+              image?: StorefrontAPI.Maybe<
+                Pick<
+                  StorefrontAPI.Image,
+                  'id' | 'url' | 'altText' | 'width' | 'height'
+                >
+              >;
+            })
+        >;
+      }>;
       fit?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
       fitLogo?: StorefrontAPI.Maybe<{
         reference?: StorefrontAPI.Maybe<
@@ -1992,55 +2047,59 @@ export type ProductQuery = {
             })
         >;
       }>;
+      construction?: StorefrontAPI.Maybe<
+        Pick<StorefrontAPI.Metafield, 'value'>
+      >;
+      constructionLogo?: StorefrontAPI.Maybe<{
+        reference?: StorefrontAPI.Maybe<
+          | {
+              __typename:
+                | 'Article'
+                | 'Collection'
+                | 'GenericFile'
+                | 'Metaobject'
+                | 'Model3d'
+                | 'Page'
+                | 'Product'
+                | 'ProductVariant'
+                | 'Video';
+            }
+          | ({__typename: 'MediaImage'} & {
+              image?: StorefrontAPI.Maybe<
+                Pick<
+                  StorefrontAPI.Image,
+                  'id' | 'url' | 'altText' | 'width' | 'height'
+                >
+              >;
+            })
+        >;
+      }>;
       careInstructions?: StorefrontAPI.Maybe<{
-        references?: StorefrontAPI.Maybe<{
-          nodes: Array<
-            | {
-                __typename:
-                  | 'Article'
-                  | 'Collection'
-                  | 'GenericFile'
-                  | 'MediaImage'
-                  | 'Model3d'
-                  | 'Page'
-                  | 'Product'
-                  | 'ProductVariant'
-                  | 'Video';
-              }
-            | ({__typename: 'Metaobject'} & Pick<
-                StorefrontAPI.Metaobject,
-                'id'
-              > & {
-                  name?: StorefrontAPI.Maybe<
-                    Pick<StorefrontAPI.MetaobjectField, 'value'>
-                  >;
-                  icon?: StorefrontAPI.Maybe<{
-                    reference?: StorefrontAPI.Maybe<
-                      | {
-                          __typename:
-                            | 'Article'
-                            | 'Collection'
-                            | 'GenericFile'
-                            | 'Metaobject'
-                            | 'Model3d'
-                            | 'Page'
-                            | 'Product'
-                            | 'ProductVariant'
-                            | 'Video';
-                        }
-                      | ({__typename: 'MediaImage'} & {
-                          image?: StorefrontAPI.Maybe<
-                            Pick<
-                              StorefrontAPI.Image,
-                              'id' | 'url' | 'altText' | 'width' | 'height'
-                            >
-                          >;
-                        })
-                    >;
-                  }>;
-                })
-          >;
-        }>;
+        reference?: StorefrontAPI.Maybe<
+          | {
+              __typename:
+                | 'Article'
+                | 'Collection'
+                | 'Metaobject'
+                | 'Model3d'
+                | 'Page'
+                | 'Product'
+                | 'ProductVariant'
+                | 'Video';
+            }
+          | ({__typename: 'GenericFile'} & Pick<
+              StorefrontAPI.GenericFile,
+              'alt' | 'mimeType' | 'url'
+            >)
+          | ({__typename: 'MediaImage'} & {
+              image?: StorefrontAPI.Maybe<
+                Pick<
+                  StorefrontAPI.Image,
+                  'id' | 'url' | 'altText' | 'width' | 'height'
+                >
+              >;
+            })
+        >;
       }>;
       options: Array<
         Pick<StorefrontAPI.ProductOption, 'name'> & {
@@ -2527,7 +2586,7 @@ interface GeneratedQueryTypes {
     return: PoliciesQuery;
     variables: PoliciesQueryVariables;
   };
-  '#graphql\n  query Product(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...Product\n    }\n  }\n  #graphql\n  fragment Product on Product {\n    id\n    title\n    vendor\n    handle\n    productType\n    descriptionHtml\n    description\n    tags\n    images(first: 20) {\n      nodes {\n        id\n        url\n        altText\n        width\n        height\n      }\n    }\n    secondaryImage: metafield(\n      namespace: "custom"\n      key: "img"\n    ) {\n      reference {\n        __typename\n        ... on MediaImage {\n          image {\n            id\n            url\n            altText\n            width\n            height\n          }\n        }\n      }\n    }\n    mainColor: metafield(namespace: "custom", key: "main_color") {\n      value\n    }\n    pdpSummary: metafield(namespace: "custom", key: "pdp_summary") {\n      value\n    }\n    colorGalleries: metafield(\n      namespace: "custom"\n      key: "color_galleries"\n    ) {\n      references(first: 20) {\n        nodes {\n          __typename\n          ... on Metaobject {\n            id\n            handle\n            colorName: field(key: "color_name") {\n              value\n            }\n            images: field(key: "images") {\n              references(first: 6) {\n                nodes {\n                  __typename\n                  ...PdpMediaImage\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n    editorialBlocks: metafield(\n      namespace: "custom"\n      key: "editorial_blocks"\n    ) {\n      references(first: 2) {\n        nodes {\n          __typename\n          ... on Metaobject {\n            id\n            heading: field(key: "heading") {\n              value\n            }\n            body: field(key: "body") {\n              value\n            }\n            image: field(key: "image") {\n              reference {\n                __typename\n                ...PdpMediaImage\n              }\n            }\n          }\n        }\n      }\n    }\n    productWeight: metafield(\n      namespace: "custom"\n      key: "spec_product_weight"\n    ) {\n      value\n    }\n    productWeightLogo: metafield(\n      namespace: "custom"\n      key: "spec_product_weight_logo"\n    ) {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    fabricContent: metafield(\n      namespace: "custom"\n      key: "spec_main_fabric_content"\n    ) {\n      value\n    }\n    fabricContentLogo: metafield(\n      namespace: "custom"\n      key: "spec_main_fabric_content_logo"\n    ) {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    fit: metafield(namespace: "custom", key: "spec_fit") {\n      value\n    }\n    fitLogo: metafield(namespace: "custom", key: "spec_fit_logo") {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    temperatureRange: metafield(\n      namespace: "custom"\n      key: "spec_temperature_range"\n    ) {\n      value\n    }\n    temperatureRangeLogo: metafield(\n      namespace: "custom"\n      key: "spec_temperature_range_logo"\n    ) {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    ridingConditions: metafield(\n      namespace: "custom"\n      key: "spec_riding_conditions"\n    ) {\n      value\n    }\n    ridingConditionsLogo: metafield(\n      namespace: "custom"\n      key: "spec_riding_conditions_logo"\n    ) {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    careInstructions: metafield(\n      namespace: "custom"\n      key: "care_instructions"\n    ) {\n      references(first: 20) {\n        nodes {\n          __typename\n          ... on Metaobject {\n            id\n            name: field(key: "name") {\n              value\n            }\n            icon: field(key: "icon") {\n              reference {\n                __typename\n                ...PdpMediaImage\n              }\n            }\n          }\n        }\n      }\n    }\n    encodedVariantExistence\n    encodedVariantAvailability\n    options {\n      name\n      optionValues {\n        name\n        firstSelectableVariant {\n          ...ProductVariant\n        }\n        swatch {\n          color\n          image {\n            previewImage {\n              url\n            }\n          }\n        }\n      }\n    }\n    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...ProductVariant\n    }\n    adjacentVariants (selectedOptions: $selectedOptions) {\n      ...ProductVariant\n    }\n    seo {\n      description\n      title\n    }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n  #graphql\n  fragment PdpMediaImage on MediaImage {\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n\n\n': {
+  '#graphql\n  query Product(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...Product\n    }\n  }\n  #graphql\n  fragment Product on Product {\n    id\n    title\n    vendor\n    handle\n    productType\n    descriptionHtml\n    description\n    tags\n    images(first: 20) {\n      nodes {\n        id\n        url\n        altText\n        width\n        height\n      }\n    }\n    secondaryImage: metafield(\n      namespace: "custom"\n      key: "img"\n    ) {\n      reference {\n        __typename\n        ... on MediaImage {\n          image {\n            id\n            url\n            altText\n            width\n            height\n          }\n        }\n      }\n    }\n    mainColor: metafield(namespace: "custom", key: "main_color") {\n      value\n    }\n    pdpSummary: metafield(namespace: "custom", key: "pdp_summary") {\n      value\n    }\n    colorGalleries: metafield(\n      namespace: "custom"\n      key: "color_galleries"\n    ) {\n      references(first: 20) {\n        nodes {\n          __typename\n          ... on Metaobject {\n            id\n            handle\n            colorName: field(key: "color_name") {\n              value\n            }\n            images: field(key: "images") {\n              references(first: 6) {\n                nodes {\n                  __typename\n                  ...PdpMediaImage\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n    editorialBlocks: metafield(\n      namespace: "custom"\n      key: "editorial_blocks"\n    ) {\n      references(first: 2) {\n        nodes {\n          __typename\n          ... on Metaobject {\n            id\n            heading: field(key: "heading") {\n              value\n            }\n            body: field(key: "body") {\n              value\n            }\n            image: field(key: "image") {\n              reference {\n                __typename\n                ...PdpMediaImage\n              }\n            }\n          }\n        }\n      }\n    }\n    productWeight: metafield(\n      namespace: "custom"\n      key: "spec_product_weight"\n    ) {\n      value\n    }\n    productWeightLogo: metafield(\n      namespace: "custom"\n      key: "spec_product_weight_logo"\n    ) {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    fabricContent: metafield(\n      namespace: "custom"\n      key: "spec_main_fabric_content"\n    ) {\n      value\n    }\n    fabricContentLogo: metafield(\n      namespace: "custom"\n      key: "spec_main_fabric_content_logo"\n    ) {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    fabric: metafield(namespace: "custom", key: "spec_fabric") {\n      value\n    }\n    fabricLogo: metafield(namespace: "custom", key: "spec_fabric_logo") {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    fit: metafield(namespace: "custom", key: "spec_fit") {\n      value\n    }\n    fitLogo: metafield(namespace: "custom", key: "spec_fit_logo") {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    temperatureRange: metafield(\n      namespace: "custom"\n      key: "spec_temperature_range"\n    ) {\n      value\n    }\n    temperatureRangeLogo: metafield(\n      namespace: "custom"\n      key: "spec_temperature_range_logo"\n    ) {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    ridingConditions: metafield(\n      namespace: "custom"\n      key: "spec_riding_conditions"\n    ) {\n      value\n    }\n    ridingConditionsLogo: metafield(\n      namespace: "custom"\n      key: "spec_riding_conditions_logo"\n    ) {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    construction: metafield(\n      namespace: "custom"\n      key: "spec_construction"\n    ) {\n      value\n    }\n    constructionLogo: metafield(\n      namespace: "custom"\n      key: "spec_construction_logo"\n    ) {\n      reference {\n        __typename\n        ...PdpMediaImage\n      }\n    }\n    careInstructions: metafield(\n      namespace: "custom"\n      key: "care_instructions"\n    ) {\n      reference {\n        __typename\n        ... on GenericFile {\n          alt\n          mimeType\n          url\n        }\n        ... on MediaImage {\n          image {\n            id\n            url\n            altText\n            width\n            height\n          }\n        }\n      }\n    }\n    encodedVariantExistence\n    encodedVariantAvailability\n    options {\n      name\n      optionValues {\n        name\n        firstSelectableVariant {\n          ...ProductVariant\n        }\n        swatch {\n          color\n          image {\n            previewImage {\n              url\n            }\n          }\n        }\n      }\n    }\n    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...ProductVariant\n    }\n    adjacentVariants (selectedOptions: $selectedOptions) {\n      ...ProductVariant\n    }\n    seo {\n      description\n      title\n    }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n  #graphql\n  fragment PdpMediaImage on MediaImage {\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n\n\n': {
     return: ProductQuery;
     variables: ProductQueryVariables;
   };

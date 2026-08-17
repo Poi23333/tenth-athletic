@@ -331,10 +331,6 @@ export default function Product() {
 
       <ProductFeatureIndex productType={product.productType} />
 
-      <ProductEditorialContent blocks={pdp.editorialBlocks} />
-
-      <ProductCampaignVideo ref={videoBoundaryRef} />
-
       <section className="product-information-section">
         <div className="product-accordions">
           {PRODUCT_INFORMATION_SECTIONS.map((item, index) => (
@@ -349,8 +345,13 @@ export default function Product() {
         </div>
       </section>
 
+      <ProductEditorialContent blocks={pdp.editorialBlocks} />
+
+      <ProductCampaignVideo ref={videoBoundaryRef} />
+
       <ProductTechnicalSpecs
         careInstructions={pdp.careInstructions}
+        postSkuSpecifications={pdp.postSkuSpecifications}
         sku={selectedVariant?.sku}
         specifications={pdp.specifications}
       />
@@ -739,6 +740,17 @@ function normalizeProductPdp(product: ProductFragment) {
       ),
     },
     {
+      label: 'Fabric',
+      logo: getOptionalMetafieldImage(
+        product.fabricLogo,
+        `${product.handle}: custom.spec_fabric_logo`,
+      ),
+      value: requireMetafieldValue(
+        product.fabric,
+        `${product.handle}: custom.spec_fabric`,
+      ),
+    },
+    {
       label: 'Fit',
       logo: getOptionalMetafieldImage(
         product.fitLogo,
@@ -772,49 +784,29 @@ function normalizeProductPdp(product: ProductFragment) {
       ),
     },
   ];
-  const careReferences = product.careInstructions?.references?.nodes;
-
-  if (!careReferences?.length) {
-    throw new Error(
-      `Product "${product.handle}" requires at least one custom.care_instructions selection.`,
-    );
-  }
-
-  const careInstructions = careReferences.map((careReference) => {
-    if (careReference.__typename !== 'Metaobject') {
-      throw new Error(
-        `Product "${product.handle}" has a non-metaobject care instruction reference.`,
-      );
-    }
-
-    const iconReference = careReference.icon?.reference;
-
-    if (iconReference?.__typename !== 'MediaImage') {
-      throw new Error(
-        `Care instruction "${careReference.id}" requires one icon.`,
-      );
-    }
-
-    if (!iconReference.image) {
-      throw new Error(
-        `Care instruction "${careReference.id}" has no icon image data.`,
-      );
-    }
-
-    return {
-      icon: iconReference.image,
-      id: careReference.id,
-      name: requireMetafieldValue(
-        careReference.name,
-        `${careReference.id}: name`,
+  const postSkuSpecifications = [
+    {
+      label: 'Constraction',
+      logo: getOptionalMetafieldImage(
+        product.constructionLogo,
+        `${product.handle}: custom.spec_construction_logo`,
       ),
-    };
-  });
+      value: requireMetafieldValue(
+        product.construction,
+        `${product.handle}: custom.spec_construction`,
+      ),
+    },
+  ];
+  const careInstructions = getRequiredMetafieldFile(
+    product.careInstructions,
+    `${product.handle}: custom.care_instructions`,
+  );
 
   return {
     careInstructions,
     colorGalleries,
     editorialBlocks,
+    postSkuSpecifications,
     specifications,
     summary,
   };
@@ -831,6 +823,27 @@ function requireMetafieldValue(
   }
 
   return value;
+}
+
+function getRequiredMetafieldFile(
+  metafield: ProductFragment['careInstructions'],
+  label: string,
+) {
+  const reference = metafield?.reference;
+
+  if (reference?.__typename === 'GenericFile') {
+    if (!reference.url) {
+      throw new Error(`PDP file ${label} has no URL.`);
+    }
+
+    return {altText: reference.alt, url: reference.url};
+  }
+
+  if (reference?.__typename === 'MediaImage' && reference.image) {
+    return reference.image;
+  }
+
+  throw new Error(`Missing required PDP file ${label}.`);
 }
 
 function getOptionalMetafieldImage(
@@ -1165,6 +1178,15 @@ const PRODUCT_FRAGMENT = `#graphql
         ...PdpMediaImage
       }
     }
+    fabric: metafield(namespace: "custom", key: "spec_fabric") {
+      value
+    }
+    fabricLogo: metafield(namespace: "custom", key: "spec_fabric_logo") {
+      reference {
+        __typename
+        ...PdpMediaImage
+      }
+    }
     fit: metafield(namespace: "custom", key: "spec_fit") {
       value
     }
@@ -1204,24 +1226,39 @@ const PRODUCT_FRAGMENT = `#graphql
         ...PdpMediaImage
       }
     }
+    construction: metafield(
+      namespace: "custom"
+      key: "spec_construction"
+    ) {
+      value
+    }
+    constructionLogo: metafield(
+      namespace: "custom"
+      key: "spec_construction_logo"
+    ) {
+      reference {
+        __typename
+        ...PdpMediaImage
+      }
+    }
     careInstructions: metafield(
       namespace: "custom"
       key: "care_instructions"
     ) {
-      references(first: 20) {
-        nodes {
-          __typename
-          ... on Metaobject {
+      reference {
+        __typename
+        ... on GenericFile {
+          alt
+          mimeType
+          url
+        }
+        ... on MediaImage {
+          image {
             id
-            name: field(key: "name") {
-              value
-            }
-            icon: field(key: "icon") {
-              reference {
-                __typename
-                ...PdpMediaImage
-              }
-            }
+            url
+            altText
+            width
+            height
           }
         }
       }

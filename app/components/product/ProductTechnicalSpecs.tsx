@@ -11,20 +11,40 @@ export type ProductTechnicalSpecification = {
   value: string;
 };
 
-export type ProductCareInstruction = {
-  icon: TechnicalSpecImage;
-  id: string;
-  name: string;
-};
+function TechnicalSpecificationRow({
+  specification,
+}: {
+  specification: ProductTechnicalSpecification;
+}) {
+  return (
+    <div className="product-specs-row">
+      <div className="product-specs-key">{specification.label}</div>
+      <div className="product-specs-value">
+        {specification.logo ? (
+          <img
+            alt={specification.logo.altText || ''}
+            className="product-specs-logo"
+            src={specification.logo.url}
+          />
+        ) : null}
+        <span>{specification.value}</span>
+      </div>
+    </div>
+  );
+}
 
 export const ProductTechnicalSpecs = forwardRef<
   HTMLElement,
   {
-    careInstructions: ReadonlyArray<ProductCareInstruction>;
+    careInstructions: TechnicalSpecImage;
+    postSkuSpecifications: ReadonlyArray<ProductTechnicalSpecification>;
     sku?: string | null;
     specifications: ReadonlyArray<ProductTechnicalSpecification>;
   }
->(function ProductTechnicalSpecs({careInstructions, sku, specifications}, ref) {
+>(function ProductTechnicalSpecs(
+  {careInstructions, postSkuSpecifications, sku, specifications},
+  ref,
+) {
   return (
     <section
       className="product-specs"
@@ -37,38 +57,34 @@ export const ProductTechnicalSpecs = forwardRef<
         Specifications
       </h2>
       <div className="product-specs-table">
-        {specifications.map((item) => (
-          <div className="product-specs-row" key={item.label}>
-            <div className="product-specs-key">{item.label}</div>
-            <div className="product-specs-value">
-              {item.logo ? (
-                <img
-                  alt={item.logo.altText || ''}
-                  className="product-specs-logo"
-                  src={item.logo.url}
-                />
-              ) : null}
-              <span>{item.value}</span>
-            </div>
-          </div>
+        {specifications.map((specification) => (
+          <TechnicalSpecificationRow
+            key={specification.label}
+            specification={specification}
+          />
         ))}
-        <div className="product-specs-row">
-          <div className="product-specs-key">Care Instructions</div>
-          <div className="product-care-instructions">
-            {careInstructions.map((instruction) => (
-              <div className="product-care-instruction" key={instruction.id}>
-                <img alt="" aria-hidden="true" src={instruction.icon.url} />
-                <span>{instruction.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
         {sku ? (
           <div className="product-specs-row">
             <div className="product-specs-key">SKU</div>
             <div className="product-specs-value">{sku}</div>
           </div>
         ) : null}
+        {postSkuSpecifications.map((specification) => (
+          <TechnicalSpecificationRow
+            key={specification.label}
+            specification={specification}
+          />
+        ))}
+        <div className="product-specs-row">
+          <div className="product-specs-key">Care Instructions</div>
+          <div className="product-care-instructions">
+            <img
+              alt={careInstructions.altText || 'Care instructions'}
+              className="product-care-instructions-image"
+              src={careInstructions.url}
+            />
+          </div>
+        </div>
       </div>
     </section>
   );
