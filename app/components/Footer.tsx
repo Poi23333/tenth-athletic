@@ -1,6 +1,9 @@
 import {useEffect, useId, useRef, useState} from 'react';
 import {RiAddLine, RiCloseLine} from '@remixicon/react';
 import {NavLink} from 'react-router';
+import {useAside} from '~/components/Aside';
+import {formatRegionNavLabel, type Region} from '~/data/regions';
+import {FOOTER_SUPPORT_BENEFITS} from '~/data/supportBenefits';
 
 type FooterLink = {
   label: string;
@@ -32,7 +35,14 @@ const FOOTER_COLUMNS: FooterLink[][] = [
   ],
 ];
 
-export function Footer({mainColor}: {mainColor: string}) {
+export function Footer({
+  currentRegion,
+  mainColor,
+}: {
+  currentRegion: Region;
+  mainColor: string;
+}) {
+  const {open} = useAside();
   const [isFieldNotesOpen, setIsFieldNotesOpen] = useState(false);
   const panelId = useId();
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -58,9 +68,22 @@ export function Footer({mainColor}: {mainColor: string}) {
       className={`footer${isFieldNotesOpen ? ' is-field-notes-open' : ''}`}
       style={{'--shop-main-color': mainColor} as React.CSSProperties}
     >
+      <div className="footer-benefits" aria-label="Delivery and returns">
+        {FOOTER_SUPPORT_BENEFITS.map((benefit) => (
+          <section className="footer-benefit" key={benefit.title}>
+            <div className="footer-benefit-heading">
+              <div className="footer-benefit-icon">
+                <img src={benefit.image} alt="" aria-hidden="true" />
+              </div>
+              <h2>{benefit.title}</h2>
+            </div>
+            <p>{benefit.description}</p>
+          </section>
+        ))}
+      </div>
       <div className="footer-inner">
+        <div className="footer-rule" aria-hidden="true" />
         <div className="footer-links">
-          <div className="footer-rule" aria-hidden="true" />
           <div className="footer-columns">
             {FOOTER_COLUMNS.map((column) => (
               <ul className="footer-column" key={column[0].label}>
@@ -73,6 +96,26 @@ export function Footer({mainColor}: {mainColor: string}) {
             ))}
           </div>
         </div>
+
+        <p className="footer-copyright">
+          © Tenth Athletic Limited 2026. All rights reserved. VAT n.GB 512329912
+        </p>
+
+        <img
+          alt="Tenth Athletic"
+          className="footer-logo"
+          height={71}
+          src="/images/tenth-athletic-outline-logo.svg"
+          width={637}
+        />
+
+        <button
+          className="footer-region reset"
+          onClick={() => open('locale')}
+          type="button"
+        >
+          {formatRegionNavLabel(currentRegion)}
+        </button>
       </div>
 
       <div className="footer-field-notes-shell">
@@ -157,9 +200,6 @@ export function Footer({mainColor}: {mainColor: string}) {
           </span>
           <span className="footer-copyright-icon" aria-hidden="true">
             {isFieldNotesOpen ? <RiCloseLine /> : <RiAddLine />}
-          </span>
-          <span className="sr-only">
-            © Tenth Athletic Limited 2026. All rights reserved.
           </span>
         </button>
       </div>

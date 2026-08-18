@@ -11,6 +11,7 @@ import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
 import {CookieConsent} from '~/components/CookieConsent';
 import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
+import {GlobalLoadingProvider} from '~/components/GlobalLoading';
 import {RegionBanner} from '~/components/RegionBanner';
 import {WishlistProvider} from '~/components/WishlistProvider';
 import type {GeoBannerData} from '~/root';
@@ -59,49 +60,51 @@ export function PageLayout({
 
   return (
     <WishlistProvider>
-      <Aside.Provider>
-        <CartAside cart={cart} />
-        <ShopAside header={header} publicStoreDomain={publicStoreDomain} />
-        <GenderMenuAside
-          type="man"
-          heading="Man"
-          menu={header.manMenu}
-          primaryDomainUrl={header.shop.primaryDomain?.url ?? ''}
-          publicStoreDomain={publicStoreDomain}
-        />
-        <GenderMenuAside
-          type="woman"
-          heading="Woman"
-          menu={header.womanMenu}
-          primaryDomainUrl={header.shop.primaryDomain?.url ?? ''}
-          publicStoreDomain={publicStoreDomain}
-        />
-        <FieldIndexAside />
-        <LocaleAside regions={regions} currentRegion={currentRegion} />
-        <MobileMenuAside
-          cart={cart}
-          isLoggedIn={isLoggedIn}
-          currentRegion={currentRegion}
-        />
-        <GlobalDotMatrix />
-        {geoBanner?.show ? (
-          <RegionBanner
-            currentRegion={geoBanner.currentRegion}
-            suggestedRegion={geoBanner.suggestedRegion}
+      <GlobalLoadingProvider>
+        <Aside.Provider>
+          <CartAside cart={cart} />
+          <ShopAside header={header} publicStoreDomain={publicStoreDomain} />
+          <GenderMenuAside
+            type="man"
+            heading="Man"
+            menu={header.manMenu}
+            primaryDomainUrl={header.shop.primaryDomain?.url ?? ''}
+            publicStoreDomain={publicStoreDomain}
           />
-        ) : null}
-        {header && (
-          <Header
-            header={header}
+          <GenderMenuAside
+            type="woman"
+            heading="Woman"
+            menu={header.womanMenu}
+            primaryDomainUrl={header.shop.primaryDomain?.url ?? ''}
+            publicStoreDomain={publicStoreDomain}
+          />
+          <FieldIndexAside />
+          <LocaleAside regions={regions} currentRegion={currentRegion} />
+          <MobileMenuAside
             cart={cart}
             isLoggedIn={isLoggedIn}
             currentRegion={currentRegion}
           />
-        )}
-        <main>{children}</main>
-        <Footer mainColor={footerMainColor} />
-        <CookieConsent />
-      </Aside.Provider>
+          <GlobalDotMatrix />
+          {geoBanner?.show ? (
+            <RegionBanner
+              currentRegion={geoBanner.currentRegion}
+              suggestedRegion={geoBanner.suggestedRegion}
+            />
+          ) : null}
+          {header && (
+            <Header
+              header={header}
+              cart={cart}
+              isLoggedIn={isLoggedIn}
+              currentRegion={currentRegion}
+            />
+          )}
+          <main>{children}</main>
+          <Footer currentRegion={currentRegion} mainColor={footerMainColor} />
+          <CookieConsent />
+        </Aside.Provider>
+      </GlobalLoadingProvider>
     </WishlistProvider>
   );
 }

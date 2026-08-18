@@ -3,6 +3,7 @@ import type {Route} from './+types/cart';
 import type {CartQueryDataReturn} from '@shopify/hydrogen';
 import {CartForm} from '@shopify/hydrogen';
 import {CartMain} from '~/components/CartMain';
+import {COMPLIMENTARY_DELIVERY, RETURNS_30_DAYS} from '~/data/supportBenefits';
 import brandLogo from '~/assets/logo.svg';
 
 export const meta: Route.MetaFunction = () => {
@@ -149,17 +150,14 @@ function CartSupport() {
         <p>Free standard delivery on UK orders over £150.</p>
         <p>Free returns on all UK orders.</p>
       </div>
-      <SupportItem
-        image="/images/cart/returns-30-days.svg"
-        title="30-Day Returns"
-      >
-        Free within the UK. International return shipping applies.
+      <SupportItem image={RETURNS_30_DAYS.image} title={RETURNS_30_DAYS.title}>
+        {RETURNS_30_DAYS.description}
       </SupportItem>
       <SupportItem
-        image="/images/cart/complimentary-delivery.svg"
-        title="Complimentary UK Delivery"
+        image={COMPLIMENTARY_DELIVERY.image}
+        title={COMPLIMENTARY_DELIVERY.title}
       >
-        On orders over £150. International shipping is calculated at checkout.
+        {COMPLIMENTARY_DELIVERY.description}
       </SupportItem>
       <SupportItem
         image="/images/cart/distance-programme.svg"

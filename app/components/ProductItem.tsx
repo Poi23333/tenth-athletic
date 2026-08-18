@@ -7,16 +7,12 @@ import type {
 } from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import {WishlistButton} from '~/components/WishlistButton';
+import {getProductSizeOptions} from '~/lib/productSizeOptions';
 
 type ProductCardFragment =
   | CollectionItemFragment
   | ProductItemFragment
   | SearchProductItemFragment;
-type ProductCardSizeOption = {
-  name: string;
-  available: boolean;
-};
-
 export function ProductItem({
   product,
   loading,
@@ -34,13 +30,9 @@ export function ProductItem({
     ? `${variantUrl}${variantUrl.includes('?') ? '&' : '?'}${trackingSearch}`
     : variantUrl;
   const image = product.featuredImage;
-  const fullImageReference = product.fullImage?.reference;
-  const hoverImage =
-    fullImageReference?.__typename === 'MediaImage'
-      ? fullImageReference.image
-      : null;
+  const hoverImage = product.images.nodes[1] ?? null;
   const hasHoverImage = Boolean(hoverImage);
-  const sizeOptions = getSizeOptions(product);
+  const sizeOptions = getProductSizeOptions(product);
   const hasSizeOptions = sizeOptions.length > 0;
   const {title, color} = getProductDisplayParts(product.title);
 
@@ -158,46 +150,4 @@ function getProductDisplayParts(title: string) {
 
 function isColorName(value: string) {
   return COLOR_NAMES.includes(value.trim().toLowerCase());
-}
-
-function getSizeOptions(product: ProductCardFragment) {
-  const sizeOption = product.options.find(
-    (option: ProductCardFragment['options'][number]) =>
-      option.name.trim().toLowerCase() === 'size',
-  );
-
-  if (!sizeOption) {
-    return [];
-  }
-
-  const availabilityBySize = new Map<string, boolean>();
-
-  for (const variant of product.variants
-    .nodes as ProductCardFragment['variants']['nodes']) {
-    const sizeValue = variant.selectedOptions.find(
-      (option: (typeof variant.selectedOptions)[number]) =>
-        option.name.trim().toLowerCase() === 'size',
-    )?.value;
-
-    if (!sizeValue) {
-      continue;
-    }
-
-    availabilityBySize.set(
-      sizeValue,
-      Boolean(availabilityBySize.get(sizeValue)) ||
-        (typeof variant.quantityAvailable === 'number'
-          ? variant.quantityAvailable > 0
-          : variant.availableForSale),
-    );
-  }
-
-  return sizeOption.optionValues.map(
-    (
-      value: ProductCardFragment['options'][number]['optionValues'][number],
-    ): ProductCardSizeOption => ({
-      name: value.name,
-      available: availabilityBySize.get(value.name) ?? false,
-    }),
-  );
 }

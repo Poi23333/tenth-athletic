@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 78 78">
+  <defs>
+    <path id="triangle" d="M0 0h8v8z" fill="#010101"/>
+  </defs>
+  <g>
+    <use href="#triangle" x="0" y="0"/><use href="#triangle" x="14" y="0"/><use href="#triangle" x="28" y="0"/><use href="#triangle" x="42" y="0"/><use href="#triangle" x="56" y="0"/><use href="#triangle" x="70" y="0"/>
+    <use href="#triangle" x="0" y="14"/><use href="#triangle" x="14" y="14"/><use href="#triangle" x="28" y="14"/><use href="#triangle" x="42" y="14"/><use href="#triangle" x="56" y="14"/><use href="#triangle" x="70" y="14"/>
+    <use href="#triangle" x="0" y="28"/><use href="#triangle" x="14" y="28"/><use href="#triangle" x="28" y="28"/><use href="#triangle" x="42" y="28"/><use href="#triangle" x="56" y="28"/><use href="#triangle" x="70" y="28"/>
+    <use href="#triangle" x="0" y="42"/><use href="#triangle" x="14" y="42"/><use href="#triangle" x="28" y="42"/><use href="#triangle" x="42" y="42"/><use href="#triangle" x="56" y="42"/><use href="#triangle" x="70" y="42"/>
+    <use href="#triangle" x="0" y="56"/><use href="#triangle" x="14" y="56"/><use href="#triangle" x="28" y="56"/><use href="#triangle" x="42" y="56"/><use href="#triangle" x="56" y="56"/><use href="#triangle" x="70" y="56"/>
+    <use href="#triangle" x="0" y="70"/><use href="#triangle" x="14" y="70"/><use href="#triangle" x="28" y="70"/><use href="#triangle" x="42" y="70"/><use href="#triangle" x="56" y="70"/><use href="#triangle" x="70" y="70"/>
+  </g>
+</svg>

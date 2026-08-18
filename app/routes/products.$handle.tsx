@@ -187,7 +187,13 @@ export default function Product() {
     );
   }
 
-  const heroImages = selectedGallery.images;
+  const heroImages = product.images.nodes.slice(0, 6);
+
+  if (heroImages.length !== 6) {
+    throw new Error(
+      `Product "${product.handle}" requires at least six product media images; received ${product.images.nodes.length}.`,
+    );
+  }
   const productTheme = getProductTheme(product.mainColor?.value);
   const productFooterMainColor = normalizeHexColor(product.mainColor?.value);
 
@@ -541,11 +547,7 @@ function ProductRailImage({
 }: {
   product: ProductMerchandisingItemFragment;
 }) {
-  const fullImageReference = product.fullImage?.reference;
-  const hoverImage =
-    fullImageReference?.__typename === 'MediaImage'
-      ? fullImageReference.image
-      : null;
+  const hoverImage = product.images.nodes[1] ?? null;
   const image = product.featuredImage;
 
   return (
@@ -1324,18 +1326,13 @@ const PRODUCT_MERCHANDISING_FRAGMENT = `#graphql
       width
       height
     }
-    fullImage: metafield(namespace: "custom", key: "full") {
-      reference {
-        __typename
-        ... on MediaImage {
-          image {
-            id
-            altText
-            url
-            width
-            height
-          }
-        }
+    images(first: 2) {
+      nodes {
+        id
+        altText
+        url
+        width
+        height
       }
     }
     options {

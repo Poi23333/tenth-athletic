@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 78 78">
+  <defs>
+    <g id="mark" fill="none" stroke="#010101" stroke-width="0.45">
+      <circle cx="4" cy="4" r="1.2"/>
+      <path d="M4 0v8M0 4h8M1.2 1.2l5.6 5.6M6.8 1.2L1.2 6.8"/>
+    </g>
+  </defs>
+  <g>
+    <use href="#mark" x="0" y="0"/><use href="#mark" x="14" y="0"/><use href="#mark" x="28" y="0"/><use href="#mark" x="42" y="0"/><use href="#mark" x="56" y="0"/><use href="#mark" x="70" y="0"/>
+    <use href="#mark" x="0" y="14"/><use href="#mark" x="14" y="14"/><use href="#mark" x="28" y="14"/><use href="#mark" x="42" y="14"/><use href="#mark" x="56" y="14"/><use href="#mark" x="70" y="14"/>
+    <use href="#mark" x="0" y="28"/><use href="#mark" x="14" y="28"/><use href="#mark" x="28" y="28"/><use href="#mark" x="42" y="28"/><use href="#mark" x="56" y="28"/><use href="#mark" x="70" y="28"/>
+    <use href="#mark" x="0" y="42"/><use href="#mark" x="14" y="42"/><use href="#mark" x="28" y="42"/><use href="#mark" x="42" y="42"/><use href="#mark" x="56" y="42"/><use href="#mark" x="70" y="42"/>
+    <use href="#mark" x="0" y="56"/><use href="#mark" x="14" y="56"/><use href="#mark" x="28" y="56"/><use href="#mark" x="42" y="56"/><use href="#mark" x="56" y="56"/><use href="#mark" x="70" y="56"/>
+    <use href="#mark" x="0" y="70"/><use href="#mark" x="14" y="70"/><use href="#mark" x="28" y="70"/><use href="#mark" x="42" y="70"/><use href="#mark" x="56" y="70"/><use href="#mark" x="70" y="70"/>
+  </g>
+</svg>

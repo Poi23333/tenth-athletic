@@ -133,18 +133,13 @@ const COLLECTION_ITEM_FRAGMENT = `#graphql
       width
       height
     }
-    fullImage: metafield(namespace: "custom", key: "full") {
-      reference {
-        __typename
-        ... on MediaImage {
-          image {
-            id
-            altText
-            url
-            width
-            height
-          }
-        }
+    images(first: 2) {
+      nodes {
+        id
+        altText
+        url
+        width
+        height
       }
     }
     options {

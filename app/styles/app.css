@@ -152,6 +152,73 @@ body > main {
 }
 
 /*
+ * --------------------------------------------------
+ * components/GlobalLoading
+ * --------------------------------------------------
+ */
+html:has(.global-loading) {
+  overflow: hidden;
+}
+
+.global-loading {
+  align-items: center;
+  animation: global-loading-fade-in 0.2s ease-out;
+  background: var(--color-page);
+  bottom: 0;
+  cursor: wait;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  padding: 1.5rem;
+  pointer-events: auto;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 400;
+}
+
+.global-loading-logo {
+  animation: global-loading-pulse 2.8s ease-in-out infinite;
+  color: var(--color-text);
+  display: block;
+  height: auto;
+  overflow: visible;
+  width: min(28rem, 70vw);
+}
+
+@keyframes global-loading-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes global-loading-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.38;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .global-loading {
+    animation: none;
+  }
+
+  .global-loading-logo {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/*
 * --------------------------------------------------
 * Non anchor links
 * --------------------------------------------------
@@ -952,10 +1019,10 @@ button.header-menu-item.reset.active:focus {
 * --------------------------------------------------
 */
 .footer {
-  /* Design @1440: links block remains compact on wide viewports. */
   --footer-gutter: clamp(2rem, 2.5vw, 3.25rem);
   --footer-links-width: 47.25rem;
   --footer-copyright-height: 3.25rem;
+  --footer-main-color: var(--shop-main-color, var(--color-copyright-bar));
   background: transparent;
   border-top: 0;
   color: var(--color-text);
@@ -966,10 +1033,6 @@ button.header-menu-item.reset.active:focus {
   z-index: 12;
 }
 
-.footer {
-  --footer-main-color: var(--shop-main-color, var(--color-copyright-bar));
-}
-
 html:has(.product) .footer {
   --footer-main-color: var(
     --product-footer-main-color,
@@ -977,17 +1040,68 @@ html:has(.product) .footer {
   );
 }
 
-.footer-inner {
+.footer-benefits {
+  display: grid;
+  gap: clamp(2rem, 4vw, 5rem);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: clamp(2.75rem, 4.5vw, 4.5rem) var(--footer-gutter)
+    clamp(3rem, 5vw, 5rem);
+  width: 100%;
+}
+
+.footer-benefit {
+  min-width: 0;
+}
+
+.footer-benefit-heading {
+  max-width: 100%;
+  width: fit-content;
+}
+
+.footer-benefit-icon {
+  align-items: flex-end;
   display: flex;
-  align-items: stretch;
-  gap: 0;
+  height: 5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.footer-benefit-icon img {
+  border-radius: 0;
+  display: block;
+  height: 5rem;
+  max-width: 5.75rem;
+  object-fit: contain;
+  width: auto;
+}
+
+.footer-benefit h2,
+.footer-benefit p {
+  margin: 0;
+}
+
+.footer-benefit h2 {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.footer-benefit p {
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  margin-top: 0.85rem;
+  max-width: 18rem;
+}
+
+.footer-inner {
+  display: block;
   padding: 0 var(--footer-gutter);
   position: relative;
   width: 100%;
 }
 
 .footer-links {
-  flex: 0 0 auto;
   padding: 1.15rem 0 1.35rem;
   position: relative;
   width: min(var(--footer-links-width), 100%);
@@ -995,9 +1109,9 @@ html:has(.product) .footer {
 
 .footer-rule {
   border-top: 1px solid rgba(26, 28, 28, 0.2);
-  left: 0;
+  left: var(--footer-gutter);
   position: absolute;
-  right: 0;
+  right: var(--footer-gutter);
   top: 0;
   z-index: 0;
 }
@@ -1051,6 +1165,36 @@ html:has(.product) .footer {
 }
 
 .footer-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.footer-copyright {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.footer-logo {
+  border-radius: 0;
+  display: block;
+  height: auto;
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  width: clamp(17rem, 27vw, 24rem);
+}
+
+.footer-region {
+  color: inherit;
+  cursor: pointer;
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  margin-top: clamp(1.75rem, 3vw, 2.5rem);
+  text-align: left;
+}
+
+.footer-region:hover {
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
@@ -1129,12 +1273,24 @@ html:has(.product) .footer {
     width: 100%;
   }
 
+  .footer-benefits {
+    gap: 2.75rem 1.5rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-bottom: 3rem;
+    padding-top: 2.5rem;
+  }
+
   .footer-columns {
     gap: 0.85rem 1.75rem;
   }
 
   .footer-link {
     white-space: normal;
+  }
+
+  .footer-logo {
+    margin-top: 2.5rem;
+    max-width: 100%;
   }
 }
 
@@ -2577,6 +2733,30 @@ body > main:has(.home) {
 
 .home-release-card-copy p {
   margin: 0;
+}
+
+.home-release-card-title--sizes {
+  display: none;
+}
+
+.home-release-card-sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.35rem;
+}
+
+.home-release-card-size--unavailable {
+  color: #b7b7b7;
+}
+
+.home-release-card--has-sizes:hover .home-release-card-title--default,
+.home-release-card--has-sizes:focus-within .home-release-card-title--default {
+  display: none;
+}
+
+.home-release-card--has-sizes:hover .home-release-card-title--sizes,
+.home-release-card--has-sizes:focus-within .home-release-card-title--sizes {
+  display: block;
 }
 
 .home-release-card:hover,
@@ -5089,6 +5269,7 @@ html:has(
   max-width: none;
   padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 3.6vw, 3.25rem)
     clamp(8rem, 14vw, 14rem);
+  padding-bottom: 0.5rem;
   position: relative;
   width: 100%;
 }
@@ -5113,7 +5294,7 @@ html:has(
   margin-inline: auto;
   max-width: 96rem;
   position: relative;
-  row-gap: clamp(9rem, 14vw, 15rem);
+  row-gap: clamp(1.5rem, 3vw, 3rem);
   width: 100%;
 }
 

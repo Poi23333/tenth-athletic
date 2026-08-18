@@ -2,6 +2,7 @@ import {Link} from 'react-router';
 import {useEffect, useState} from 'react';
 import type {Route} from './+types/wishlist';
 import type {ProductItemFragment} from 'storefrontapi.generated';
+import {usePageLoading} from '~/components/GlobalLoading';
 import {ProductItem} from '~/components/ProductItem';
 import {useWishlist} from '~/components/WishlistProvider';
 
@@ -67,6 +68,8 @@ export default function Wishlist() {
     return () => abortController.abort();
   }, [isReady, productIds]);
 
+  usePageLoading(!isReady || loading);
+
   return (
     <div className="wishlist-page">
       <header className="wishlist-heading">
@@ -91,9 +94,7 @@ export default function Wishlist() {
         </p>
       ) : null}
 
-      {!isReady || loading ? (
-        <p className="wishlist-status">Loading wishlist…</p>
-      ) : products.length > 0 ? (
+      {!isReady || loading ? null : products.length > 0 ? (
         <div className="products-grid wishlist-grid">
           {products.map((product) => (
             <ProductItem key={product.id} product={product} />

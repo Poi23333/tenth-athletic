@@ -9,6 +9,7 @@ import {
 import {useAside} from '~/components/Aside';
 import {getGenderFromCollectionHandle, type GenderMenuKey} from '~/lib/menu';
 import {WishlistButton} from '~/components/WishlistButton';
+import {getProductSizeOptions} from '~/lib/productSizeOptions';
 
 const ENABLE_CATEGORY_CARD_LINKS: boolean = false;
 
@@ -72,9 +73,16 @@ export default function Homepage() {
         <div className="home-release-grid">
           {currentRelease.map((product, index) => {
             const hoverImage = getHoverImage(product);
+            const sizeOptions = getProductSizeOptions(product);
+            const hasSizeOptions = sizeOptions.length > 0;
 
             return (
-              <article className="home-release-card" key={product.id}>
+              <article
+                className={`home-release-card${
+                  hasSizeOptions ? ' home-release-card--has-sizes' : ''
+                }`}
+                key={product.id}
+              >
                 <Link
                   className="home-release-card-media-link"
                   prefetch="intent"
@@ -119,7 +127,30 @@ export default function Homepage() {
                     prefetch="intent"
                     to={`/products/${product.handle}`}
                   >
-                    <p>{product.title}</p>
+                    <div className="home-release-card-title home-release-card-title--default">
+                      <p>{product.title}</p>
+                    </div>
+                    {hasSizeOptions ? (
+                      <div
+                        className="home-release-card-title home-release-card-title--sizes"
+                        aria-hidden="true"
+                      >
+                        <p className="home-release-card-sizes">
+                          {sizeOptions.map((size) => (
+                            <span
+                              className={`home-release-card-size${
+                                size.available
+                                  ? ''
+                                  : ' home-release-card-size--unavailable'
+                              }`}
+                              key={size.name}
+                            >
+                              {size.name}
+                            </span>
+                          ))}
+                        </p>
+                      </div>
+                    ) : null}
                     <p>{formatPrice(product.priceRange.minVariantPrice)}</p>
                   </Link>
                   <WishlistButton
@@ -194,8 +225,7 @@ function formatPrice(price: {amount: string; currencyCode: string}) {
 type HomepageProduct = HomepageCurrentReleaseQuery['products']['nodes'][number];
 
 function getHoverImage(product: HomepageProduct) {
-  const reference = product.fullImage?.reference;
-  return reference?.__typename === 'MediaImage' ? reference.image : null;
+  return product.images.nodes[1] ?? null;
 }
 
 type HomepageBannerMetaobject =
@@ -459,16 +489,27 @@ const HOMEPAGE_QUERY = `#graphql
           width
           height
         }
-        fullImage: metafield(namespace: "custom", key: "full") {
-          reference {
-            __typename
-            ... on MediaImage {
-              image {
-                altText
-                url
-                width
-                height
-              }
+        images(first: 2) {
+          nodes {
+            altText
+            url
+            width
+            height
+          }
+        }
+        options {
+          name
+          optionValues {
+            name
+          }
+        }
+        variants(first: 50) {
+          nodes {
+            availableForSale
+            quantityAvailable
+            selectedOptions {
+              name
+              value
             }
           }
         }
