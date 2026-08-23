@@ -778,22 +778,6 @@ button.reset:hover:not(:has(> *)) {
   margin-left: 0.15rem;
 }
 
-.region-banner-close {
-  align-items: center;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  display: inline-flex;
-  height: auto;
-  padding: 0;
-}
-
-.region-banner-close img {
-  display: block;
-  height: 1.5rem;
-  width: 1.5rem;
-}
-
 /* Locale confirm panel */
 .locale-confirm {
   background: #fff;

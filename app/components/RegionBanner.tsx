@@ -1,6 +1,5 @@
 import {Form, useLocation} from 'react-router';
 import {useEffect, useLayoutEffect, useRef} from 'react';
-import closeCircleFill from '~/assets/close_circle_fill.png';
 import type {Region} from '~/data/regions';
 import {formatGeoBannerMessage} from '~/data/regions';
 import {useAside} from '~/components/Aside';
@@ -78,13 +77,6 @@ export function RegionBanner({
             <span className="region-banner-continue-x" aria-hidden="true">
               ×
             </span>
-          </button>
-          <button
-            className="region-banner-close"
-            type="submit"
-            aria-label="Dismiss location suggestion"
-          >
-            <img src={closeCircleFill} alt="" width={24} height={24} />
           </button>
         </Form>
       </div>
