@@ -249,3 +249,28 @@ export function getCollectionSort(sort: ProductListSort) {
       };
   }
 }
+
+export function getCatalogSort(sort: ProductListSort) {
+  switch (sort) {
+    case 'price-asc':
+      return {
+        sortKey: 'PRICE' as StorefrontAPI.ProductSortKeys,
+        reverse: false,
+      };
+    case 'price-desc':
+      return {
+        sortKey: 'PRICE' as StorefrontAPI.ProductSortKeys,
+        reverse: true,
+      };
+    case 'newest':
+      return {
+        sortKey: 'CREATED_AT' as StorefrontAPI.ProductSortKeys,
+        reverse: true,
+      };
+    case 'featured':
+      return {
+        sortKey: 'BEST_SELLING' as StorefrontAPI.ProductSortKeys,
+        reverse: false,
+      };
+  }
+}

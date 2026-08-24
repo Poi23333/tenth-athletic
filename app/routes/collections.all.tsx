@@ -6,7 +6,7 @@ import {ProductItem} from '~/components/ProductItem';
 import {ProductListEmpty} from '~/components/ProductListEmpty';
 import {
   ProductListSidebar,
-  getCollectionSort,
+  getCatalogSort,
   getProductListControls,
 } from '~/components/ProductListSidebar';
 import {filterProductList} from '~/lib/productListFilters';
@@ -36,10 +36,10 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
     pageBy: 15,
   });
   const {sort, sizes, fits} = getProductListControls(request);
-  const sortInput = getCollectionSort(sort);
+  const sortInput = getCatalogSort(sort);
   const hasCustomFilters = sizes.length > 0 || fits.length > 0;
 
-  const {collection} = await storefront.query(CATALOG_QUERY, {
+  const {products: catalog} = await storefront.query(CATALOG_QUERY, {
     variables: hasCustomFilters
       ? {
           first: 250,
@@ -51,14 +51,14 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
         },
   });
 
-  if (!collection) {
-    throw new Response('Collection all not found', {status: 404});
+  if (!catalog) {
+    throw new Response('Products not found', {status: 404});
   }
 
   const products = hasCustomFilters
     ? {
-        ...collection.products,
-        nodes: filterProductList(collection.products.nodes, {sizes, fits}),
+        ...catalog,
+        nodes: filterProductList(catalog.nodes, {sizes, fits}),
         pageInfo: {
           hasNextPage: false,
           hasPreviousPage: false,
@@ -66,7 +66,7 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
           endCursor: null,
         },
       }
-    : collection.products;
+    : catalog;
 
   return {
     products,
@@ -178,27 +178,25 @@ const CATALOG_QUERY = `#graphql
     $last: Int
     $startCursor: String
     $endCursor: String
-    $sortKey: ProductCollectionSortKeys
+    $sortKey: ProductSortKeys
     $reverse: Boolean
   ) @inContext(country: $country, language: $language) {
-    collection(handle: "all") {
-      products(
-        first: $first,
-        last: $last,
-        before: $startCursor,
-        after: $endCursor,
-        sortKey: $sortKey,
-        reverse: $reverse
-      ) {
-        nodes {
-          ...CollectionItem
-        }
-        pageInfo {
-          hasPreviousPage
-          hasNextPage
-          startCursor
-          endCursor
-        }
+    products(
+      first: $first,
+      last: $last,
+      before: $startCursor,
+      after: $endCursor,
+      sortKey: $sortKey,
+      reverse: $reverse
+    ) {
+      nodes {
+        ...CollectionItem
+      }
+      pageInfo {
+        hasPreviousPage
+        hasNextPage
+        startCursor
+        endCursor
       }
     }
   }
