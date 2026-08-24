@@ -297,8 +297,8 @@ function AddressCard({
 }) {
   const [editing, setEditing] = useState(false);
   const action = useActionData<ActionResponse>();
-  const {state, formMethod} = useNavigation();
-  const isDeleting = formMethod === 'DELETE' && state !== 'idle';
+  const {formMethod} = useNavigation();
+  const isDeleting = formMethod === 'DELETE';
 
   useEffect(() => {
     if (action?.success === 'updated' && action.addressId === address.id) {
@@ -381,8 +381,8 @@ function AddressForm({
   submittingLabel: string;
 }) {
   const formId = useId();
-  const {state, formMethod} = useNavigation();
-  const isSubmitting = formMethod === method && state !== 'idle';
+  const {formMethod} = useNavigation();
+  const isSubmitting = formMethod === method;
   const selectedCountry = address.territoryCode ?? '';
   const hasSelectedCountry = countries.some(
     (country) => country.isoCode === selectedCountry,

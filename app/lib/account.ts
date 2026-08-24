@@ -1,6 +1,8 @@
+import type {CurrencyCode} from '@shopify/hydrogen/customer-account-api-types';
+
 type MoneyLike = {
   amount: string;
-  currencyCode: string;
+  currencyCode: CurrencyCode;
 };
 
 export function formatAccountStatus(value?: string | null) {

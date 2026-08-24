@@ -32,7 +32,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {sort, sizes, fits} = getProductListControls(request);
 
   if (!handle) {
-    throw redirect('/collections');
+    throw redirect('/collections/all');
   }
 
   const sortInput = getCollectionSort(sort);

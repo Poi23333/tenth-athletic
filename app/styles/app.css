@@ -5227,6 +5227,14 @@ aside.aside-brand {
   width: 100%;
 }
 
+.account-page-header {
+  align-items: baseline;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin: 0 0 1.25rem;
+}
+
 .account-page-title {
   color: var(--color-text);
   font-family: var(--font-display);
@@ -5234,7 +5242,7 @@ aside.aside-brand {
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.25;
-  margin: 0 0 1.25rem;
+  margin: 0;
 }
 
 .account-page-body,
@@ -5320,7 +5328,14 @@ aside.aside-brand {
 
 .account-logout {
   display: inline-flex;
+  flex-shrink: 0;
   margin: 0;
+}
+
+.account-logout .account-text-button {
+  color: var(--color-secondary);
+  font-size: 0.875rem;
+  font-weight: 400;
 }
 
 .account-field,

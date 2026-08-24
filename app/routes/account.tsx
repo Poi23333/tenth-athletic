@@ -46,7 +46,10 @@ export default function AccountLayout() {
   return (
     <div className="account-page">
       <div className="account-page-inner">
-        <h1 className="account-page-title">{heading}</h1>
+        <div className="account-page-header">
+          <h1 className="account-page-title">{heading}</h1>
+          <Logout />
+        </div>
         <AccountMenu />
         <div className="account-page-body">
           <Outlet context={{customer}} />
@@ -84,10 +87,6 @@ function AccountMenu() {
       <NavLink className={accountNavClass} to="/account/addresses">
         Addresses
       </NavLink>
-      <NavLink className={accountNavClass} to="/wishlist">
-        Wishlist
-      </NavLink>
-      <Logout />
     </nav>
   );
 }
@@ -95,7 +94,7 @@ function AccountMenu() {
 function Logout() {
   return (
     <Form className="account-logout" method="POST" action="/account/logout">
-      <button className="account-nav-link" type="submit">
+      <button className="account-text-button" type="submit">
         Sign out
       </button>
     </Form>

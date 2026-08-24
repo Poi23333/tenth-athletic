@@ -45,14 +45,13 @@ export async function action({request, context}: Route.ActionArgs) {
 
   try {
     const customer: CustomerUpdateInput = {};
-    const validInputKeys = ['firstName', 'lastName'] as const;
-    for (const [key, value] of form.entries()) {
-      if (!validInputKeys.includes(key as (typeof validInputKeys)[number])) {
-        continue;
-      }
-      if (typeof value === 'string' && value.length) {
-        customer[key] = value;
-      }
+    const firstName = form.get('firstName');
+    const lastName = form.get('lastName');
+    if (typeof firstName === 'string' && firstName.length) {
+      customer.firstName = firstName;
+    }
+    if (typeof lastName === 'string' && lastName.length) {
+      customer.lastName = lastName;
     }
 
     const {data: mutationData, errors} = await customerAccount.mutate(
