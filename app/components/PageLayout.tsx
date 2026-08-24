@@ -80,11 +80,7 @@ export function PageLayout({
           />
           <FieldIndexAside />
           <LocaleAside regions={regions} currentRegion={currentRegion} />
-          <MobileMenuAside
-            cart={cart}
-            isLoggedIn={isLoggedIn}
-            currentRegion={currentRegion}
-          />
+          <MobileMenuAside cart={cart} isLoggedIn={isLoggedIn} />
           <GlobalDotMatrix />
           {geoBanner?.show ? (
             <RegionBanner
@@ -93,12 +89,7 @@ export function PageLayout({
             />
           ) : null}
           {header && (
-            <Header
-              header={header}
-              cart={cart}
-              isLoggedIn={isLoggedIn}
-              currentRegion={currentRegion}
-            />
+            <Header header={header} cart={cart} isLoggedIn={isLoggedIn} />
           )}
           <main>{children}</main>
           <Footer currentRegion={currentRegion} mainColor={footerMainColor} />
@@ -126,20 +117,13 @@ function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
 function MobileMenuAside({
   cart,
   isLoggedIn,
-  currentRegion,
 }: {
   cart: PageLayoutProps['cart'];
   isLoggedIn: PageLayoutProps['isLoggedIn'];
-  currentRegion: Region;
 }) {
   return (
     <Aside type="mobile" heading="MENU">
-      <HeaderMenu
-        cart={cart}
-        isLoggedIn={isLoggedIn}
-        viewport="mobile"
-        currentRegion={currentRegion}
-      />
+      <HeaderMenu cart={cart} isLoggedIn={isLoggedIn} viewport="mobile" />
     </Aside>
   );
 }

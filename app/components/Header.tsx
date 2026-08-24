@@ -9,7 +9,6 @@ import {Suspense, useEffect, useLayoutEffect, useRef} from 'react';
 import {type CartViewPayload, useAnalytics} from '@shopify/hydrogen';
 import type {CartApiQueryFragment, HeaderQuery} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
-import {formatRegionNavLabel, type Region} from '~/data/regions';
 import {
   getGenderFromCollectionHandle,
   getGenderFromMenus,
@@ -29,12 +28,11 @@ interface HeaderProps {
   header: HeaderQuery;
   cart: Promise<CartApiQueryFragment | null>;
   isLoggedIn: Promise<boolean>;
-  currentRegion: Region;
 }
 
 type Viewport = 'desktop' | 'mobile';
 
-export function Header({cart, header, isLoggedIn, currentRegion}: HeaderProps) {
+export function Header({cart, header, isLoggedIn}: HeaderProps) {
   return (
     <header className="header">
       <div className="header-inner">
@@ -47,12 +45,7 @@ export function Header({cart, header, isLoggedIn, currentRegion}: HeaderProps) {
             height={32}
           />
         </NavLink>
-        <HeaderMenu
-          cart={cart}
-          isLoggedIn={isLoggedIn}
-          viewport="desktop"
-          currentRegion={currentRegion}
-        />
+        <HeaderMenu cart={cart} isLoggedIn={isLoggedIn} viewport="desktop" />
         <HeaderCtas />
       </div>
     </header>
@@ -63,28 +56,29 @@ export function HeaderMenu({
   cart,
   isLoggedIn,
   viewport,
-  currentRegion,
 }: {
   cart: Promise<CartApiQueryFragment | null>;
   isLoggedIn: Promise<boolean>;
   viewport: Viewport;
-  currentRegion: Region;
 }) {
   const className = `header-menu-${viewport}`;
   const navRef = useRef<HTMLElement>(null);
   const {open, type, close} = useAside();
   const routeGender = useRouteGender();
-  const manActive = type === 'man' || routeGender === 'man';
-  const womanActive = type === 'woman' || routeGender === 'woman';
+  const manActive =
+    type === 'man' || (type === 'closed' && routeGender === 'man');
+  const womanActive =
+    type === 'woman' || (type === 'closed' && routeGender === 'woman');
   const hasSharedHeaderDrawer =
     viewport === 'desktop' &&
-    (type === 'shop' ||
+    (type === 'cart' ||
+      type === 'shop' ||
       type === 'man' ||
       type === 'woman' ||
       type === 'field-index' ||
       type === 'locale');
 
-  function toggleAside(nextType: 'locale' | 'man' | 'woman' | 'field-index') {
+  function toggleAside(nextType: 'man' | 'woman' | 'field-index') {
     if (type === nextType) {
       close();
       return;
@@ -134,15 +128,6 @@ export function HeaderMenu({
   return (
     <nav className={className} ref={navRef} role="navigation">
       {viewport === 'desktop' ? <SearchLink viewport="desktop" /> : null}
-      <button
-        className={`header-menu-item reset header-locale${
-          type === 'locale' ? ' active' : ''
-        }`}
-        type="button"
-        onClick={() => toggleAside('locale')}
-      >
-        {formatRegionNavLabel(currentRegion)}
-      </button>
       <button
         className={`header-menu-item reset${manActive ? ' active' : ''}`}
         type="button"
@@ -273,10 +258,30 @@ function AccountNavLink({
 }
 
 function HeaderCtas() {
+  const {close, type} = useAside();
+  const hasSharedHeaderDrawer =
+    type === 'cart' ||
+    type === 'shop' ||
+    type === 'man' ||
+    type === 'woman' ||
+    type === 'field-index' ||
+    type === 'locale';
+
   return (
     <nav className="header-ctas" role="navigation">
       <SearchLink viewport="mobile" />
-      <HeaderMenuMobileToggle />
+      {hasSharedHeaderDrawer ? (
+        <button
+          aria-label="Close drawer"
+          className="header-drawer-close header-drawer-close--mobile reset"
+          onClick={close}
+          type="button"
+        >
+          &times;
+        </button>
+      ) : (
+        <HeaderMenuMobileToggle />
+      )}
     </nav>
   );
 }

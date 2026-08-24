@@ -24,6 +24,7 @@ type AsideType =
 type AsideChrome = 'default' | 'brand';
 type AsideContextValue = {
   type: AsideType;
+  isSwap: boolean;
   localeConfirmRegionId: RegionId | null;
   open: (mode: AsideType) => void;
   openLocaleConfirm: (regionId: RegionId) => void;
@@ -51,15 +52,23 @@ export function Aside({
   type: AsideType;
   heading: React.ReactNode;
 }) {
-  const {type: activeType, close} = useAside();
+  const {type: activeType, close, isSwap} = useAside();
   const expanded = type === activeType;
   const isBrand = chrome === 'brand';
   const [renderedOpen, setRenderedOpen] = useState(expanded);
-  const opening = expanded && !renderedOpen;
-  const closing = !expanded && renderedOpen;
   const transitionFrameRef = useRef<number | null>(null);
 
+  // Skip close/open motion when replacing one open drawer with another.
+  if (isSwap && renderedOpen !== expanded) {
+    setRenderedOpen(expanded);
+  }
+
+  const opening = expanded && !renderedOpen;
+  const closing = !expanded && renderedOpen;
+
   useEffect(() => {
+    if (isSwap) return;
+
     if (expanded) {
       if (renderedOpen) return;
 
@@ -81,7 +90,7 @@ export function Aside({
     }, DRAWER_TRANSITION_MS);
 
     return () => window.clearTimeout(timeout);
-  }, [expanded, renderedOpen]);
+  }, [expanded, isSwap, renderedOpen]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -112,7 +121,7 @@ export function Aside({
             : closing
               ? ' closing'
               : ''
-      }`}
+      }${isSwap && expanded ? ' swap' : ''}`}
       data-aside-type={type}
       role="dialog"
     >
@@ -150,30 +159,49 @@ const AsideContext = createContext<AsideContextValue | null>(null);
 
 Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
   const [type, setType] = useState<AsideType>('closed');
+  const [isSwap, setIsSwap] = useState(false);
   const [localeConfirmRegionId, setLocaleConfirmRegionId] =
     useState<RegionId | null>(null);
+  const typeRef = useRef(type);
+  typeRef.current = type;
+
+  const markSwap = useCallback((nextType: AsideType) => {
+    const current = typeRef.current;
+    setIsSwap(current !== 'closed' && current !== nextType);
+  }, []);
 
   const close = useCallback(() => {
+    setIsSwap(false);
     setType('closed');
     setLocaleConfirmRegionId(null);
   }, []);
 
-  const open = useCallback((mode: AsideType) => {
-    setLocaleConfirmRegionId(null);
-    setType(mode);
-  }, []);
+  const open = useCallback(
+    (mode: AsideType) => {
+      markSwap(mode);
+      setLocaleConfirmRegionId(null);
+      setType(mode);
+    },
+    [markSwap],
+  );
 
-  const openLocaleConfirm = useCallback((regionId: RegionId) => {
-    setLocaleConfirmRegionId(regionId);
-    setType('locale');
-  }, []);
+  const openLocaleConfirm = useCallback(
+    (regionId: RegionId) => {
+      markSwap('locale');
+      setLocaleConfirmRegionId(regionId);
+      setType('locale');
+    },
+    [markSwap],
+  );
 
   const clearLocaleConfirm = useCallback(() => {
     setLocaleConfirmRegionId(null);
   }, []);
 
+  const isOpen = type !== 'closed';
+
   useEffect(() => {
-    if (type === 'closed') return;
+    if (!isOpen) return;
 
     const scrollY = window.scrollY;
     const {style: bodyStyle} = document.body;
@@ -204,12 +232,13 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
       bodyStyle.width = originalBodyStyles.width;
       window.scrollTo(0, scrollY);
     };
-  }, [type]);
+  }, [isOpen]);
 
   return (
     <AsideContext.Provider
       value={{
         type,
+        isSwap,
         localeConfirmRegionId,
         open,
         openLocaleConfirm,

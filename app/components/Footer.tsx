@@ -1,5 +1,5 @@
 import {useEffect, useId, useRef, useState} from 'react';
-import {RiCloseLine} from '@remixicon/react';
+import {RiAddLine, RiCloseLine} from '@remixicon/react';
 import {NavLink} from 'react-router';
 import brandLogo from '~/assets/logo.svg';
 import {useAside} from '~/components/Aside';
@@ -36,7 +36,16 @@ const FOOTER_COLUMNS: FooterLink[][] = [
   ],
 ];
 
-type FieldNotesPhase = 'idle' | 'preparing' | 'opening' | 'open' | 'closing';
+type FieldNotesPhase =
+  | 'idle'
+  | 'hiding-bar'
+  | 'opening'
+  | 'open'
+  | 'closing'
+  | 'showing-bar';
+
+const BAR_HIDE_MS = 320;
+const DRAWER_MS = 480;
 
 function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -54,90 +63,64 @@ export function Footer({
     useState<FieldNotesPhase>('idle');
   const panelId = useId();
   const emailInputRef = useRef<HTMLInputElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
   const isFieldNotesOpen =
     fieldNotesPhase === 'opening' || fieldNotesPhase === 'open';
   const isFieldNotesActive = fieldNotesPhase !== 'idle';
-
-  const captureStageOrigin = () => {
-    const stage = stageRef.current;
-    if (!stage) return;
-
-    const rect = stage.getBoundingClientRect();
-    stage.style.setProperty('--stage-width', `${rect.width}px`);
-    stage.style.setProperty('--stage-height', `${rect.height}px`);
-    stage.style.setProperty(
-      '--stage-right',
-      `${Math.max(0, window.innerWidth - rect.right)}px`,
-    );
-    stage.style.setProperty(
-      '--stage-bottom',
-      `${Math.max(0, window.innerHeight - rect.bottom)}px`,
-    );
-  };
-
-  const clearStageOrigin = () => {
-    const stage = stageRef.current;
-    if (!stage) return;
-
-    stage.style.removeProperty('--stage-width');
-    stage.style.removeProperty('--stage-height');
-    stage.style.removeProperty('--stage-right');
-    stage.style.removeProperty('--stage-bottom');
-  };
+  const isBarHidden =
+    fieldNotesPhase === 'hiding-bar' ||
+    fieldNotesPhase === 'opening' ||
+    fieldNotesPhase === 'open' ||
+    fieldNotesPhase === 'closing';
+  const isDrawerVisible =
+    fieldNotesPhase === 'opening' ||
+    fieldNotesPhase === 'open' ||
+    fieldNotesPhase === 'closing';
 
   const openFieldNotes = () => {
-    if (fieldNotesPhase === 'closing') {
-      setFieldNotesPhase(prefersReducedMotion() ? 'open' : 'opening');
+    if (fieldNotesPhase === 'showing-bar') {
+      setFieldNotesPhase(prefersReducedMotion() ? 'open' : 'hiding-bar');
       return;
     }
     if (fieldNotesPhase !== 'idle') return;
-
-    captureStageOrigin();
-    if (prefersReducedMotion()) {
-      setFieldNotesPhase('open');
-      return;
-    }
-    setFieldNotesPhase('preparing');
+    setFieldNotesPhase(prefersReducedMotion() ? 'open' : 'hiding-bar');
   };
 
   const closeFieldNotes = () => {
-    if (fieldNotesPhase === 'idle' || fieldNotesPhase === 'closing') return;
-    if (prefersReducedMotion()) {
-      setFieldNotesPhase('idle');
-      clearStageOrigin();
+    if (
+      fieldNotesPhase === 'idle' ||
+      fieldNotesPhase === 'closing' ||
+      fieldNotesPhase === 'showing-bar'
+    ) {
       return;
     }
-    setFieldNotesPhase('closing');
+    if (prefersReducedMotion()) {
+      setFieldNotesPhase('idle');
+      return;
+    }
+    setFieldNotesPhase(
+      fieldNotesPhase === 'hiding-bar' ? 'showing-bar' : 'closing',
+    );
   };
 
   useEffect(() => {
-    if (fieldNotesPhase !== 'preparing') return;
+    const nextPhase =
+      fieldNotesPhase === 'hiding-bar'
+        ? 'opening'
+        : fieldNotesPhase === 'opening'
+          ? 'open'
+          : fieldNotesPhase === 'closing'
+            ? 'showing-bar'
+            : fieldNotesPhase === 'showing-bar'
+              ? 'idle'
+              : null;
 
-    let innerFrame = 0;
-    const outerFrame = requestAnimationFrame(() => {
-      innerFrame = requestAnimationFrame(() => setFieldNotesPhase('opening'));
-    });
+    if (!nextPhase) return;
 
-    return () => {
-      cancelAnimationFrame(outerFrame);
-      cancelAnimationFrame(innerFrame);
-    };
-  }, [fieldNotesPhase]);
-
-  useEffect(() => {
-    if (fieldNotesPhase !== 'opening' && fieldNotesPhase !== 'closing') return;
-
-    const timer = window.setTimeout(() => {
-      if (fieldNotesPhase === 'opening') {
-        setFieldNotesPhase('open');
-        return;
-      }
-
-      setFieldNotesPhase('idle');
-      clearStageOrigin();
-    }, 560);
-
+    const delay =
+      fieldNotesPhase === 'hiding-bar' || fieldNotesPhase === 'showing-bar'
+        ? BAR_HIDE_MS
+        : DRAWER_MS;
+    const timer = window.setTimeout(() => setFieldNotesPhase(nextPhase), delay);
     return () => window.clearTimeout(timer);
   }, [fieldNotesPhase]);
 
@@ -148,12 +131,15 @@ export function Footer({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       setFieldNotesPhase((phase) => {
-        if (phase === 'idle' || phase === 'closing') return phase;
-        if (prefersReducedMotion()) {
-          clearStageOrigin();
-          return 'idle';
+        if (
+          phase === 'idle' ||
+          phase === 'closing' ||
+          phase === 'showing-bar'
+        ) {
+          return phase;
         }
-        return 'closing';
+        if (prefersReducedMotion()) return 'idle';
+        return phase === 'hiding-bar' ? 'showing-bar' : 'closing';
       });
     };
 
@@ -165,27 +151,11 @@ export function Footer({
     };
   }, [isFieldNotesActive]);
 
-  const handleStageTransitionEnd = (
-    event: React.TransitionEvent<HTMLDivElement>,
-  ) => {
-    if (event.target !== event.currentTarget) return;
-
-    if (fieldNotesPhase === 'opening' && event.propertyName === 'height') {
-      setFieldNotesPhase('open');
-      return;
-    }
-
-    if (fieldNotesPhase === 'closing' && event.propertyName === 'width') {
-      setFieldNotesPhase('idle');
-      clearStageOrigin();
-    }
-  };
-
   return (
     <footer
-      className={`footer${isFieldNotesOpen ? ' is-field-notes-open' : ''}${
-        fieldNotesPhase === 'closing' ? ' is-field-notes-closing' : ''
-      }`}
+      className={`footer${isFieldNotesActive ? ' is-field-notes-active' : ''}${
+        isFieldNotesOpen ? ' is-field-notes-open' : ''
+      }${fieldNotesPhase === 'closing' ? ' is-field-notes-closing' : ''}`}
       style={{'--shop-main-color': mainColor} as React.CSSProperties}
     >
       <div className="footer-benefits" aria-label="Delivery and returns">
@@ -244,23 +214,41 @@ export function Footer({
           aria-label="Close field notes sign-up"
           className="footer-field-notes-backdrop"
           onClick={closeFieldNotes}
-          tabIndex={isFieldNotesOpen ? 0 : -1}
+          tabIndex={isDrawerVisible ? 0 : -1}
           type="button"
         />
+        <button
+          aria-controls={panelId}
+          aria-expanded={isFieldNotesOpen}
+          className={`footer-copyright-bar${isBarHidden ? ' is-offscreen' : ''}${
+            fieldNotesPhase === 'hiding-bar' ||
+            fieldNotesPhase === 'showing-bar'
+              ? ' is-animating'
+              : ''
+          }`}
+          onClick={() =>
+            isFieldNotesOpen ? closeFieldNotes() : openFieldNotes()
+          }
+          type="button"
+        >
+          <span className="footer-copyright-copy">
+            <span className="footer-copyright-title">One More Mile</span>
+            <span className="footer-copyright-prompt">
+              Sign up for field notes
+            </span>
+          </span>
+          <span className="footer-copyright-icon" aria-hidden="true">
+            <RiAddLine />
+          </span>
+        </button>
         <div
           className={`footer-field-notes-stage${
-            fieldNotesPhase === 'idle' ? '' : ' is-lifted'
-          }${
-            fieldNotesPhase === 'opening' || fieldNotesPhase === 'open'
-              ? ' is-expanded'
-              : ''
-          }${
+            isDrawerVisible ? ' is-visible' : ''
+          }${isFieldNotesOpen ? ' is-expanded' : ''}${
             fieldNotesPhase === 'opening' || fieldNotesPhase === 'closing'
               ? ' is-animating'
               : ''
           }`}
-          onTransitionEnd={handleStageTransitionEnd}
-          ref={stageRef}
         >
           <section
             aria-hidden={!isFieldNotesOpen}
@@ -329,23 +317,6 @@ export function Footer({
               </form>
             </div>
           </section>
-
-          <button
-            aria-controls={panelId}
-            aria-expanded={isFieldNotesOpen}
-            className="footer-copyright-bar"
-            onClick={() =>
-              isFieldNotesOpen ? closeFieldNotes() : openFieldNotes()
-            }
-            type="button"
-          >
-            <span className="footer-copyright-title">One More Mile</span>
-            <span className="footer-copyright-prompt">
-              {isFieldNotesOpen
-                ? 'Close field notes'
-                : 'Sign up for field notes'}
-            </span>
-          </button>
         </div>
       </div>
     </footer>
