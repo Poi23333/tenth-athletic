@@ -14,6 +14,8 @@ export function shouldRevalidate() {
 
 export async function loader({context}: Route.LoaderArgs) {
   const {customerAccount} = context;
+  customerAccount.handleAuthStatus();
+
   const {data, errors} = await customerAccount.query(CUSTOMER_DETAILS_QUERY, {
     variables: {
       language: customerAccount.i18n.language,
@@ -37,52 +39,54 @@ export async function loader({context}: Route.LoaderArgs) {
 export default function AccountLayout() {
   const {customer} = useLoaderData<typeof loader>();
 
-  const heading = customer
-    ? customer.firstName
-      ? `Welcome, ${customer.firstName}`
-      : `Welcome to your account.`
-    : 'Account Details';
+  const heading = customer.firstName
+    ? `Welcome, ${customer.firstName}`
+    : 'Welcome to your account.';
 
   return (
-    <div className="account">
-      <h1>{heading}</h1>
-      <br />
-      <AccountMenu />
-      <br />
-      <br />
-      <Outlet context={{customer}} />
+    <div className="account-page">
+      <div className="account-page-inner">
+        <h1 className="account-page-title">{heading}</h1>
+        <AccountMenu />
+        <div className="account-page-body">
+          <Outlet context={{customer}} />
+        </div>
+      </div>
     </div>
   );
 }
 
-function AccountMenu() {
-  function isActiveStyle({
-    isActive,
-    isPending,
-  }: {
-    isActive: boolean;
-    isPending: boolean;
-  }) {
-    return {
-      fontWeight: isActive ? 700 : 400,
-      color: isPending ? 'grey' : 'black',
-    };
-  }
+function accountNavClass({
+  isActive,
+  isPending,
+}: {
+  isActive: boolean;
+  isPending: boolean;
+}) {
+  return [
+    'account-nav-link',
+    isActive ? 'is-active' : '',
+    isPending ? 'is-pending' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
 
+function AccountMenu() {
   return (
-    <nav role="navigation">
-      <NavLink to="/account/orders" style={isActiveStyle}>
-        Orders &nbsp;
+    <nav className="account-nav" aria-label="Account">
+      <NavLink className={accountNavClass} to="/account/orders">
+        Orders
       </NavLink>
-      &nbsp;|&nbsp;
-      <NavLink to="/account/profile" style={isActiveStyle}>
-        &nbsp; Profile &nbsp;
+      <NavLink className={accountNavClass} to="/account/profile">
+        Profile
       </NavLink>
-      &nbsp;|&nbsp;
-      <NavLink to="/account/addresses" style={isActiveStyle}>
-        &nbsp; Addresses &nbsp;
+      <NavLink className={accountNavClass} to="/account/addresses">
+        Addresses
       </NavLink>
-      &nbsp;|&nbsp;
+      <NavLink className={accountNavClass} to="/wishlist">
+        Wishlist
+      </NavLink>
       <Logout />
     </nav>
   );
@@ -91,7 +95,9 @@ function AccountMenu() {
 function Logout() {
   return (
     <Form className="account-logout" method="POST" action="/account/logout">
-      &nbsp;<button type="submit">Sign out</button>
+      <button className="account-nav-link" type="submit">
+        Sign out
+      </button>
     </Form>
   );
 }

@@ -12,7 +12,13 @@ import type {Route} from './+types/account.profile';
 
 export type ActionResponse = {
   error: string | null;
-  customer: CustomerFragment | null;
+  success: boolean;
+  customer: {
+    firstName?: string | null;
+    lastName?: string | null;
+    emailAddress?: {emailAddress?: string | null} | null;
+    phoneNumber?: {phoneNumber?: string | null} | null;
+  } | null;
 };
 
 export const meta: Route.MetaFunction = () => {
@@ -29,7 +35,10 @@ export async function action({request, context}: Route.ActionArgs) {
   const {customerAccount} = context;
 
   if (request.method !== 'PUT') {
-    return data({error: 'Method not allowed'}, {status: 405});
+    return data(
+      {error: 'Method not allowed', success: false, customer: null},
+      {status: 405},
+    );
   }
 
   const form = await request.formData();
@@ -38,16 +47,15 @@ export async function action({request, context}: Route.ActionArgs) {
     const customer: CustomerUpdateInput = {};
     const validInputKeys = ['firstName', 'lastName'] as const;
     for (const [key, value] of form.entries()) {
-      if (!validInputKeys.includes(key as any)) {
+      if (!validInputKeys.includes(key as (typeof validInputKeys)[number])) {
         continue;
       }
       if (typeof value === 'string' && value.length) {
-        customer[key as (typeof validInputKeys)[number]] = value;
+        customer[key] = value;
       }
     }
 
-    // update customer and possibly password
-    const {data, errors} = await customerAccount.mutate(
+    const {data: mutationData, errors} = await customerAccount.mutate(
       CUSTOMER_UPDATE_MUTATION,
       {
         variables: {
@@ -61,17 +69,24 @@ export async function action({request, context}: Route.ActionArgs) {
       throw new Error(errors[0].message);
     }
 
-    if (!data?.customerUpdate?.customer) {
+    if (!mutationData?.customerUpdate?.customer) {
       throw new Error('Customer profile update failed.');
+    }
+
+    if (mutationData.customerUpdate.userErrors?.length) {
+      throw new Error(mutationData.customerUpdate.userErrors[0].message);
     }
 
     return {
       error: null,
-      customer: data?.customerUpdate?.customer,
+      success: true,
+      customer: mutationData.customerUpdate.customer,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : 'Customer profile update failed.';
     return data(
-      {error: error.message, customer: null},
+      {error: message, success: false, customer: null},
       {
         status: 400,
       },
@@ -83,50 +98,82 @@ export default function AccountProfile() {
   const account = useOutletContext<{customer: CustomerFragment}>();
   const {state} = useNavigation();
   const action = useActionData<ActionResponse>();
-  const customer = action?.customer ?? account?.customer;
+  const customer = {
+    ...account.customer,
+    ...action?.customer,
+    emailAddress:
+      action?.customer?.emailAddress ?? account.customer.emailAddress,
+    phoneNumber: action?.customer?.phoneNumber ?? account.customer.phoneNumber,
+  };
 
   return (
     <div className="account-profile">
-      <h2>My profile</h2>
-      <br />
-      <Form method="PUT">
-        <legend>Personal information</legend>
+      <h2>Profile</h2>
+      <Form
+        className="account-form"
+        key={`${customer.firstName}-${customer.lastName}`}
+        method="PUT"
+      >
         <fieldset>
-          <label htmlFor="firstName">First name</label>
-          <input
-            id="firstName"
-            name="firstName"
-            type="text"
-            autoComplete="given-name"
-            placeholder="First name"
-            aria-label="First name"
-            defaultValue={customer.firstName ?? ''}
-            minLength={2}
-          />
-          <label htmlFor="lastName">Last name</label>
-          <input
-            id="lastName"
-            name="lastName"
-            type="text"
-            autoComplete="family-name"
-            placeholder="Last name"
-            aria-label="Last name"
-            defaultValue={customer.lastName ?? ''}
-            minLength={2}
-          />
+          <legend>Personal information</legend>
+          <label className="account-field">
+            <span>First name</span>
+            <input
+              id="account-firstName"
+              name="firstName"
+              type="text"
+              autoComplete="given-name"
+              placeholder="First name"
+              aria-label="First name"
+              defaultValue={customer.firstName ?? ''}
+              minLength={2}
+            />
+          </label>
+          <label className="account-field">
+            <span>Last name</span>
+            <input
+              id="account-lastName"
+              name="lastName"
+              type="text"
+              autoComplete="family-name"
+              placeholder="Last name"
+              aria-label="Last name"
+              defaultValue={customer.lastName ?? ''}
+              minLength={2}
+            />
+          </label>
         </fieldset>
+
+        <fieldset>
+          <legend>Contact</legend>
+          <div className="account-readonly">
+            <span>Email</span>
+            <p>{customer.emailAddress?.emailAddress || 'Not provided'}</p>
+          </div>
+          <div className="account-readonly">
+            <span>Phone</span>
+            <p>{customer.phoneNumber?.phoneNumber || 'Not provided'}</p>
+          </div>
+        </fieldset>
+
         {action?.error ? (
-          <p>
-            <mark>
-              <small>{action.error}</small>
-            </mark>
+          <p className="account-feedback account-feedback--error">{action.error}</p>
+        ) : null}
+        {action?.success ? (
+          <p className="account-feedback account-feedback--success">
+            Profile updated.
           </p>
-        ) : (
-          <br />
-        )}
-        <button type="submit" disabled={state !== 'idle'}>
-          {state !== 'idle' ? 'Updating' : 'Update'}
-        </button>
+        ) : null}
+
+        <div className="account-actions">
+          <button
+            className="account-button"
+            type="submit"
+            disabled={state !== 'idle'}
+          >
+            {state !== 'idle' ? 'Updating' : 'Update'}
+          </button>
+        </div>
       </Form>
     </div>
   );

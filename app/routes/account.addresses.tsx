@@ -9,22 +9,21 @@ import {
   useActionData,
   useNavigation,
   useOutletContext,
-  type Fetcher,
+  useRouteLoaderData,
 } from 'react-router';
+import {useEffect, useId, useState, type ReactNode} from 'react';
 import type {Route} from './+types/account.addresses';
 import {
-  UPDATE_ADDRESS_MUTATION,
-  DELETE_ADDRESS_MUTATION,
   CREATE_ADDRESS_MUTATION,
+  DELETE_ADDRESS_MUTATION,
+  UPDATE_ADDRESS_MUTATION,
 } from '~/graphql/customer-account/CustomerAddressMutations';
+import type {RootLoader} from '~/root';
 
 export type ActionResponse = {
   addressId?: string | null;
-  createdAddress?: AddressFragment;
-  defaultAddress?: string | null;
-  deletedAddress?: string | null;
-  error: Record<AddressFragment['id'], string> | null;
-  updatedAddress?: AddressFragment;
+  error: string | null;
+  success: 'created' | 'updated' | 'deleted' | null;
 };
 
 export const meta: Route.MetaFunction = () => {
@@ -50,11 +49,10 @@ export async function action({request, context}: Route.ActionArgs) {
       throw new Error('You must provide an address id.');
     }
 
-    // this will ensure redirecting to login never happen for mutatation
     const isLoggedIn = await customerAccount.isLoggedIn();
     if (!isLoggedIn) {
       return data(
-        {error: {[addressId]: 'Unauthorized'}},
+        {error: 'Unauthorized', success: null, addressId},
         {
           status: 401,
         },
@@ -87,151 +85,95 @@ export async function action({request, context}: Route.ActionArgs) {
 
     switch (request.method) {
       case 'POST': {
-        // handle new address creation
-        try {
-          const {data, errors} = await customerAccount.mutate(
-            CREATE_ADDRESS_MUTATION,
-            {
-              variables: {
-                address,
-                defaultAddress,
-                language: customerAccount.i18n.language,
-              },
+        const {data: mutationData, errors} = await customerAccount.mutate(
+          CREATE_ADDRESS_MUTATION,
+          {
+            variables: {
+              address,
+              defaultAddress,
+              language: customerAccount.i18n.language,
             },
-          );
+          },
+        );
 
-          if (errors?.length) {
-            throw new Error(errors[0].message);
-          }
+        if (errors?.length) {
+          throw new Error(errors[0].message);
+        }
 
-          if (data?.customerAddressCreate?.userErrors?.length) {
-            throw new Error(data?.customerAddressCreate?.userErrors[0].message);
-          }
-
-          if (!data?.customerAddressCreate?.customerAddress) {
-            throw new Error('Customer address create failed.');
-          }
-
-          return {
-            error: null,
-            createdAddress: data?.customerAddressCreate?.customerAddress,
-            defaultAddress,
-          };
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            return data(
-              {error: {[addressId]: error.message}},
-              {
-                status: 400,
-              },
-            );
-          }
-          return data(
-            {error: {[addressId]: error}},
-            {
-              status: 400,
-            },
+        if (mutationData?.customerAddressCreate?.userErrors?.length) {
+          throw new Error(
+            mutationData.customerAddressCreate.userErrors[0].message,
           );
         }
+
+        if (!mutationData?.customerAddressCreate?.customerAddress) {
+          throw new Error('Customer address create failed.');
+        }
+
+        return {error: null, success: 'created' as const, addressId};
       }
 
       case 'PUT': {
-        // handle address updates
-        try {
-          const {data, errors} = await customerAccount.mutate(
-            UPDATE_ADDRESS_MUTATION,
-            {
-              variables: {
-                address,
-                addressId: decodeURIComponent(addressId),
-                defaultAddress,
-                language: customerAccount.i18n.language,
-              },
+        const {data: mutationData, errors} = await customerAccount.mutate(
+          UPDATE_ADDRESS_MUTATION,
+          {
+            variables: {
+              address,
+              addressId: decodeURIComponent(addressId),
+              defaultAddress,
+              language: customerAccount.i18n.language,
             },
-          );
+          },
+        );
 
-          if (errors?.length) {
-            throw new Error(errors[0].message);
-          }
+        if (errors?.length) {
+          throw new Error(errors[0].message);
+        }
 
-          if (data?.customerAddressUpdate?.userErrors?.length) {
-            throw new Error(data?.customerAddressUpdate?.userErrors[0].message);
-          }
-
-          if (!data?.customerAddressUpdate?.customerAddress) {
-            throw new Error('Customer address update failed.');
-          }
-
-          return {
-            error: null,
-            updatedAddress: address,
-            defaultAddress,
-          };
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            return data(
-              {error: {[addressId]: error.message}},
-              {
-                status: 400,
-              },
-            );
-          }
-          return data(
-            {error: {[addressId]: error}},
-            {
-              status: 400,
-            },
+        if (mutationData?.customerAddressUpdate?.userErrors?.length) {
+          throw new Error(
+            mutationData.customerAddressUpdate.userErrors[0].message,
           );
         }
+
+        if (!mutationData?.customerAddressUpdate?.customerAddress) {
+          throw new Error('Customer address update failed.');
+        }
+
+        return {error: null, success: 'updated' as const, addressId};
       }
 
       case 'DELETE': {
-        // handles address deletion
-        try {
-          const {data, errors} = await customerAccount.mutate(
-            DELETE_ADDRESS_MUTATION,
-            {
-              variables: {
-                addressId: decodeURIComponent(addressId),
-                language: customerAccount.i18n.language,
-              },
+        const {data: mutationData, errors} = await customerAccount.mutate(
+          DELETE_ADDRESS_MUTATION,
+          {
+            variables: {
+              addressId: decodeURIComponent(addressId),
+              language: customerAccount.i18n.language,
             },
-          );
+          },
+        );
 
-          if (errors?.length) {
-            throw new Error(errors[0].message);
-          }
+        if (errors?.length) {
+          throw new Error(errors[0].message);
+        }
 
-          if (data?.customerAddressDelete?.userErrors?.length) {
-            throw new Error(data?.customerAddressDelete?.userErrors[0].message);
-          }
-
-          if (!data?.customerAddressDelete?.deletedAddressId) {
-            throw new Error('Customer address delete failed.');
-          }
-
-          return {error: null, deletedAddress: addressId};
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            return data(
-              {error: {[addressId]: error.message}},
-              {
-                status: 400,
-              },
-            );
-          }
-          return data(
-            {error: {[addressId]: error}},
-            {
-              status: 400,
-            },
+        if (mutationData?.customerAddressDelete?.userErrors?.length) {
+          throw new Error(
+            mutationData.customerAddressDelete.userErrors[0].message,
           );
         }
+
+        if (!mutationData?.customerAddressDelete?.deletedAddressId) {
+          throw new Error('Customer address delete failed.');
+        }
+
+        return {error: null, success: 'deleted' as const, addressId};
       }
 
       default: {
         return data(
-          {error: {[addressId]: 'Method not allowed'}},
+          {error: 'Method not allowed', success: null, addressId},
           {
             status: 405,
           },
@@ -239,16 +181,10 @@ export async function action({request, context}: Route.ActionArgs) {
       }
     }
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return data(
-        {error: error.message},
-        {
-          status: 400,
-        },
-      );
-    }
+    const message =
+      error instanceof Error ? error.message : 'Address update failed.';
     return data(
-      {error},
+      {error: message, success: null},
       {
         status: 400,
       },
@@ -259,258 +195,358 @@ export async function action({request, context}: Route.ActionArgs) {
 export default function Addresses() {
   const {customer} = useOutletContext<{customer: CustomerFragment}>();
   const {defaultAddress, addresses} = customer;
+  const action = useActionData<ActionResponse>();
+  const rootData = useRouteLoaderData<RootLoader>('root');
+  const countries =
+    rootData?.localization?.localization?.availableCountries ?? [];
+  const currentCountry =
+    rootData?.localization?.localization?.country?.isoCode ?? '';
+
+  const successMessage =
+    action?.success === 'created'
+      ? 'Address created.'
+      : action?.success === 'updated'
+        ? 'Address saved.'
+        : action?.success === 'deleted'
+          ? 'Address deleted.'
+          : null;
 
   return (
     <div className="account-addresses">
       <h2>Addresses</h2>
-      <br />
-      <div>
-        <div>
-          <legend>Create address</legend>
-          <NewAddressForm key={addresses.nodes.length} />
-        </div>
-        <br />
-        <hr />
-        <br />
+      {action?.error ? (
+        <p className="account-feedback account-feedback--error">{action.error}</p>
+      ) : null}
+      {successMessage ? (
+        <p className="account-feedback account-feedback--success">
+          {successMessage}
+        </p>
+      ) : null}
+
+      <section className="account-address-create">
+        <h3>New address</h3>
+        <NewAddressForm
+          countries={countries}
+          defaultTerritoryCode={currentCountry}
+          key={addresses.nodes.length}
+        />
+      </section>
+
+      <section>
+        <h3>Saved addresses</h3>
         {!addresses.nodes.length ? (
-          <p>You have no addresses saved.</p>
+          <p className="account-empty">You have no addresses saved.</p>
         ) : (
-          <ExistingAddresses
-            addresses={addresses}
-            defaultAddress={defaultAddress}
-          />
+          <div className="account-address-list">
+            {addresses.nodes.map((address) => (
+              <AddressCard
+                key={address.id}
+                address={address}
+                countries={countries}
+                isDefault={defaultAddress?.id === address.id}
+              />
+            ))}
+          </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
 
-function NewAddressForm() {
+function NewAddressForm({
+  countries,
+  defaultTerritoryCode,
+}: {
+  countries: CountryOption[];
+  defaultTerritoryCode: string;
+}) {
   const newAddress = {
     address1: '',
     address2: '',
     city: '',
     company: '',
-    territoryCode: '',
+    territoryCode: defaultTerritoryCode,
     firstName: '',
-    id: 'new',
     lastName: '',
     phoneNumber: '',
     zoneCode: '',
     zip: '',
-  } as CustomerAddressInput;
+  } satisfies CustomerAddressInput;
 
   return (
     <AddressForm
-      addressId={'NEW_ADDRESS_ID'}
       address={newAddress}
-      defaultAddress={null}
-    >
-      {({stateForMethod}) => (
-        <div>
+      addressId="NEW_ADDRESS_ID"
+      countries={countries}
+      isDefault={false}
+      method="POST"
+      submitLabel="Create"
+      submittingLabel="Creating"
+    />
+  );
+}
+
+function AddressCard({
+  address,
+  countries,
+  isDefault,
+}: {
+  address: AddressFragment;
+  countries: CountryOption[];
+  isDefault: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const action = useActionData<ActionResponse>();
+  const {state, formMethod} = useNavigation();
+  const isDeleting = formMethod === 'DELETE' && state !== 'idle';
+
+  useEffect(() => {
+    if (action?.success === 'updated' && action.addressId === address.id) {
+      setEditing(false);
+    }
+  }, [action, address.id]);
+
+  const lines = Array.isArray(address.formatted)
+    ? address.formatted
+    : address.formatted
+      ? [address.formatted]
+      : [];
+
+  return (
+    <article className="account-address-card">
+      {isDefault ? <p className="account-badge">Default</p> : null}
+      <address>
+        {lines.map((line) => (
+          <span key={line}>{line}</span>
+        ))}
+      </address>
+      {editing ? (
+        <AddressForm
+          address={address}
+          addressId={address.id}
+          countries={countries}
+          isDefault={isDefault}
+          method="PUT"
+          onCancel={() => setEditing(false)}
+          submitLabel="Save"
+          submittingLabel="Saving"
+        />
+      ) : (
+        <div className="account-actions">
           <button
-            disabled={stateForMethod('POST') !== 'idle'}
-            formMethod="POST"
-            type="submit"
+            className="account-text-button"
+            type="button"
+            onClick={() => setEditing(true)}
           >
-            {stateForMethod('POST') !== 'idle' ? 'Creating' : 'Create'}
+            Edit
           </button>
+          <Form method="DELETE">
+            <input type="hidden" name="addressId" value={address.id} />
+            <button
+              className="account-text-button"
+              disabled={isDeleting}
+              type="submit"
+            >
+              {isDeleting ? 'Deleting' : 'Delete'}
+            </button>
+          </Form>
         </div>
       )}
-    </AddressForm>
+    </article>
   );
 }
 
-function ExistingAddresses({
-  addresses,
-  defaultAddress,
-}: Pick<CustomerFragment, 'addresses' | 'defaultAddress'>) {
-  return (
-    <div>
-      <legend>Existing addresses</legend>
-      {addresses.nodes.map((address) => (
-        <AddressForm
-          key={address.id}
-          addressId={address.id}
-          address={address}
-          defaultAddress={defaultAddress}
-        >
-          {({stateForMethod}) => (
-            <div>
-              <button
-                disabled={stateForMethod('PUT') !== 'idle'}
-                formMethod="PUT"
-                type="submit"
-              >
-                {stateForMethod('PUT') !== 'idle' ? 'Saving' : 'Save'}
-              </button>
-              <button
-                disabled={stateForMethod('DELETE') !== 'idle'}
-                formMethod="DELETE"
-                type="submit"
-              >
-                {stateForMethod('DELETE') !== 'idle' ? 'Deleting' : 'Delete'}
-              </button>
-            </div>
-          )}
-        </AddressForm>
-      ))}
-    </div>
-  );
-}
+type CountryOption = {
+  isoCode: string;
+  name: string;
+};
 
-export function AddressForm({
-  addressId,
+function AddressForm({
   address,
-  defaultAddress,
-  children,
+  addressId,
+  countries,
+  isDefault,
+  method,
+  onCancel,
+  submitLabel,
+  submittingLabel,
 }: {
-  addressId: AddressFragment['id'];
   address: CustomerAddressInput;
-  defaultAddress: CustomerFragment['defaultAddress'];
-  children: (props: {
-    stateForMethod: (method: 'PUT' | 'POST' | 'DELETE') => Fetcher['state'];
-  }) => React.ReactNode;
+  addressId: string;
+  countries: CountryOption[];
+  isDefault: boolean;
+  method: 'POST' | 'PUT';
+  onCancel?: () => void;
+  submitLabel: string;
+  submittingLabel: string;
 }) {
+  const formId = useId();
   const {state, formMethod} = useNavigation();
-  const action = useActionData<ActionResponse>();
-  const error = action?.error?.[addressId];
-  const isDefaultAddress = defaultAddress?.id === addressId;
+  const isSubmitting = formMethod === method && state !== 'idle';
+  const selectedCountry = address.territoryCode ?? '';
+  const hasSelectedCountry = countries.some(
+    (country) => country.isoCode === selectedCountry,
+  );
+
   return (
-    <Form id={addressId}>
+    <Form className="account-form" id={formId} method={method}>
+      <input type="hidden" name="addressId" value={addressId} />
       <fieldset>
-        <input type="hidden" name="addressId" defaultValue={addressId} />
-        <label htmlFor="firstName">First name*</label>
-        <input
-          aria-label="First name"
-          autoComplete="given-name"
-          defaultValue={address?.firstName ?? ''}
-          id="firstName"
-          name="firstName"
-          placeholder="First name"
-          required
-          type="text"
-        />
-        <label htmlFor="lastName">Last name*</label>
-        <input
-          aria-label="Last name"
-          autoComplete="family-name"
-          defaultValue={address?.lastName ?? ''}
-          id="lastName"
-          name="lastName"
-          placeholder="Last name"
-          required
-          type="text"
-        />
-        <label htmlFor="company">Company</label>
-        <input
-          aria-label="Company"
-          autoComplete="organization"
-          defaultValue={address?.company ?? ''}
-          id="company"
-          name="company"
-          placeholder="Company"
-          type="text"
-        />
-        <label htmlFor="address1">Address line*</label>
-        <input
-          aria-label="Address line 1"
-          autoComplete="address-line1"
-          defaultValue={address?.address1 ?? ''}
-          id="address1"
-          name="address1"
-          placeholder="Address line 1*"
-          required
-          type="text"
-        />
-        <label htmlFor="address2">Address line 2</label>
-        <input
-          aria-label="Address line 2"
-          autoComplete="address-line2"
-          defaultValue={address?.address2 ?? ''}
-          id="address2"
-          name="address2"
-          placeholder="Address line 2"
-          type="text"
-        />
-        <label htmlFor="city">City*</label>
-        <input
-          aria-label="City"
-          autoComplete="address-level2"
-          defaultValue={address?.city ?? ''}
-          id="city"
-          name="city"
-          placeholder="City"
-          required
-          type="text"
-        />
-        <label htmlFor="zoneCode">State / Province*</label>
-        <input
-          aria-label="State/Province"
-          autoComplete="address-level1"
-          defaultValue={address?.zoneCode ?? ''}
-          id="zoneCode"
-          name="zoneCode"
-          placeholder="State / Province"
-          required
-          type="text"
-        />
-        <label htmlFor="zip">Zip / Postal Code*</label>
-        <input
-          aria-label="Zip"
-          autoComplete="postal-code"
-          defaultValue={address?.zip ?? ''}
-          id="zip"
-          name="zip"
-          placeholder="Zip / Postal Code"
-          required
-          type="text"
-        />
-        <label htmlFor="territoryCode">Country Code*</label>
-        <input
-          aria-label="territoryCode"
-          autoComplete="country"
-          defaultValue={address?.territoryCode ?? ''}
-          id="territoryCode"
-          name="territoryCode"
-          placeholder="Country"
-          required
-          type="text"
-          maxLength={2}
-        />
-        <label htmlFor="phoneNumber">Phone</label>
-        <input
-          aria-label="Phone Number"
-          autoComplete="tel"
-          defaultValue={address?.phoneNumber ?? ''}
-          id="phoneNumber"
-          name="phoneNumber"
-          placeholder="+16135551111"
-          pattern="^\+?[1-9]\d{3,14}$"
-          type="tel"
-        />
-        <div>
+        <Field id={`${formId}-firstName`} label="First name" required>
           <input
-            defaultChecked={isDefaultAddress}
-            id="defaultAddress"
+            autoComplete="given-name"
+            defaultValue={address.firstName ?? ''}
+            id={`${formId}-firstName`}
+            name="firstName"
+            required
+            type="text"
+          />
+        </Field>
+        <Field id={`${formId}-lastName`} label="Last name" required>
+          <input
+            autoComplete="family-name"
+            defaultValue={address.lastName ?? ''}
+            id={`${formId}-lastName`}
+            name="lastName"
+            required
+            type="text"
+          />
+        </Field>
+        <Field id={`${formId}-company`} label="Company">
+          <input
+            autoComplete="organization"
+            defaultValue={address.company ?? ''}
+            id={`${formId}-company`}
+            name="company"
+            type="text"
+          />
+        </Field>
+        <Field id={`${formId}-address1`} label="Address line 1" required>
+          <input
+            autoComplete="address-line1"
+            defaultValue={address.address1 ?? ''}
+            id={`${formId}-address1`}
+            name="address1"
+            required
+            type="text"
+          />
+        </Field>
+        <Field id={`${formId}-address2`} label="Address line 2">
+          <input
+            autoComplete="address-line2"
+            defaultValue={address.address2 ?? ''}
+            id={`${formId}-address2`}
+            name="address2"
+            type="text"
+          />
+        </Field>
+        <Field id={`${formId}-city`} label="City" required>
+          <input
+            autoComplete="address-level2"
+            defaultValue={address.city ?? ''}
+            id={`${formId}-city`}
+            name="city"
+            required
+            type="text"
+          />
+        </Field>
+        <Field id={`${formId}-zoneCode`} label="State" required>
+          <input
+            autoComplete="address-level1"
+            defaultValue={address.zoneCode ?? ''}
+            id={`${formId}-zoneCode`}
+            name="zoneCode"
+            required
+            type="text"
+          />
+        </Field>
+        <Field id={`${formId}-zip`} label="Postal code" required>
+          <input
+            autoComplete="postal-code"
+            defaultValue={address.zip ?? ''}
+            id={`${formId}-zip`}
+            name="zip"
+            required
+            type="text"
+          />
+        </Field>
+        <Field id={`${formId}-territoryCode`} label="Country" required>
+          <select
+            autoComplete="country"
+            defaultValue={selectedCountry}
+            id={`${formId}-territoryCode`}
+            name="territoryCode"
+            required
+          >
+            <option value="">Select country</option>
+            {!hasSelectedCountry && selectedCountry ? (
+              <option value={selectedCountry}>{selectedCountry}</option>
+            ) : null}
+            {countries.map((country) => (
+              <option key={country.isoCode} value={country.isoCode}>
+                {country.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field id={`${formId}-phoneNumber`} label="Phone">
+          <input
+            autoComplete="tel"
+            defaultValue={address.phoneNumber ?? ''}
+            id={`${formId}-phoneNumber`}
+            name="phoneNumber"
+            pattern="^\+?[1-9]\d{3,14}$"
+            type="tel"
+          />
+        </Field>
+        <div className="account-checkbox">
+          <input
+            defaultChecked={isDefault}
+            id={`${formId}-defaultAddress`}
             name="defaultAddress"
             type="checkbox"
           />
-          <label htmlFor="defaultAddress">Set as default address</label>
+          <label htmlFor={`${formId}-defaultAddress`}>
+            Set as default address
+          </label>
         </div>
-        {error ? (
-          <p>
-            <mark>
-              <small>{error}</small>
-            </mark>
-          </p>
-        ) : (
-          <br />
-        )}
-        {children({
-          stateForMethod: (method) => (formMethod === method ? state : 'idle'),
-        })}
       </fieldset>
+      <div className="account-actions">
+        <button className="account-button" disabled={isSubmitting} type="submit">
+          {isSubmitting ? submittingLabel : submitLabel}
+        </button>
+        {onCancel ? (
+          <button
+            className="account-text-button"
+            type="button"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+        ) : null}
+      </div>
     </Form>
+  );
+}
+
+function Field({
+  children,
+  id,
+  label,
+  required,
+}: {
+  children: ReactNode;
+  id: string;
+  label: string;
+  required?: boolean;
+}) {
+  return (
+    <label className="account-field" htmlFor={id}>
+      <span>
+        {label}
+        {required ? '*' : ''}
+      </span>
+      {children}
+    </label>
   );
 }

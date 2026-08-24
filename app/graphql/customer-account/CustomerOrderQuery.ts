@@ -47,11 +47,17 @@ export const CUSTOMER_ORDER_QUERY = `#graphql
     name
     confirmationNumber
     statusPageUrl
+    financialStatus
     fulfillmentStatus
     processedAt
-    fulfillments(first: 1) {
+    fulfillments(first: 5) {
       nodes {
         status
+        trackingInformation {
+          company
+          number
+          url
+        }
       }
     }
     totalTax {
@@ -60,8 +66,14 @@ export const CUSTOMER_ORDER_QUERY = `#graphql
     totalPrice {
       ...OrderMoney
     }
+    totalShipping {
+      ...OrderMoney
+    }
     subtotal {
       ...OrderMoney
+    }
+    shippingLine {
+      title
     }
     shippingAddress {
       name

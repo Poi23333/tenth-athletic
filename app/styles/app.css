@@ -5213,61 +5213,456 @@ aside.aside-brand {
 * --------------------------------------------------
 */
 
-.account-logout {
-  display: inline-block;
+.account-page {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  padding: clamp(2rem, 4.8vw, 3.6rem) clamp(1.6rem, 2vw, 2.6rem)
+    clamp(2.4rem, 6.4vw, 4.8rem);
+  width: 100%;
 }
 
-/*
-* --------------------------------------------------
-* Order Search Form - Minimal & Responsive
-* --------------------------------------------------
-*/
-.order-search-form {
-  margin-bottom: 1.5rem;
+.account-page-inner {
+  max-width: 51.625rem;
+  width: 100%;
 }
 
-.order-search-fieldset {
-  border: 1px solid #e5e5e5;
-  border-radius: 4px;
-  padding: 1rem;
-}
-
-.order-search-legend {
+.account-page-title {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
   font-weight: 700;
-  padding: 0 0.5rem;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 0 0 1.25rem;
 }
 
-.order-search-active {
+.account-page-body,
+.account-page-body :where(h2, h3, legend, th, strong, button) {
   font-weight: 400;
-  opacity: 0.7;
-  margin-left: 0.5rem;
 }
 
-.order-search-inputs {
+.account-page-body {
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.account-page-body h2 {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  margin: 0 0 1.25rem;
+}
+
+.account-page-body h3 {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  margin: 0 0 0.85rem;
+}
+
+.account-page form {
+  max-width: none;
+}
+
+.account-page fieldset {
+  border: 0;
   display: grid;
   gap: 1rem;
-  margin: 0.25rem 0 1rem;
-  grid-template-columns: 1fr;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
 }
 
-@media (min-width: 640px) {
-  .order-search-inputs {
+.account-page legend {
+  font-family: var(--font-display);
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+
+.account-nav {
+  align-items: center;
+  border-bottom: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin: 0 0 2rem;
+  padding: 0 0 0.85rem;
+}
+
+.account-nav-link {
+  background: none;
+  border: 0;
+  color: #626262;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 0;
+  text-decoration: none;
+}
+
+.account-nav-link:hover,
+.account-nav-link.is-active {
+  color: var(--color-text);
+}
+
+.account-nav-link.is-active {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.account-nav-link.is-pending {
+  color: var(--color-secondary);
+}
+
+.account-logout {
+  display: inline-flex;
+  margin: 0;
+}
+
+.account-field,
+.account-readonly {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.account-field span,
+.account-readonly span {
+  color: var(--color-text);
+}
+
+.account-page input,
+.account-page select {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--color-text);
+  border-radius: 0;
+  color: inherit;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  min-height: 2.75rem;
+  outline: none;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+}
+
+.account-page input:focus-visible,
+.account-page select:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--color-text);
+}
+
+.account-page select {
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.1rem) 1.15rem,
+    calc(100% - 0.75rem) 1.15rem;
+  background-repeat: no-repeat;
+  background-size:
+    0.35rem 0.35rem,
+    0.35rem 0.35rem;
+  padding-right: 2rem;
+}
+
+.account-checkbox {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+}
+
+.account-checkbox input {
+  height: 1rem;
+  min-height: 0;
+  width: 1rem;
+}
+
+.account-checkbox label {
+  margin: 0;
+}
+
+.account-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+  margin-top: 0.25rem;
+}
+
+.account-button {
+  background: var(--color-primary-container);
+  border: 0;
+  border-radius: 0.25rem;
+  color: var(--color-light);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  min-height: 2.4rem;
+  padding: 0.65rem 1.1rem;
+}
+
+.account-button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.account-button:disabled,
+.account-text-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.account-text-button,
+.account-back-link,
+.account-empty a,
+.account-order-row-link {
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.account-text-button:hover,
+.account-back-link:hover,
+.account-empty a:hover,
+.account-order-row-link:hover {
+  opacity: 0.7;
+}
+
+.account-back-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.account-feedback {
+  margin: 0 0 1.25rem;
+}
+
+.account-feedback--error {
+  color: #a51d1d;
+}
+
+.account-empty {
+  min-height: 8rem;
+}
+
+.account-empty p {
+  margin: 0 0 1rem;
+}
+
+.account-empty a {
+  font-weight: 700;
+}
+
+.account-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.account-readonly p {
+  margin: 0;
+}
+
+.account-order-search {
+  margin-bottom: 2rem;
+}
+
+.account-order-search-fields {
+  display: grid;
+  gap: 1rem;
+}
+
+.account-order-rows {
+  display: grid;
+}
+
+.account-order-row {
+  border-bottom: 1px solid var(--color-border-subtle);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 4.5rem 1fr;
+  padding: 1.15rem 0;
+}
+
+.account-order-row:first-child {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.account-order-row-media,
+.account-order-row-placeholder {
+  aspect-ratio: 1;
+  background: var(--color-surface-container-low);
+  overflow: hidden;
+}
+
+.account-order-row-media img,
+.account-order-product img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.account-order-row-heading {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.account-order-row-heading a {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.account-order-row-heading a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.account-order-row-meta,
+.account-order-row-status,
+.account-order-status {
+  color: var(--color-secondary);
+  margin: 0.2rem 0 0;
+}
+
+.account-order-row-link {
+  display: inline-block;
+  font-weight: 700;
+  margin-top: 0.65rem;
+}
+
+.account-order-header h2 {
+  margin-bottom: 0.35rem;
+}
+
+.account-order-header p {
+  margin: 0;
+}
+
+.account-order-layout {
+  display: grid;
+  gap: 2rem;
+  margin-top: 1.75rem;
+}
+
+.account-order-scroll {
+  overflow-x: auto;
+}
+
+.account-order-table {
+  border-collapse: collapse;
+  min-width: 32rem;
+  width: 100%;
+}
+
+.account-order-table th,
+.account-order-table td {
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding: 0.85rem 0.75rem 0.85rem 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.account-order-table th:last-child,
+.account-order-table td:last-child {
+  padding-right: 0;
+  text-align: right;
+}
+
+.account-order-table tfoot th {
+  font-weight: 400;
+}
+
+.account-order-product {
+  align-items: flex-start;
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 4.5rem 1fr;
+}
+
+.account-order-product p,
+.account-order-product small {
+  display: block;
+  margin: 0;
+}
+
+.account-order-product small {
+  color: var(--color-secondary);
+}
+
+.account-order-aside {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.account-order-aside address,
+.account-address-card address {
+  display: grid;
+  font-style: normal;
+  gap: 0.15rem;
+}
+
+.account-tracking-list {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.account-address-create,
+.account-address-list {
+  margin-bottom: 2.25rem;
+}
+
+.account-address-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.account-address-card {
+  border-bottom: 1px solid var(--color-border-subtle);
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.1rem 0;
+}
+
+.account-badge {
+  color: var(--color-secondary);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.account-orders-list a[href*='direction='] {
+  color: inherit;
+  display: inline-block;
+  margin: 1rem 0;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (min-width: 40em) {
+  .account-order-search-fields {
     grid-template-columns: 1fr 1fr;
   }
 }
 
-.order-search-input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-size: 1rem;
+@media (min-width: 56em) {
+  .account-order-layout {
+    grid-template-columns: minmax(0, 1.7fr) minmax(12rem, 0.8fr);
+  }
 }
 
-.order-search-buttons {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+@media (max-width: 47.99em) {
+  .account-page {
+    padding-inline: var(--page-gutter);
+  }
 }
 
 /*
