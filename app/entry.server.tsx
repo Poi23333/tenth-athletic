@@ -15,6 +15,15 @@ export default async function handleRequest(
   context: HydrogenRouterContextProvider,
 ) {
   const {nonce, header, NonceProvider} = createContentSecurityPolicy({
+    connectSrc: ['https://api.mapbox.com', 'https://events.mapbox.com'],
+    workerSrc: ["'self'", 'blob:'],
+    imgSrc: [
+      "'self'",
+      'data:',
+      'blob:',
+      'https://cdn.shopify.com',
+      'https://shopify.com',
+    ],
     shop: {
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,

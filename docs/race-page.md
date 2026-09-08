@@ -34,7 +34,7 @@ All assets were copied, with descriptive new names, into `public/images/race/`; 
 - `Asset 5.svg` → `circuit-wordmark.svg` (retained resource)
 - `Asset 6.svg` → `course-outline.svg`
 - `Asset 7.svg` → `stratford-map.svg`
-- `Asset 8.svg` → `location-map.svg`
+- `Asset 8.svg` → `location-map.svg` (retained reference; replaced by Mapbox)
 - `banner-bg.jpg` → `field-circuit-hero.jpg`
 - `banner-logo.png` → `field-circuit-logo.png`
 
@@ -46,6 +46,20 @@ Page ink: `#5f3058`, matching the supplied SVGs. Hero navigation is white. Typog
 
 ## Verification — 2026-09-08
 
+### Mapbox integration
+
+The LOCATION section uses Mapbox GL JS 3.30.0 with the `mapbox/light-v11` style, a purple venue marker, address popup and zoom controls. The SDK loads within 200px of the viewport, is excluded from the Oxygen server bundle via `app/lib/mapbox.client.ts`, and is removed when the component unmounts. Cooperative gestures avoid capturing ordinary page scrolling. Mapbox attribution remains visible. The separate Google Maps directions link was removed at the user’s request.
+
+Create a dedicated public token at https://console.mapbox.com/account/access-tokens with `styles:read` and `fonts:read`, without secret scopes. Restrict the development token to `http://localhost:3080`. Production/preview tokens must allow the actual storefront origin, including its Oxygen preview hostname when testing there; the Shopify Admin domain is not the storefront origin. Use separate tokens for development and production.
+
+Set `PUBLIC_MAPBOX_ACCESS_TOKEN` in the local `.env` and in the appropriate Tenth Athletic Hydrogen/Oxygen environment before deploying. Its value must start with `pk.`. Do not commit the token. This public value is sent to the browser by the route loader. A missing token displays an explicit unconfigured state; an `sk.` or other non-public value is rejected server-side with 503 and is not sent to the browser. Map load failures/timeouts display an error instead of substituting a static map.
+
+The marker uses the user-provided coordinates `[-0.0153, 51.5504]` (longitude, latitude). The popup opens initially and displays only `Lee Valley VeloPark`, without an address or translated name. This is the venue centre, not a confirmed race check-in entrance.
+
+Mapbox validation: project typecheck, scoped ESLint and build passed. Live tiles, token restrictions, marker interactions and responsive WebGL rendering remain blocked pending the user's token. The local preview also returned `500 / Network connection lost` during browser verification; no local service was restarted. The separate skill validator remains blocked by its missing dependencies listed below.
+
+### Earlier race-page verification
+
 - PASS: Shopify definition and active entry saved in Tenth Athletic; the local route successfully reads the remote date.
 - PASS: GraphQL code generation, TypeScript check, scoped ESLint, production build, diff whitespace check.
 - PASS: desktop 1440px and mobile 390px / 320px browser rendering; no horizontal overflow; Tenth font loaded; computed page ink `rgb(95, 48, 88)`.
@@ -54,3 +68,7 @@ Page ink: `#5f3058`, matching the supplied SVGs. Hero navigation is white. Typog
 - PASS: all seven rendered race images loaded; countdown rollover/expiry checked with five boundary cases; long FAQ list verified on 320px.
 - Browser tooling limitation: Chrome automation rewrites the favicon (`data-codex-favicon-badge`) and the in-app browser injects `div#codex-browser-sidebar-comments-root` directly under `html`. React 18 reports hydration warnings on those instrumented loads. The latter extra node was verified in the live DOM; the warning names an unexpected `div` inside `html`. Normal, uninstrumented browser hydration has not been verified. No hydration suppression or error-swallowing was added.
 - Not performed: deployment, live site publication, full accessibility audit, performance benchmark.
+
+### Local Mapbox follow-up verification
+
+The existing development service was restarted on port 3080 to load PUBLIC_MAPBOX_ACCESS_TOKEN from .env. Browser verification passed: real Mapbox Light tiles, purple marker, initial English-only Lee Valley VeloPark popup and zoom control. No Google Maps links remain. Production and Preview Oxygen variables were saved separately; deployment has not been triggered.

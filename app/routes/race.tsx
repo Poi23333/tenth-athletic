@@ -4,8 +4,11 @@ import type {Route} from './+types/race';
 import {raceFaq} from '~/data/race-faq';
 import {raceProgramme, raceSpecifications} from '~/data/race';
 import raceStyles from '~/styles/race.css?url';
+import mapboxStyles from 'mapbox-gl/dist/mapbox-gl.css?url';
+import {RaceMap} from '~/components/RaceMap';
 
 export const links: Route.LinksFunction = () => [
+  {rel: 'stylesheet', href: mapboxStyles},
   {rel: 'stylesheet', href: raceStyles},
   {
     rel: 'preload',
@@ -25,6 +28,13 @@ export const meta: Route.MetaFunction = () => [
 ];
 
 export async function loader({context}: Route.LoaderArgs) {
+  const mapboxAccessToken = context.env.PUBLIC_MAPBOX_ACCESS_TOKEN?.trim();
+  if (mapboxAccessToken && !mapboxAccessToken.startsWith('pk.')) {
+    throw new Response(
+      'PUBLIC_MAPBOX_ACCESS_TOKEN must be a public pk. token.',
+      {status: 503},
+    );
+  }
   const {race} = await context.storefront.query(RACE_QUERY, {
     cache: context.storefront.CacheNone(),
   });
@@ -36,6 +46,7 @@ export async function loader({context}: Route.LoaderArgs) {
     );
   }
   return {
+    mapboxAccessToken: mapboxAccessToken || null,
     startsAt: date,
     serverNow: Date.now(),
     registrationUrl: race?.registrationUrl?.value,
@@ -162,8 +173,13 @@ function EntryLink({href, children}: {href?: string | null; children: string}) {
 }
 
 export default function RacePage() {
-  const {startsAt, serverNow, registrationUrl, photographerUrl} =
-    useLoaderData<typeof loader>();
+  const {
+    startsAt,
+    serverNow,
+    registrationUrl,
+    photographerUrl,
+    mapboxAccessToken,
+  } = useLoaderData<typeof loader>();
   return (
     <article className="race-page">
       <section className="race-hero" aria-label="TENTH FIELD CIRCUIT">
@@ -371,19 +387,7 @@ export default function RacePage() {
           </section>
           <section className="race-location">
             <h2>LOCATION</h2>
-            <a
-              href="https://www.google.com/maps/search/?api=1&query=Lee+Valley+VeloPark+London"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <img
-                src="/images/race/location-map.svg"
-                alt="Map showing Lee Valley VeloPark in East London. Open directions."
-                width="1001"
-                height="247"
-                loading="lazy"
-              />
-            </a>
+            <RaceMap accessToken={mapboxAccessToken} />
           </section>
         </div>
         <img

@@ -226,9 +226,74 @@ body:has(.race-page) .global-dot-matrix {
 .race-location h2 {
   margin-bottom: 1em;
 }
-.race-location img {
+.race-map {
+  position: relative;
+  margin-bottom: 0.75em;
+}
+.race-map-canvas {
   width: 100%;
-  height: auto;
+  aspect-ratio: 1001 / 247;
+  min-height: 240px;
+  background: #eef0ed;
+}
+.race-map-status {
+  position: absolute;
+  inset: 50% 3rem auto;
+  transform: translateY(-50%);
+  padding: 0.75rem;
+  background: white;
+  text-align: center;
+  pointer-events: none;
+}
+.race-map .mapboxgl-popup-content {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #5f3058;
+  padding: 18px 44px 18px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgb(95 48 88 / 14%);
+}
+.race-map .mapboxgl-popup-close-button {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: #5f3058;
+  background: transparent;
+  font-size: 0;
+  cursor: pointer;
+}
+.race-map .mapboxgl-popup-close-button::before,
+.race-map .mapboxgl-popup-close-button::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+.race-map .mapboxgl-popup-close-button::after {
+  transform: rotate(-45deg);
+}
+.race-map .mapboxgl-popup-close-button:hover {
+  background: rgb(95 48 88 / 8%);
+}
+.race-map .mapboxgl-popup-close-button:focus {
+  outline: none;
+}
+.race-map .mapboxgl-popup-close-button:focus-visible {
+  outline: 2px solid #5f3058;
+  outline-offset: -3px;
 }
 .race-intro {
   grid-column: 1;

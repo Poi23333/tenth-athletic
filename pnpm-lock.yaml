@@ -23,6 +23,9 @@ importers:
       isbot:
         specifier: ^5.1.22
         version: 5.1.44
+      mapbox-gl:
+        specifier: ^3.30.0
+        version: 3.30.0
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -3159,6 +3162,9 @@ packages:
   map-cache@0.2.2:
     resolution: {integrity: sha512-8y/eV9QQZCiyn1SprXSrCmqJN0yNRATe+PO8ztwqrvrbdRLA3eYJF0yaR0YayLWkMbsQSKWS9N2gPcGEc4UsZg==}
     engines: {node: '>=0.10.0'}
+
+  mapbox-gl@3.30.0:
+    resolution: {integrity: sha512-26m0CSBszLkvbdVWf2oIZ3SjqCuResxJKEbupwwSyNwbwJAcgnMhDy2Yl5cSgtUxeamUJ1UeXRqpBmGEUVaAeQ==}
 
   matcher@3.0.0:
     resolution: {integrity: sha512-OkeDaAZ/bQCxeFAozM55PKcKU0yJMPGifLwV4Qgjitu+5MoAfSQN4lsLJeXZ1b8w0x+/Emda6MZgXS1jvsapng==}
@@ -7452,6 +7458,8 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   map-cache@0.2.2: {}
+
+  mapbox-gl@3.30.0: {}
 
   matcher@3.0.0:
     dependencies:
