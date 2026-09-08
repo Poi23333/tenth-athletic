@@ -441,6 +441,16 @@ body:has(.race-page) .header a,
 body:has(.race-page) .header button {
   color: white;
 }
+/* Shared desktop navigation sits on the drawer's white surface while open. */
+body:has(.race-page):has(
+    .overlay:is(.opening, .expanded, .closing):not(.overlay-mobile):not(
+        .overlay-filter
+      )
+  )
+  .header-menu-desktop
+  :is(a, button) {
+  color: var(--color-text);
+}
 body:has(.race-page) .global-dot-matrix-grid {
   background-image: radial-gradient(
     circle at 1px 1px,
