@@ -416,6 +416,24 @@ export type StoreRobotsQueryVariables = StorefrontAPI.Exact<{
 
 export type StoreRobotsQuery = {shop: Pick<StorefrontAPI.Shop, 'id'>};
 
+export type RaceEventQueryVariables = StorefrontAPI.Exact<{
+  [key: string]: never;
+}>;
+
+export type RaceEventQuery = {
+  race?: StorefrontAPI.Maybe<{
+    startsAt?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.MetaobjectField, 'value'>
+    >;
+    registrationUrl?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.MetaobjectField, 'value'>
+    >;
+    photographerUrl?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.MetaobjectField, 'value'>
+    >;
+  }>;
+};
+
 export type WishlistProductsQueryVariables = StorefrontAPI.Exact<{
   ids:
     | Array<StorefrontAPI.Scalars['ID']['input']>
@@ -2020,24 +2038,6 @@ export type ProductMerchandisingQuery = {
   };
 };
 
-export type RaceEventQueryVariables = StorefrontAPI.Exact<{
-  [key: string]: never;
-}>;
-
-export type RaceEventQuery = {
-  race?: StorefrontAPI.Maybe<{
-    startsAt?: StorefrontAPI.Maybe<
-      Pick<StorefrontAPI.MetaobjectField, 'value'>
-    >;
-    registrationUrl?: StorefrontAPI.Maybe<
-      Pick<StorefrontAPI.MetaobjectField, 'value'>
-    >;
-    photographerUrl?: StorefrontAPI.Maybe<
-      Pick<StorefrontAPI.MetaobjectField, 'value'>
-    >;
-  }>;
-};
-
 export type SearchProductItemFragment = Pick<
   StorefrontAPI.Product,
   'id' | 'handle' | 'title' | 'productType' | 'trackingParameters'
@@ -2160,6 +2160,10 @@ interface GeneratedQueryTypes {
     return: StoreRobotsQuery;
     variables: StoreRobotsQueryVariables;
   };
+  '#graphql\n  query RaceEvent {\n    race: metaobject(handle: {type: "race_event", handle: "field-circuit"}) {\n      startsAt: field(key: "starts_at") { value }\n      registrationUrl: field(key: "registration_url") { value }\n      photographerUrl: field(key: "photographer_url") { value }\n    }\n  }\n': {
+    return: RaceEventQuery;
+    variables: RaceEventQueryVariables;
+  };
   '#graphql\n  query WishlistProducts(\n    $ids: [ID!]!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      __typename\n      ... on Product {\n        id\n        handle\n        title\n        productType\n        featuredImage {\n          id\n          altText\n          url\n          width\n          height\n        }\n        images(first: 2) {\n          nodes {\n            id\n            altText\n            url\n            width\n            height\n          }\n        }\n        options {\n          name\n          optionValues { name }\n        }\n        variants(first: 50) {\n          nodes {\n            availableForSale\n            quantityAvailable\n            selectedOptions { name value }\n          }\n        }\n        priceRange {\n          minVariantPrice { amount currencyCode }\n          maxVariantPrice { amount currencyCode }\n        }\n      }\n    }\n  }\n': {
     return: WishlistProductsQuery;
     variables: WishlistProductsQueryVariables;
@@ -2203,10 +2207,6 @@ interface GeneratedQueryTypes {
   '#graphql\n  query ProductMerchandising(\n    $country: CountryCode\n    $language: LanguageCode\n    $productId: ID!\n    $recentlyExploredQuery: String!\n  ) @inContext(country: $country, language: $language) {\n    productRecommendations(productId: $productId, intent: COMPLEMENTARY) {\n      ...ProductMerchandisingItem\n    }\n    recentlyExplored: products(\n      first: 8\n      query: $recentlyExploredQuery\n    ) {\n      nodes {\n        ...ProductMerchandisingItem\n      }\n    }\n  }\n  #graphql\n  fragment ProductMerchandisingItem on Product {\n    id\n    handle\n    title\n    productType\n    featuredImage {\n      id\n      altText\n      url\n      width\n      height\n    }\n    images(first: 2) {\n      nodes {\n        id\n        altText\n        url\n        width\n        height\n      }\n    }\n    options {\n      name\n      optionValues {\n        name\n      }\n    }\n    variants(first: 50) {\n      nodes {\n        availableForSale\n        quantityAvailable\n        selectedOptions {\n          name\n          value\n        }\n      }\n    }\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n      maxVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n  }\n\n': {
     return: ProductMerchandisingQuery;
     variables: ProductMerchandisingQueryVariables;
-  };
-  '#graphql\n  query RaceEvent {\n    race: metaobject(handle: {type: "race_event", handle: "field-circuit"}) {\n      startsAt: field(key: "starts_at") { value }\n      registrationUrl: field(key: "registration_url") { value }\n      photographerUrl: field(key: "photographer_url") { value }\n    }\n  }\n': {
-    return: RaceEventQuery;
-    variables: RaceEventQueryVariables;
   };
   '#graphql\n  query SearchProducts(\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $term: String!\n  ) @inContext(country: $country, language: $language) {\n    search(\n      after: $endCursor\n      before: $startCursor\n      first: $first\n      last: $last\n      prefix: LAST\n      query: $term\n      sortKey: RELEVANCE\n      types: [PRODUCT]\n      unavailableProducts: LAST\n    ) {\n      nodes {\n        __typename\n        ... on Product {\n          ...SearchProductItem\n        }\n      }\n      pageInfo {\n        hasPreviousPage\n        hasNextPage\n        startCursor\n        endCursor\n      }\n      totalCount\n    }\n  }\n  #graphql\n  fragment SearchProductItem on Product {\n    id\n    handle\n    title\n    productType\n    trackingParameters\n    featuredImage {\n      id\n      altText\n      url\n      width\n      height\n    }\n    images(first: 2) {\n      nodes {\n        id\n        altText\n        url\n        width\n        height\n      }\n    }\n    options {\n      name\n      optionValues {\n        name\n      }\n    }\n    variants(first: 50) {\n      nodes {\n        availableForSale\n        quantityAvailable\n        selectedOptions {\n          name\n          value\n        }\n      }\n    }\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n      maxVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n  }\n\n': {
     return: SearchProductsQuery;
