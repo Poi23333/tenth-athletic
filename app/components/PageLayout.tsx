@@ -239,13 +239,10 @@ const FIELD_INDEX_SECTIONS = [
       'Collaborations',
     ],
   },
-  {
-    heading: 'Field Notes',
-    items: ['Running', 'Places', 'People', 'Events'],
-  },
 ] as const;
 
 function FieldIndexAside() {
+  const {close} = useAside();
   return (
     <Aside chrome="brand" type="field-index" heading="Field Index">
       <nav className="drawer-menu" aria-label="Field Index">
@@ -261,6 +258,19 @@ function FieldIndexAside() {
             </div>
           </div>
         ))}
+        <div className="drawer-menu-group">
+          <p className="drawer-menu-heading">Field Circuit</p>
+          <div className="drawer-list">
+            <NavLink
+              className="drawer-list-item"
+              to="/race"
+              prefetch="intent"
+              onClick={close}
+            >
+              London 2026
+            </NavLink>
+          </div>
+        </div>
       </nav>
     </Aside>
   );

@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useLoaderData} from 'react-router';
 import type {Route} from './+types/race';
 import {raceFaq} from '~/data/race-faq';
@@ -173,6 +173,33 @@ function EntryLink({href, children}: {href?: string | null; children: string}) {
 }
 
 export default function RacePage() {
+  const hero = useRef<HTMLElement>(null);
+  const [headerOnHero, setHeaderOnHero] = useState(true);
+  useEffect(() => {
+    const header = document.querySelector('.header');
+    const banner = hero.current;
+    if (!header || !banner) return;
+    let frame = 0;
+    const update = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        setHeaderOnHero(
+          banner.getBoundingClientRect().bottom >
+            header.getBoundingClientRect().bottom,
+        );
+      });
+    };
+    const resize = new ResizeObserver(update);
+    resize.observe(header);
+    resize.observe(banner);
+    window.addEventListener('scroll', update, {passive: true});
+    update();
+    return () => {
+      cancelAnimationFrame(frame);
+      resize.disconnect();
+      window.removeEventListener('scroll', update);
+    };
+  }, []);
   const {
     startsAt,
     serverNow,
@@ -181,8 +208,12 @@ export default function RacePage() {
     mapboxAccessToken,
   } = useLoaderData<typeof loader>();
   return (
-    <article className="race-page">
-      <section className="race-hero" aria-label="TENTH FIELD CIRCUIT">
+    <article className="race-page" data-header-on-hero={headerOnHero}>
+      <section
+        ref={hero}
+        className="race-hero"
+        aria-label="TENTH FIELD CIRCUIT"
+      >
         <img
           className="race-hero-background"
           src="/images/race/field-circuit-hero.jpg"

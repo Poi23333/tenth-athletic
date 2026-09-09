@@ -9,20 +9,39 @@ body:has(.race-page) {
   --product-main-color: #5f3058;
 }
 body:has(.race-page) .header {
-  position: absolute;
-  inset: var(--region-banner-height, 0px) 0 auto;
-  background: transparent;
-  color: white;
-  border: 0;
-  z-index: 50;
+  border-top: 0;
+  mix-blend-mode: normal;
 }
-body:has(.race-page) .header-logo {
+body:has(.race-page[data-header-on-hero='true']):not(
+    :has(.overlay:is(.opening, .expanded, .closing))
+  )
+  .header {
+  background: linear-gradient(
+    to bottom,
+    rgb(25 12 22 / 62%),
+    rgb(25 12 22 / 42%)
+  );
+}
+body:has(.race-page[data-header-on-hero='true']):not(
+    :has(.overlay:is(.opening, .expanded, .closing))
+  )
+  .header
+  :is(a, button) {
+  color: #fff;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 40%);
+}
+body:has(.race-page[data-header-on-hero='true']):not(
+    :has(.overlay:is(.opening, .expanded, .closing))
+  )
+  .header-logo {
   filter: brightness(0) invert(1);
 }
 body:has(.race-page) .global-dot-matrix {
   mix-blend-mode: normal;
 }
 .race-page {
+  /* Place the hero behind the shared sticky header without changing its behavior. */
+  margin-top: calc(-1 * var(--header-height));
   color: #5f3058;
   font-family: Arial, Helvetica, sans-serif;
   --race-rule: color-mix(in srgb, #5f3058 65%, transparent);
@@ -501,20 +520,6 @@ body:has(.race-page) .global-dot-matrix {
 .race-countdown-value {
   color: transparent;
   -webkit-text-stroke: 0.45px #5f3058;
-}
-body:has(.race-page) .header a,
-body:has(.race-page) .header button {
-  color: white;
-}
-/* Shared desktop navigation sits on the drawer's white surface while open. */
-body:has(.race-page):has(
-    .overlay:is(.opening, .expanded, .closing):not(.overlay-mobile):not(
-        .overlay-filter
-      )
-  )
-  .header-menu-desktop
-  :is(a, button) {
-  color: var(--color-text);
 }
 body:has(.race-page) .global-dot-matrix-grid {
   background-image: radial-gradient(
