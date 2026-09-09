@@ -1,4 +1,0 @@
-/* Coming soon fills the space below the shared development-branch header. */
-.coming-soon {
-  min-height: calc(100svh - var(--header-height) - 1px);
-}

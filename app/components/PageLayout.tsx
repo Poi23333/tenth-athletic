@@ -6,20 +6,13 @@ import type {
   MenuFragment,
 } from 'storefrontapi.generated';
 import {Aside, useAside} from '~/components/Aside';
-import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
 import {CookieConsent} from '~/components/CookieConsent';
-import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
 import {GlobalLoadingProvider} from '~/components/GlobalLoading';
-import {RegionBanner} from '~/components/RegionBanner';
 import {WishlistProvider} from '~/components/WishlistProvider';
 import type {GeoBannerData} from '~/root';
-import {
-  isPlaceholderMenuUrl,
-  normalizeShopifyMenuUrl,
-  getGenderShopAllHandle,
-} from '~/lib/menu';
+import {isPlaceholderMenuUrl, normalizeShopifyMenuUrl} from '~/lib/menu';
 import {
   formatConfirmBody,
   formatConfirmSwitchLabel,
@@ -27,9 +20,6 @@ import {
   getRegionById,
   type Region,
 } from '~/data/regions';
-
-const DEFAULT_FOOTER_MAIN_COLOR = '#554d48';
-const CSS_HEX_COLOR_PATTERN = /^#(?:[\da-f]{3}|[\da-f]{6}|[\da-f]{8})$/i;
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -50,14 +40,7 @@ export function PageLayout({
   publicStoreDomain,
   regions,
   currentRegion,
-  geoBanner,
 }: PageLayoutProps) {
-  const shopMainColor = header.globalMainColor?.color?.value?.trim();
-  const footerMainColor =
-    shopMainColor && CSS_HEX_COLOR_PATTERN.test(shopMainColor)
-      ? shopMainColor
-      : DEFAULT_FOOTER_MAIN_COLOR;
-
   return (
     <WishlistProvider>
       <GlobalLoadingProvider>
@@ -81,18 +64,10 @@ export function PageLayout({
           <FieldIndexAside />
           <LocaleAside regions={regions} currentRegion={currentRegion} />
           <MobileMenuAside cart={cart} isLoggedIn={isLoggedIn} />
-          <GlobalDotMatrix />
-          {geoBanner?.show ? (
-            <RegionBanner
-              currentRegion={geoBanner.currentRegion}
-              suggestedRegion={geoBanner.suggestedRegion}
-            />
-          ) : null}
           {header && (
             <Header header={header} cart={cart} isLoggedIn={isLoggedIn} />
           )}
           <main>{children}</main>
-          <Footer currentRegion={currentRegion} mainColor={footerMainColor} />
           <CookieConsent />
         </Aside.Provider>
       </GlobalLoadingProvider>
@@ -152,7 +127,7 @@ function GenderMenuAside({
               className="drawer-list-item drawer-menu-shop-all"
               onClick={close}
               prefetch="intent"
-              to={`/collections/${getGenderShopAllHandle(type)}`}
+              to="/coming-soon"
             >
               Shop All
             </NavLink>
@@ -165,43 +140,12 @@ function GenderMenuAside({
               {category.items?.length ? (
                 <div className="drawer-list">
                   {category.items.map((item) => {
-                    if (
-                      !item.url ||
-                      isPlaceholderMenuUrl(item.url) ||
-                      !primaryDomainUrl
-                    ) {
-                      return (
-                        <span className="drawer-list-item" key={item.id}>
-                          {item.title}
-                        </span>
-                      );
-                    }
-
-                    const url = normalizeShopifyMenuUrl({
-                      primaryDomainUrl,
-                      publicStoreDomain,
-                      url: item.url,
-                    });
-                    const isExternal = !url.startsWith('/');
-
-                    return isExternal ? (
-                      <a
-                        className="drawer-list-item"
-                        href={url}
-                        key={item.id}
-                        onClick={close}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        {item.title}
-                      </a>
-                    ) : (
+                    return (
                       <NavLink
                         className="drawer-list-item"
                         key={item.id}
                         onClick={close}
-                        prefetch="intent"
-                        to={url}
+                        to="/coming-soon"
                       >
                         {item.title}
                       </NavLink>
@@ -239,13 +183,10 @@ const FIELD_INDEX_SECTIONS = [
       'Collaborations',
     ],
   },
-  {
-    heading: 'Field Notes',
-    items: ['Running', 'Places', 'People', 'Events'],
-  },
 ] as const;
 
 function FieldIndexAside() {
+  const {close} = useAside();
   return (
     <Aside chrome="brand" type="field-index" heading="Field Index">
       <nav className="drawer-menu" aria-label="Field Index">
@@ -254,13 +195,31 @@ function FieldIndexAside() {
             <p className="drawer-menu-heading">{section.heading}</p>
             <div className="drawer-list">
               {section.items.map((item) => (
-                <span className="drawer-list-item" key={item}>
+                <NavLink
+                  className="drawer-list-item"
+                  key={item}
+                  to="/coming-soon"
+                  onClick={close}
+                >
                   {item}
-                </span>
+                </NavLink>
               ))}
             </div>
           </div>
         ))}
+        <div className="drawer-menu-group">
+          <p className="drawer-menu-heading">Field Circuit</p>
+          <div className="drawer-list">
+            <NavLink
+              className="drawer-list-item"
+              to="/race"
+              prefetch="intent"
+              onClick={close}
+            >
+              London 2026
+            </NavLink>
+          </div>
+        </div>
       </nav>
     </Aside>
   );

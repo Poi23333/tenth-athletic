@@ -1,6 +1,6 @@
 export function ComingSoon() {
   return (
-    <main className="coming-soon">
+    <div className="coming-soon">
       <div className="coming-soon-content">
         <div className="coming-soon-brand">
           <img
@@ -11,6 +11,6 @@ export function ComingSoon() {
           <p className="coming-soon-text">Coming soon</p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

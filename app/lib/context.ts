@@ -1,5 +1,7 @@
 import {createHydrogenContext} from '@shopify/hydrogen';
 import {AppSession} from '~/lib/session';
+import {CART_QUERY_FRAGMENT} from '~/lib/fragments';
+import {getLocaleFromRequest} from '~/lib/locale';
 
 // Define the additional context object
 const additionalContext = {
@@ -46,6 +48,10 @@ export async function createHydrogenRouterContext(
       cache,
       waitUntil,
       session,
+      i18n: getLocaleFromRequest(request),
+      cart: {
+        queryFragment: CART_QUERY_FRAGMENT,
+      },
     },
     additionalContext,
   );

@@ -19,6 +19,13 @@ export default {
       getLoadContext: () => hydrogenContext,
     });
 
-    return handleRequest(request);
+    const response = await handleRequest(request);
+    if (hydrogenContext.session.isPending) {
+      response.headers.append(
+        'Set-Cookie',
+        await hydrogenContext.session.commit(),
+      );
+    }
+    return response;
   },
 };

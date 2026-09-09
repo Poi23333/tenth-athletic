@@ -1,4 +1,5 @@
 import {defineConfig} from 'vite';
+import {fileURLToPath} from 'node:url';
 import {hydrogen} from '@shopify/hydrogen/vite';
 import {oxygen} from '@shopify/mini-oxygen/vite';
 import {reactRouter} from '@react-router/dev/vite';
@@ -6,6 +7,9 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+  resolve: {
+    alias: {'~': fileURLToPath(new URL('./app', import.meta.url))},
+  },
   plugins: [
     tailwindcss(),
     hydrogen(),

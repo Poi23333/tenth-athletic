@@ -9,18 +9,9 @@ body:has(.race-page) {
   --product-main-color: #5f3058;
 }
 body:has(.race-page) .header {
+  background: none;
   border-top: 0;
   mix-blend-mode: normal;
-}
-body:has(.race-page[data-header-on-hero='true']):not(
-    :has(.overlay:is(.opening, .expanded, .closing))
-  )
-  .header {
-  background: linear-gradient(
-    to bottom,
-    rgb(25 12 22 / 62%),
-    rgb(25 12 22 / 42%)
-  );
 }
 body:has(.race-page[data-header-on-hero='true']):not(
     :has(.overlay:is(.opening, .expanded, .closing))
@@ -28,7 +19,6 @@ body:has(.race-page[data-header-on-hero='true']):not(
   .header
   :is(a, button) {
   color: #fff;
-  text-shadow: 0 1px 3px rgb(0 0 0 / 40%);
 }
 body:has(.race-page[data-header-on-hero='true']):not(
     :has(.overlay:is(.opening, .expanded, .closing))

@@ -208,7 +208,7 @@ export default function RacePage() {
     mapboxAccessToken,
   } = useLoaderData<typeof loader>();
   return (
-    <main className="race-page" data-header-on-hero={headerOnHero}>
+    <article className="race-page" data-header-on-hero={headerOnHero}>
       <section
         ref={hero}
         className="race-hero"
@@ -459,7 +459,7 @@ export default function RacePage() {
           ))}
         </section>
       </div>
-    </main>
+    </article>
   );
 }
 
