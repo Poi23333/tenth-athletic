@@ -30,7 +30,10 @@ const FOOTER_COLUMNS: FooterLink[][] = [
   [
     {label: 'Instagram', href: 'https://www.instagram.com/'},
     {label: 'YouTube', href: 'https://www.youtube.com/'},
-    {label: 'TikTok', href: 'https://www.tiktok.com/'},
+    {
+      label: 'TikTok',
+      href: 'https://www.tiktok.com/@tenthathlectic?is_from_webapp=1&sender_device=pc',
+    },
     {label: 'Strava', href: 'https://www.strava.com/'},
     {label: 'Spotify', href: 'https://open.spotify.com/'},
   ],

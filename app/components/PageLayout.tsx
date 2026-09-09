@@ -75,7 +75,7 @@ export function PageLayout({
           {isRacePage && (
             <Footer
               currentRegion={currentRegion}
-              mainColor="var(--product-main-color)"
+              mainColor="#BE8EC2"
             />
           )}
           <CookieConsent />
