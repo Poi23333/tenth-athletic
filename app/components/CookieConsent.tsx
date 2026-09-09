@@ -224,14 +224,14 @@ export function CookieConsent() {
           )}
           <div className="cookie-consent-action-group">
             <button
-              className="cookie-consent-button"
+              className="cookie-consent-button cookie-consent-button--reject"
               type="button"
               onClick={() => saveConsent(DEFAULT_CHOICE)}
             >
               Reject All
             </button>
             <button
-              className="cookie-consent-button"
+              className="cookie-consent-button cookie-consent-button--allow"
               type="button"
               onClick={() =>
                 saveConsent({

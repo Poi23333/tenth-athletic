@@ -1756,6 +1756,18 @@ html:has(.product) .footer {
   padding: 0.8rem 1rem;
 }
 
+.cookie-consent-button--allow {
+  background: #000;
+  border-color: #000;
+  color: #fff;
+}
+
+.cookie-consent-button--reject {
+  background: #eee;
+  border-color: #eee;
+  color: #000;
+}
+
 .cookie-consent-button:hover,
 .cookie-consent-text-action:hover {
   opacity: 0.72;

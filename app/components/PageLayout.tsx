@@ -1,4 +1,4 @@
-import {Await, Form, NavLink} from 'react-router';
+import {Await, Form, NavLink, useLocation} from 'react-router';
 import {Suspense, useEffect, useRef} from 'react';
 import type {
   CartApiQueryFragment,
@@ -7,6 +7,7 @@ import type {
 } from 'storefrontapi.generated';
 import {Aside, useAside} from '~/components/Aside';
 import {Header, HeaderMenu} from '~/components/Header';
+import {Footer} from '~/components/Footer';
 import {CartMain} from '~/components/CartMain';
 import {CookieConsent} from '~/components/CookieConsent';
 import {GlobalLoadingProvider} from '~/components/GlobalLoading';
@@ -41,6 +42,9 @@ export function PageLayout({
   regions,
   currentRegion,
 }: PageLayoutProps) {
+  const {pathname} = useLocation();
+  const isRacePage = pathname === '/' || /^\/race\/?$/.test(pathname);
+
   return (
     <WishlistProvider>
       <GlobalLoadingProvider>
@@ -68,6 +72,12 @@ export function PageLayout({
             <Header header={header} cart={cart} isLoggedIn={isLoggedIn} />
           )}
           <main>{children}</main>
+          {isRacePage && (
+            <Footer
+              currentRegion={currentRegion}
+              mainColor="var(--product-main-color)"
+            />
+          )}
           <CookieConsent />
         </Aside.Provider>
       </GlobalLoadingProvider>

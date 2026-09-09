@@ -6,6 +6,7 @@ import {raceProgramme, raceSpecifications} from '~/data/race';
 import raceStyles from '~/styles/race.css?url';
 import mapboxStyles from 'mapbox-gl/dist/mapbox-gl.css?url';
 import {RaceMap} from '~/components/RaceMap';
+import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
 
 export const links: Route.LinksFunction = () => [
   {rel: 'stylesheet', href: mapboxStyles},
@@ -209,6 +210,7 @@ export default function RacePage() {
   } = useLoaderData<typeof loader>();
   return (
     <article className="race-page" data-header-on-hero={headerOnHero}>
+      <GlobalDotMatrix />
       <section
         ref={hero}
         className="race-hero"
