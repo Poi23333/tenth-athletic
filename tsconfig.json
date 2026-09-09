@@ -6,6 +6,7 @@
     "app/entry.server.tsx",
     "app/routes.ts",
     "app/routes/_index.tsx",
+    "app/routes/race.tsx",
     "app/routes/$.tsx",
     "app/components/ComingSoon.tsx",
     "app/lib/context.ts",
@@ -13,7 +14,11 @@
     "server.ts",
     "react-router.config.ts",
     "vite.config.ts",
-    ".react-router/types/**/*"
+    ".react-router/types/**/*",
+    "app/components/RaceMap.tsx",
+    "app/lib/mapbox.client.ts",
+    "app/data/race.ts",
+    "app/data/race-faq.ts"
   ],
   "exclude": ["node_modules", "dist", "build", "packages/**/dist/**/*"],
   "compilerOptions": {
