@@ -28,13 +28,13 @@ const FOOTER_COLUMNS: FooterLink[][] = [
     {label: 'Store Locator / Stockists', to: '/pages/store-locator'},
   ],
   [
-    {label: 'Instagram', href: 'https://www.instagram.com/'},
+    {label: 'Instagram', href: 'https://www.instagram.com/tenth.athletic/'},
     {label: 'YouTube', href: 'https://www.youtube.com/'},
     {
       label: 'TikTok',
       href: 'https://www.tiktok.com/@tenthathlectic?is_from_webapp=1&sender_device=pc',
     },
-    {label: 'Strava', href: 'https://www.strava.com/'},
+    {label: 'Strava', href: 'https://www.strava.com/clubs/1626313/leaderboard'},
     {label: 'Spotify', href: 'https://open.spotify.com/'},
   ],
 ];
