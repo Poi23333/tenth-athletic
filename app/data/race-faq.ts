@@ -6,7 +6,7 @@ export const raceFaq = [
       {
         question: 'When and where will TENTH FIELD CIRCUIT take place?',
         answer:
-          'TENTH FIELD CIRCUIT will take place at Lee Valley VeloPark in East London.\n\nEvent date: [TBC]  \nEvent hours: [TBC]\n\nThe detailed race-day timetable will be published before the event.',
+          'TENTH FIELD CIRCUIT will take place at Lee Valley VeloPark in East London.\n\nEvent date: SATURDAY / 24 OCTOBER 2026\n\nEvent hours: 15:00–22:00\n\nThe detailed race-day timetable will be published before the event.',
       },
       {
         question: 'Is the event open to spectators?',
@@ -21,7 +21,7 @@ export const raceFaq = [
       {
         question: 'Are dogs permitted at the venue?',
         answer:
-          '[TBC — confirm with Lee Valley VeloPark.]\n\nSuggested final wording:\n\nPets are not permitted at the venue. Registered assistance dogs are welcome, subject to the venue’s access policy.',
+          'Dogs are permitted in the outdoor spectator areas surrounding the Trail course, provided they are kept on a lead and under control at all times.\n\nDogs are not permitted inside the indoor venue areas, on the race course or within restricted operational areas.\n\nAssistance dogs are permitted in both indoor and outdoor venue areas but must not enter the active race course.',
       },
       {
         question: 'Is the venue accessible?',
@@ -39,9 +39,9 @@ export const raceFaq = [
           'TENTH FIELD CIRCUIT consists of two separate competitions:\n\n- Individual Field\n- Community Field Relay\n\nPublic entrants may apply for the Individual Field. Community and running clubs may apply separately for the Community Field Relay.\n\nInvited places are issued directly by TENTH.',
       },
       {
-        question: 'Is there an entry fee or refundable deposit?',
+        question: 'How much does it cost to enter?',
         answer:
-          'There is no race entry fee.\n\nA refundable £20 attendance deposit is required to confirm a place. The deposit is not an entry fee and will be returned to eligible participants following the event.\n\nParticipants must complete event check-in to become eligible for the refund. Full cancellation, non-attendance and refund terms will be provided during registration.',
+          'Individual Field entry costs £25 per runner.\n\nCommunity Field Relay entry costs £120 per six-person team.\n\nEntry fees secure a place in the selected race format. Full cancellation, transfer and refund terms will be provided during registration.\n\nSpectator entry is free.',
       },
       {
         question: 'What is the minimum age to compete?',
@@ -56,7 +56,7 @@ export const raceFaq = [
       {
         question: 'Can I cancel, defer or transfer my entry?',
         answer:
-          'Entries cannot automatically be deferred to a future event.\n\nTransfers or participant substitutions require prior approval from the TENTH event team and must be completed before the published transfer deadline.\n\nCancellation and deposit-refund eligibility will be governed by the registration terms. Contact [EVENT EMAIL] if you can no longer attend.',
+          'Entry fees are non-refundable if a participant cancels or is unable to attend. Entries cannot be deferred to a future event.\n\nTransfers or participant substitutions are permitted only with prior written approval from the TENTH event team.\n\nFor questions about an existing entry, contact info@tenthathletic.com.',
       },
       {
         question: 'How do invited participants register?',
@@ -67,7 +67,7 @@ export const raceFaq = [
         question:
           'Can I enter both the Individual Field and Community Field Relay?',
         answer:
-          '[TBC — operational decision required.]\n\nRecommended policy:\n\nParticipants may enter only one race format. This protects the event timetable, participant recovery and the availability of places for other runners.',
+          'No. Participants may enter either the Individual Field or the Community Field Relay, but not both.\n\nThis protects participant recovery, keeps the race-day schedule on time and ensures places remain available to more runners.',
       },
     ],
   },
@@ -153,7 +153,7 @@ export const raceFaq = [
       {
         question: 'What facilities are available?',
         answer:
-          'The planned race-day facilities include:\n\n- Toilets\n- Changing facilities\n- Bag drop\n- Drinking-water and hydration points\n- First aid\n- Accessible entrances and viewing areas\n- Food and drink\n- Spectator areas\n\n[TBC — confirm the final facility list with the venue before publishing.]',
+          'The planned race-day facilities include:\n\n- Toilets\n- Changing facilities\n- Bag drop\n- Drinking-water and hydration points\n- First aid\n- Accessible entrances and viewing areas\n- Food and drink\n- Spectator areas',
       },
       {
         question: 'Will food and drinks be available?',
@@ -188,17 +188,17 @@ export const raceFaq = [
       {
         question: 'How do community photographers apply for accreditation?',
         answer:
-          'Photographers attending with a registered community or running crew must submit a separate Community Photographer Accreditation application.\n\nEach registered crew may nominate one photographer. Accreditation is subject to approval and does not provide unrestricted course access.\n\nApproved photographers must remain within designated media areas and follow all instructions issued by event officials.\n\nAccreditation link: [INSERT LINK]',
+          'Photographers attending with a registered community or running crew must submit a separate Community Photographer Accreditation application.\n\nEach registered crew may nominate one photographer. Accreditation is subject to approval and does not provide unrestricted course access.\n\nApproved photographers must remain within designated media areas and follow all instructions issued by event officials.',
       },
       {
         question: 'Where will results be published?',
         answer:
-          'Provisional results will be published on the TENTH FIELD CIRCUIT website following the event.\n\nResults will become official once timing data, penalties and any race-official decisions have been reviewed.\n\nResults page: [INSERT LINK]',
+          'Provisional results will be published on the TENTH FIELD CIRCUIT website following the event.\n\nResults will become official once timing data, penalties and any race-official decisions have been reviewed.',
       },
       {
         question: 'Where can I find official race photographs?',
         answer:
-          'Official race photographs will be published in the TENTH FIELD CIRCUIT event gallery after the event.\n\nThe gallery link and publication timing will be shared through the event website, participant email and official TENTH channels.\n\nPhotography gallery: [INSERT LINK]',
+          'Official race photographs will be published in the TENTH FIELD CIRCUIT event gallery after the event.\n\nThe gallery link and publication timing will be shared through the event website, participant email and official TENTH channels.',
       },
     ],
   },

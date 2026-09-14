@@ -243,16 +243,16 @@ export default function RacePage() {
             <p>
               LEE VALLEY VELOPARK, LONDON
               <br />
-              13:00–22:00
+              15:00–22:00
             </p>
             <p>
-              INDIVIDUAL FIELD + COMMUNITY FIELD RELAY
+              INDIVIDUAL FIELD / £25 PER RUNNER
               <br />
-              £20 REFUNDABLE DEPOSIT
+              COMMUNITY FIELD RELAY / £120 PER TEAM
               <br />
               ELIGIBILITY / 18+
               <br />
-              SPECTATORS FREE
+              SPECTATORS / FREE
             </p>
           </div>
           <img

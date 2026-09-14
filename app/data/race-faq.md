@@ -6,8 +6,9 @@
 
 TENTH FIELD CIRCUIT will take place at Lee Valley VeloPark in East London.
 
-Event date: [TBC]  
-Event hours: [TBC]
+Event date: SATURDAY / 24 OCTOBER 2026
+
+Event hours: 15:00–22:00
 
 The detailed race-day timetable will be published before the event.
 
@@ -25,11 +26,11 @@ Children must remain within designated spectator areas and must not enter the co
 
 ### Are dogs permitted at the venue?
 
-[TBC — confirm with Lee Valley VeloPark.]
+Dogs are permitted in the outdoor spectator areas surrounding the Trail course, provided they are kept on a lead and under control at all times.
 
-Suggested final wording:
+Dogs are not permitted inside the indoor venue areas, on the race course or within restricted operational areas.
 
-Pets are not permitted at the venue. Registered assistance dogs are welcome, subject to the venue’s access policy.
+Assistance dogs are permitted in both indoor and outdoor venue areas but must not enter the active race course.
 
 ### Is the venue accessible?
 
@@ -51,13 +52,15 @@ Public entrants may apply for the Individual Field. Community and running clubs 
 
 Invited places are issued directly by TENTH.
 
-### Is there an entry fee or refundable deposit?
+### How much does it cost to enter?
 
-There is no race entry fee.
+Individual Field entry costs £25 per runner.
 
-A refundable £20 attendance deposit is required to confirm a place. The deposit is not an entry fee and will be returned to eligible participants following the event.
+Community Field Relay entry costs £120 per six-person team.
 
-Participants must complete event check-in to become eligible for the refund. Full cancellation, non-attendance and refund terms will be provided during registration.
+Entry fees secure a place in the selected race format. Full cancellation, transfer and refund terms will be provided during registration.
+
+Spectator entry is free.
 
 ### What is the minimum age to compete?
 
@@ -80,11 +83,11 @@ Any additional items or participant benefits will be confirmed before the event.
 
 ### Can I cancel, defer or transfer my entry?
 
-Entries cannot automatically be deferred to a future event.
+Entry fees are non-refundable if a participant cancels or is unable to attend. Entries cannot be deferred to a future event.
 
-Transfers or participant substitutions require prior approval from the TENTH event team and must be completed before the published transfer deadline.
+Transfers or participant substitutions are permitted only with prior written approval from the TENTH event team.
 
-Cancellation and deposit-refund eligibility will be governed by the registration terms. Contact [EVENT EMAIL] if you can no longer attend.
+For questions about an existing entry, contact info@tenthathletic.com.
 
 ### How do invited participants register?
 
@@ -94,11 +97,9 @@ An invitation does not replace registration. Every participant must complete the
 
 ### Can I enter both the Individual Field and Community Field Relay?
 
-[TBC — operational decision required.]
+No. Participants may enter either the Individual Field or the Community Field Relay, but not both.
 
-Recommended policy:
-
-Participants may enter only one race format. This protects the event timetable, participant recovery and the availability of places for other runners.
+This protects participant recovery, keeps the race-day schedule on time and ensures places remain available to more runners.
 
 
 ## INDIVIDUAL FIELD
@@ -225,8 +226,6 @@ The planned race-day facilities include:
 - Food and drink
 - Spectator areas
 
-[TBC — confirm the final facility list with the venue before publishing.]
-
 ### Will food and drinks be available?
 
 Food and drinks will be available at the venue.
@@ -272,20 +271,14 @@ Each registered crew may nominate one photographer. Accreditation is subject to 
 
 Approved photographers must remain within designated media areas and follow all instructions issued by event officials.
 
-Accreditation link: [INSERT LINK]
-
 ### Where will results be published?
 
 Provisional results will be published on the TENTH FIELD CIRCUIT website following the event.
 
 Results will become official once timing data, penalties and any race-official decisions have been reviewed.
 
-Results page: [INSERT LINK]
-
 ### Where can I find official race photographs?
 
 Official race photographs will be published in the TENTH FIELD CIRCUIT event gallery after the event.
 
 The gallery link and publication timing will be shared through the event website, participant email and official TENTH channels.
-
-Photography gallery: [INSERT LINK]
