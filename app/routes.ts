@@ -7,6 +7,7 @@ const enabled = new Set([
   'routes/_index.tsx',
   'routes/race.tsx',
   'routes/coming-soon.tsx',
+  'routes/pages.$handle.tsx',
   'routes/$.tsx',
   'routes/cart.tsx',
   'routes/cart.$lines.tsx',

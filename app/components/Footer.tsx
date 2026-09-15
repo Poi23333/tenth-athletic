@@ -37,6 +37,10 @@ const FOOTER_COLUMNS: FooterLink[][] = [
     {label: 'Strava', href: 'https://www.strava.com/clubs/1626313/leaderboard'},
     {label: 'Spotify', href: 'https://open.spotify.com/'},
   ],
+  [
+    {label: 'Event Entry Terms', to: '/pages/event-entry-terms'},
+    {label: 'Event Privacy Notice', to: '/pages/field-circuit-privacy-notice'},
+  ],
 ];
 
 type FieldNotesPhase =

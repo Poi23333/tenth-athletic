@@ -1,4 +1,4 @@
-import {useLoaderData} from 'react-router';
+import {redirect, useLoaderData} from 'react-router';
 import type {Route} from './+types/pages.$handle';
 import {InfoPage} from '~/components/InfoPage';
 import {getInfoPage} from '~/data/info-pages';
@@ -16,6 +16,9 @@ export const meta: Route.MetaFunction = ({data}) => {
 };
 
 export async function loader(args: Route.LoaderArgs) {
+  if (!args.params.handle || !getInfoPage(args.params.handle)) {
+    return redirect('/coming-soon');
+  }
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
 

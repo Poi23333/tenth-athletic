@@ -10,6 +10,8 @@ import {Header, HeaderMenu} from '~/components/Header';
 import {Footer} from '~/components/Footer';
 import {CartMain} from '~/components/CartMain';
 import {CookieConsent} from '~/components/CookieConsent';
+import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
+import {isInfoPageHandle} from '~/data/info-pages';
 import {GlobalLoadingProvider} from '~/components/GlobalLoading';
 import {WishlistProvider} from '~/components/WishlistProvider';
 import type {GeoBannerData} from '~/root';
@@ -44,6 +46,8 @@ export function PageLayout({
 }: PageLayoutProps) {
   const {pathname} = useLocation();
   const isRacePage = pathname === '/' || /^\/race\/?$/.test(pathname);
+  const infoPageMatch = /^\/pages\/([^/]+)\/?$/.exec(pathname);
+  const isInfoPage = Boolean(infoPageMatch && isInfoPageHandle(infoPageMatch[1]));
 
   return (
     <WishlistProvider>
@@ -68,11 +72,12 @@ export function PageLayout({
           <FieldIndexAside />
           <LocaleAside regions={regions} currentRegion={currentRegion} />
           <MobileMenuAside cart={cart} isLoggedIn={isLoggedIn} />
+          {isInfoPage && <GlobalDotMatrix />}
           {header && (
             <Header header={header} cart={cart} isLoggedIn={isLoggedIn} />
           )}
           <main>{children}</main>
-          {isRacePage && (
+          {(isRacePage || isInfoPage) && (
             <Footer
               currentRegion={currentRegion}
               mainColor="#BE8EC2"

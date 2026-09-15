@@ -1,5 +1,8 @@
 import type {ReactNode} from 'react';
 import {InfoPageAccordion} from '~/components/InfoPage';
+import {EventDocument} from '~/components/EventDocument';
+import eventEntryTerms from './event-entry-terms.json';
+import eventPrivacyNotice from './event-privacy-notice.json';
 
 export type InfoPageDefinition = {
   title: string;
@@ -142,6 +145,15 @@ function ShippingRatesTable({rates}: {rates: ShippingRate[]}) {
 }
 
 export const INFO_PAGES: Record<string, InfoPageDefinition> = {
+  'field-circuit-privacy-notice': {
+    title: 'Event Privacy Notice',
+    wide: true,
+    content: <EventDocument text={eventPrivacyNotice} />,
+  },
+  'event-entry-terms': {
+    title: 'Event Entry Terms',
+    content: <EventDocument text={eventEntryTerms} />,
+  },
   'customer-service': {
     title: 'Customer Service',
     content: (

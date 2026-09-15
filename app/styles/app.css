@@ -1119,12 +1119,14 @@ html:has(.product) .footer {
 
 @media (min-width: 48em) {
   .footer-columns {
-    grid-template-columns: repeat(3, max-content);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 1.75rem;
     justify-content: space-between;
   }
 }
 
 .footer-column {
+  align-content: start;
   display: grid;
   gap: 0.45rem;
   list-style: none;
@@ -6168,7 +6170,7 @@ aside.aside-brand {
 }
 
 .footer-links {
-  width: min(54rem, 100%);
+  width: min(72rem, 100%);
 }
 
 .footer-copyright-bar {
