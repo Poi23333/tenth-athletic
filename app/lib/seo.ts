@@ -4,7 +4,7 @@ import type {MetaDescriptor} from 'react-router';
 export const SITE_ORIGIN = 'https://tenthathletic.com';
 export const EVENT_IMAGE = `${SITE_ORIGIN}/images/race/field-circuit-hero-1920.webp`;
 export const HERO_SRC_SET = [640, 960, 1440, 1920]
-  .map((width) => `/images/race/field-circuit-hero-${width}.webp ${width}w`)
+  .map((width) => `/images/race/field-circuit-hero-${width}.avif ${width}w`)
   .join(', ');
 
 export function pageMeta({

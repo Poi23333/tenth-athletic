@@ -1,4 +1,7 @@
-// Keep the WebGL implementation out of the Oxygen server bundle.
+// Load both WebGL and its styles only when a map approaches the viewport.
 export function loadMapbox() {
-  return import('mapbox-gl');
+  return Promise.all([
+    import('mapbox-gl'),
+    import('mapbox-gl/dist/mapbox-gl.css'),
+  ]).then(([mapbox]) => mapbox);
 }

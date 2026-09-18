@@ -86,6 +86,7 @@ export function RaceMap({accessToken}: {accessToken: string | null}) {
       <div
         ref={container}
         className="race-map-canvas"
+        role="region"
         aria-label="Interactive map of Lee Valley VeloPark"
       />
       {(!configured || status) && (
