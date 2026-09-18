@@ -409,13 +409,6 @@ export type LocalizationQuery = {
   };
 };
 
-export type StoreRobotsQueryVariables = StorefrontAPI.Exact<{
-  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
-  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
-}>;
-
-export type StoreRobotsQuery = {shop: Pick<StorefrontAPI.Shop, 'id'>};
-
 export type RaceEventQueryVariables = StorefrontAPI.Exact<{
   [key: string]: never;
 }>;
@@ -2155,10 +2148,6 @@ interface GeneratedQueryTypes {
   '#graphql\n  query Localization(\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    localization {\n      country {\n        isoCode\n        name\n        currency {\n          isoCode\n          symbol\n        }\n      }\n      language {\n        isoCode\n        name\n      }\n      availableCountries {\n        isoCode\n        name\n        currency {\n          isoCode\n          symbol\n        }\n      }\n    }\n  }\n': {
     return: LocalizationQuery;
     variables: LocalizationQueryVariables;
-  };
-  '#graphql\n  query StoreRobots($country: CountryCode, $language: LanguageCode)\n   @inContext(country: $country, language: $language) {\n    shop {\n      id\n    }\n  }\n': {
-    return: StoreRobotsQuery;
-    variables: StoreRobotsQueryVariables;
   };
   '#graphql\n  query RaceEvent {\n    race: metaobject(handle: {type: "race_event", handle: "field-circuit"}) {\n      startsAt: field(key: "starts_at") { value }\n      registrationUrl: field(key: "registration_url") { value }\n      photographerUrl: field(key: "photographer_url") { value }\n    }\n  }\n': {
     return: RaceEventQuery;

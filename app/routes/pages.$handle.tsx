@@ -3,6 +3,7 @@ import type {Route} from './+types/pages.$handle';
 import {InfoPage} from '~/components/InfoPage';
 import {getInfoPage} from '~/data/info-pages';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {SITE_ORIGIN} from '~/lib/seo';
 
 export const meta: Route.MetaFunction = ({data}) => {
   const title =
@@ -12,7 +13,14 @@ export const meta: Route.MetaFunction = ({data}) => {
         ? data.page.title
         : '';
 
-  return [{title: title ? `Tenth Athletic | ${title}` : 'Tenth Athletic'}];
+  const handle = data?.type === 'info' ? data.handle : data?.page.handle;
+
+  return [
+    {title: title ? `Tenth Athletic | ${title}` : 'Tenth Athletic'},
+    ...(handle
+      ? [{tagName: 'link' as const, rel: 'canonical', href: `${SITE_ORIGIN}/pages/${handle}`}]
+      : []),
+  ];
 };
 
 export async function loader(args: Route.LoaderArgs) {

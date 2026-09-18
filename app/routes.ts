@@ -6,6 +6,8 @@ import {hydrogenRoutes} from '@shopify/hydrogen';
 const enabled = new Set([
   'routes/_index.tsx',
   'routes/race.tsx',
+  'routes/[robots.txt].tsx',
+  'routes/[sitemap.xml].tsx',
   'routes/coming-soon.tsx',
   'routes/pages.$handle.tsx',
   'routes/$.tsx',

@@ -1,13 +1,7 @@
-import type {Route} from './+types/[robots.txt]';
-import {parseGid} from '@shopify/hydrogen';
+import {SITE_ORIGIN} from '~/lib/seo';
 
-export async function loader({request, context}: Route.LoaderArgs) {
-  const url = new URL(request.url);
-
-  const {shop} = await context.storefront.query(ROBOTS_QUERY);
-
-  const shopId = parseGid(shop.id).id;
-  const body = robotsTxtData({url: url.origin, shopId});
+export function loader() {
+  const body = robotsTxtData({url: SITE_ORIGIN});
 
   return new Response(body, {
     status: 200,
@@ -103,12 +97,3 @@ Disallow: /apple-app-site-association
 Disallow: /.well-known/shopify/monorail
 ${sitemapUrl ? `Sitemap: ${sitemapUrl}` : ''}`;
 }
-
-const ROBOTS_QUERY = `#graphql
-  query StoreRobots($country: CountryCode, $language: LanguageCode)
-   @inContext(country: $country, language: $language) {
-    shop {
-      id
-    }
-  }
-` as const;

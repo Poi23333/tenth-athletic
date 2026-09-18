@@ -7,6 +7,7 @@ import raceStyles from '~/styles/race.css?url';
 import mapboxStyles from 'mapbox-gl/dist/mapbox-gl.css?url';
 import {RaceMap} from '~/components/RaceMap';
 import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
+import {SITE_ORIGIN} from '~/lib/seo';
 
 export const links: Route.LinksFunction = () => [
   {rel: 'stylesheet', href: mapboxStyles},
@@ -25,6 +26,12 @@ export const meta: Route.MetaFunction = () => [
     name: 'description',
     content:
       'One circuit. Two terrains. Your sequence. Discover TENTH FIELD CIRCUIT at Lee Valley VeloPark, London.',
+  },
+  {
+    // /race re-exports this route while the homepage is the event landing page.
+    tagName: 'link',
+    rel: 'canonical',
+    href: `${SITE_ORIGIN}/`,
   },
 ];
 
