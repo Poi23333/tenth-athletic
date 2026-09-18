@@ -3,12 +3,15 @@ import {useLoaderData} from 'react-router';
 import type {Route} from './+types/_index';
 import {getRaceFaq} from '~/data/race-faq';
 import {raceProgramme, raceSpecifications} from '~/data/race';
+import raceLogo640 from '~/assets/race/field-circuit-logo-640.webp?url';
+import raceLogo1280 from '~/assets/race/field-circuit-logo-1280.webp?url';
 import raceStyles from '~/styles/race.css?url';
 import {RaceMap} from '~/components/RaceMap';
 import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
 import {
   EVENT_IMAGE,
   HERO_SRC_SET,
+  HERO_IMAGE,
   eventDate,
   eventDescription,
   eventHours,
@@ -21,7 +24,7 @@ export const links: Route.LinksFunction = () => [
     rel: 'preload',
     as: 'image',
     type: 'image/avif',
-    href: '/images/race/field-circuit-hero-960.avif',
+    href: HERO_IMAGE,
     imageSrcSet: HERO_SRC_SET,
     imageSizes: '100vw',
   },
@@ -242,7 +245,7 @@ export default function RacePage() {
       >
         <img
           className="race-hero-background"
-          src="/images/race/field-circuit-hero-960.avif"
+          src={HERO_IMAGE}
           srcSet={HERO_SRC_SET}
           sizes="100vw"
           fetchPriority="high"
@@ -252,8 +255,8 @@ export default function RacePage() {
         />
         <img
           className="race-hero-logo"
-          src="/images/race/field-circuit-logo-640.webp"
-          srcSet="/images/race/field-circuit-logo-640.webp 640w, /images/race/field-circuit-logo-1280.webp 1280w"
+          src={raceLogo640}
+          srcSet={`${raceLogo640} 640w, ${raceLogo1280} 1280w`}
           sizes="(max-width: 767px) 75vw, 53vw"
           alt="Field Circuit"
           width="2401"

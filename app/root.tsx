@@ -21,11 +21,7 @@ import {
   isGeoBannerDismissed,
   resolveRegionForGeo,
 } from '~/lib/locale';
-import resetStyles from '~/styles/reset.css?url';
-import comingSoonStyles from '~/styles/coming-soon.css?url';
-import appStyles from '~/styles/app.css?url';
-import infoPageStyles from '~/styles/info-page.css?url';
-import tailwindCss from './styles/tailwind.css?url';
+import siteStyles from '~/styles/site.css?url';
 import {PageLayout} from './components/PageLayout';
 
 export type RootLoader = typeof loader;
@@ -174,11 +170,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <link rel="stylesheet" href={tailwindCss}></link>
-        <link rel="stylesheet" href={resetStyles}></link>
-        <link rel="stylesheet" href={appStyles}></link>
-        <link rel="stylesheet" href={infoPageStyles}></link>
-        <link rel="stylesheet" href={comingSoonStyles} />
+        <link rel="stylesheet" href={siteStyles} />
         <Meta />
         <script
           type="application/ld+json"
