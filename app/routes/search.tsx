@@ -16,6 +16,7 @@ export const meta: Route.MetaFunction = ({data}) => {
   const term = data?.term;
 
   return [
+    {name: 'robots', content: 'noindex,follow'},
     {
       title: term
         ? `Search: ${term} | TENTH Athletic`

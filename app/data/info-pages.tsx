@@ -6,6 +6,7 @@ import eventPrivacyNotice from './event-privacy-notice.json';
 
 export type InfoPageDefinition = {
   title: string;
+  description: string;
   wide?: boolean;
   content: ReactNode;
 };
@@ -72,8 +73,7 @@ const SHIPPING_REGIONS: ShippingRegion[] = [
   },
   {
     title: 'Asia',
-    note:
-      'Includes China, Hong Kong, Japan, South Korea, Singapore, Taiwan, Thailand and Indonesia.',
+    note: 'Includes China, Hong Kong, Japan, South Korea, Singapore, Taiwan, Thailand and Indonesia.',
     rates: [
       {
         service: 'Standard Tracked',
@@ -89,8 +89,7 @@ const SHIPPING_REGIONS: ShippingRegion[] = [
   },
   {
     title: 'Middle East, Australia & New Zealand',
-    note:
-      'Includes Australia, New Zealand, United Arab Emirates, Saudi Arabia, Qatar and Israel.',
+    note: 'Includes Australia, New Zealand, United Arab Emirates, Saudi Arabia, Qatar and Israel.',
     rates: [
       {
         service: 'Standard Tracked',
@@ -147,15 +146,21 @@ function ShippingRatesTable({rates}: {rates: ShippingRate[]}) {
 export const INFO_PAGES: Record<string, InfoPageDefinition> = {
   'field-circuit-privacy-notice': {
     title: 'Event Privacy Notice',
+    description:
+      'Read how Tenth Athletic handles participant, spectator and photographer information for FIELD CIRCUIT, including event photography and your privacy rights.',
     wide: true,
     content: <EventDocument text={eventPrivacyNotice} />,
   },
   'event-entry-terms': {
     title: 'Event Entry Terms',
+    description:
+      'Read the TENTH FIELD CIRCUIT entry terms, including eligibility, registration, participant responsibilities, cancellations and event changes.',
     content: <EventDocument text={eventEntryTerms} />,
   },
   'customer-service': {
     title: 'Customer Service',
+    description:
+      'Find customer service information for Tenth Athletic, including help with orders, sizing, shipping, returns and general enquiries.',
     content: (
       <>
         <p>
@@ -177,6 +182,8 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
 
   'shipping-returns': {
     title: 'Shipping & Returns',
+    description:
+      'Read Tenth Athletic shipping and returns information, including delivery regions, dispatch times, international duties and return conditions.',
     wide: true,
     content: (
       <div className="info-page-accordions">
@@ -189,9 +196,9 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
             email with tracking information.
           </p>
           <p>
-            Delivery times are estimates and may vary due to customs
-            processing, local carrier delays, public holidays, weather
-            conditions, or circumstances outside our control.
+            Delivery times are estimates and may vary due to customs processing,
+            local carrier delays, public holidays, weather conditions, or
+            circumstances outside our control.
           </p>
 
           {SHIPPING_REGIONS.map((region) => (
@@ -244,8 +251,7 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
           <ul className="info-page-returns-list">
             <li>We accept returns within 14 days of delivery</li>
             <li>
-              Simply enter on My Account or click{' '}
-              <a href="/account">here</a>
+              Simply enter on My Account or click <a href="/account">here</a>
             </li>
             <li>
               Return shipping costs are the responsibility of the customer
@@ -263,6 +269,8 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
 
   faq: {
     title: 'FAQ',
+    description:
+      'Find answers to common Tenth Athletic questions about ordering, sizing, delivery, returns and product care.',
     content: (
       <div className="info-page-faq">
         <div className="info-page-faq-item">
@@ -338,6 +346,8 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
 
   'terms-conditions': {
     title: 'Terms & Conditions',
+    description:
+      'Read the terms and conditions for using the Tenth Athletic website and placing orders, including payment, delivery and returns.',
     content: (
       <>
         <p>
@@ -356,9 +366,9 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
         <h2 className="info-page-heading">Pricing and payment</h2>
         <p>
           Prices are shown in the currency selected for your region and include
-          applicable taxes where stated. Payment is taken at checkout. We reserve
-          the right to cancel orders placed at an incorrect price due to obvious
-          error.
+          applicable taxes where stated. Payment is taken at checkout. We
+          reserve the right to cancel orders placed at an incorrect price due to
+          obvious error.
         </p>
 
         <h2 className="info-page-heading">Orders and fulfilment</h2>
@@ -393,6 +403,8 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
 
   'privacy-cookie-policy': {
     title: 'Privacy & Cookie Policy',
+    description:
+      'Learn how Tenth Athletic collects and uses personal information and cookies, and how to exercise your privacy rights.',
     content: (
       <>
         <p>
@@ -411,13 +423,15 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
         </p>
         <p>
           We use cookies and similar technologies for essential site functions,
-          analytics, and (where consented) marketing. You can manage non-essential
-          cookies through the cookie banner or your browser settings.
+          analytics, and (where consented) marketing. You can manage
+          non-essential cookies through the cookie banner or your browser
+          settings.
         </p>
         <p>
-          We do not sell personal data. Data may be shared with service providers
-          who help us operate the store (for example payment, fulfilment, and
-          analytics partners), only as needed to provide those services.
+          We do not sell personal data. Data may be shared with service
+          providers who help us operate the store (for example payment,
+          fulfilment, and analytics partners), only as needed to provide those
+          services.
         </p>
         <p>
           To request access, correction, or deletion of your personal data, or
@@ -434,6 +448,8 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
 
   'our-packaging': {
     title: 'Our Packaging',
+    description:
+      'Learn about the Tenth Athletic approach to packaging, including protecting products, reducing unnecessary materials and supporting reuse.',
     content: (
       <>
         <p>
@@ -458,6 +474,8 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
 
   'care-guide': {
     title: 'Care Guide',
+    description:
+      'Follow the Tenth Athletic care guide for washing, drying and storing garments and technical fabrics. Always check the care label on your item.',
     content: (
       <>
         <p>
@@ -480,8 +498,8 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
         <h2 className="info-page-heading">Technical fabrics</h2>
         <p>
           Performance fabrics are built for repeated use in training and daily
-          movement. Wash after heavy sessions, avoid overloading the machine, and
-          skip softener so moisture management and stretch recovery stay
+          movement. Wash after heavy sessions, avoid overloading the machine,
+          and skip softener so moisture management and stretch recovery stay
           effective over time.
         </p>
 
@@ -497,6 +515,8 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
 
   sustainability: {
     title: 'Sustainability',
+    description:
+      'Read about the Tenth Athletic approach to product purpose, material responsibility, packaging and long-term use.',
     content: (
       <>
         <p>
@@ -528,6 +548,8 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
 
   careers: {
     title: 'Careers',
+    description:
+      'Find information about careers at Tenth Athletic and how to introduce yourself for future opportunities. No open roles are currently listed.',
     content: (
       <>
         <p>
@@ -545,6 +567,8 @@ export const INFO_PAGES: Record<string, InfoPageDefinition> = {
 
   'store-locator': {
     title: 'Store Locator / Stockists',
+    description:
+      'Find Tenth Athletic stockist information and how to make wholesale enquiries. Physical locations will be listed as they are confirmed.',
     content: (
       <>
         <p>

@@ -1,13 +1,21 @@
 import {useEffect, useRef, useState} from 'react';
 import {useLoaderData} from 'react-router';
 import type {Route} from './+types/_index';
-import {raceFaq} from '~/data/race-faq';
+import {getRaceFaq} from '~/data/race-faq';
 import {raceProgramme, raceSpecifications} from '~/data/race';
 import raceStyles from '~/styles/race.css?url';
 import mapboxStyles from 'mapbox-gl/dist/mapbox-gl.css?url';
 import {RaceMap} from '~/components/RaceMap';
 import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
-import {SITE_ORIGIN} from '~/lib/seo';
+import {
+  EVENT_IMAGE,
+  HERO_SRC_SET,
+  eventDate,
+  eventDescription,
+  eventHours,
+  eventStructuredData,
+  pageMeta,
+} from '~/lib/seo';
 
 export const links: Route.LinksFunction = () => [
   {rel: 'stylesheet', href: mapboxStyles},
@@ -20,20 +28,23 @@ export const links: Route.LinksFunction = () => [
     crossOrigin: 'anonymous',
   },
 ];
-export const meta: Route.MetaFunction = () => [
-  {title: 'TENTH FIELD CIRCUIT | Tenth Athletic'},
-  {
-    name: 'description',
-    content:
-      'One circuit. Two terrains. Your sequence. Discover TENTH FIELD CIRCUIT at Lee Valley VeloPark, London.',
-  },
-  {
-    // /race re-exports this route while the homepage is the event landing page.
-    tagName: 'link',
-    rel: 'canonical',
-    href: `${SITE_ORIGIN}/`,
-  },
-];
+export const meta: Route.MetaFunction = ({data}) => {
+  if (!data)
+    return [
+      {title: 'FIELD CIRCUIT unavailable | TENTH Athletic'},
+      {name: 'robots', content: 'noindex'},
+    ];
+  return [
+    ...pageMeta({
+      title: 'FIELD CIRCUIT London — Road & Trail Race | TENTH Athletic',
+      description: eventDescription(data.startsAt),
+      // /race is an alias while the homepage is the event landing page.
+      path: '/',
+      image: EVENT_IMAGE,
+    }),
+    {'script:ld+json': eventStructuredData(data.startsAt)},
+  ];
+};
 
 export async function loader({context}: Route.LoaderArgs) {
   const mapboxAccessToken = context.env.PUBLIC_MAPBOX_ACCESS_TOKEN?.trim();
@@ -225,7 +236,10 @@ export default function RacePage() {
       >
         <img
           className="race-hero-background"
-          src="/images/race/field-circuit-hero.jpg"
+          src="/images/race/field-circuit-hero-960.webp"
+          srcSet={HERO_SRC_SET}
+          sizes="100vw"
+          fetchPriority="high"
           alt=""
           width="1835"
           height="1223"
@@ -234,23 +248,28 @@ export default function RacePage() {
           className="race-hero-logo"
           src="/images/race/field-circuit-logo.png"
           alt="Field Circuit"
+          width="2401"
+          height="1006"
         />
       </section>
       <div className="race-layout">
         <div className="race-intro">
-          <h1>
+          <h1 className="race-event-name">TENTH FIELD CIRCUIT</h1>
+          <p className="race-tagline">
             ONE CIRCUIT.
             <br />
             TWO TERRAINS.
             <br />
             YOUR SEQUENCE.
-          </h1>
+          </p>
           <EntryLink href={registrationUrl}>REGISTER</EntryLink>
           <div className="race-venue">
             <p>
               LEE VALLEY VELOPARK, LONDON
               <br />
-              15:00–22:00
+              <time dateTime={startsAt}>{eventDate(startsAt)}</time>
+              <br />
+              {eventHours(startsAt)}
             </p>
             <p>
               INDIVIDUAL FIELD / £25 PER RUNNER
@@ -427,6 +446,14 @@ export default function RacePage() {
           </section>
           <section className="race-location">
             <h2>LOCATION</h2>
+            <p>
+              Lee Valley VeloPark, Abercrombie Road, Queen Elizabeth Olympic
+              Park, London E20 3AB, United Kingdom.
+              <br />
+              <a href="https://www.visitleevalley.org.uk/lee-valley-velopark">
+                Venue and travel information
+              </a>
+            </p>
             <RaceMap accessToken={mapboxAccessToken} />
           </section>
         </div>
@@ -454,7 +481,14 @@ export default function RacePage() {
         </section>
         <section className="race-faq">
           <h2>FAQ</h2>
-          {raceFaq.map((group, groupIndex) => (
+          <p>
+            <a href="/pages/event-entry-terms">Event entry terms</a>
+            {' · '}
+            <a href="/pages/field-circuit-privacy-notice">
+              Event privacy notice
+            </a>
+          </p>
+          {getRaceFaq(startsAt).map((group, groupIndex) => (
             <section key={group.title}>
               <h3>{group.title}</h3>
               {group.items.map((item, itemIndex) => (

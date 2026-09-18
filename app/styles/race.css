@@ -87,7 +87,8 @@ body:has(.race-page[data-header-on-hero='true']):not(
   margin-bottom: 1.2em;
   white-space: pre-line;
 }
-.race-intro h1 {
+.race-intro .race-tagline {
+  font-weight: 700;
   font-size: clamp(28px, 2.75vw, 53px);
   line-height: 1.16;
   margin-bottom: 22px;
@@ -486,7 +487,7 @@ body:has(.race-page[data-header-on-hero='true']):not(
     padding: 32px 20px 70px;
     font-size: 13px;
   }
-  .race-intro h1 {
+  .race-intro .race-tagline {
     font-size: clamp(28px, 9.2vw, 36px);
   }
   .race-venue {
@@ -586,4 +587,10 @@ body:has(.race-page[data-header-on-hero='true']):not(
 .race-page,
 .race-page * {
   box-sizing: border-box;
+}
+
+.race-intro .race-event-name {
+  font-size: clamp(16px, 1.25vw, 24px);
+  line-height: 1.2;
+  margin-bottom: 16px;
 }

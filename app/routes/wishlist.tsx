@@ -7,6 +7,7 @@ import {ProductItem} from '~/components/ProductItem';
 import {useWishlist} from '~/components/WishlistProvider';
 
 export const meta: Route.MetaFunction = () => [
+  {name: 'robots', content: 'noindex,follow'},
   {title: 'Wishlist | TENTH Athletic'},
 ];
 

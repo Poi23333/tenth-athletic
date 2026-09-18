@@ -11,6 +11,7 @@ import {
   useRouteLoaderData,
 } from 'react-router';
 import type {Route} from './+types/root';
+import {serializeJsonLd, siteStructuredData} from '~/lib/seo';
 import favicon from '~/assets/favicon.ico';
 import {REGIONS, type Region} from '~/data/regions';
 import {HEADER_QUERY, LOCALIZATION_QUERY} from '~/lib/fragments';
@@ -136,7 +137,7 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
 
   const [header, localization] = await Promise.all([
     storefront.query(HEADER_QUERY, {
-      cache: storefront.CacheNone(),
+      cache: storefront.CacheShort(),
       variables: {
         shopMenuHandle: 'shop-menu',
         manMenuHandle: 'man-menu',
@@ -179,6 +180,13 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={infoPageStyles}></link>
         <link rel="stylesheet" href={comingSoonStyles} />
         <Meta />
+        <script
+          type="application/ld+json"
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(siteStructuredData),
+          }}
+        />
         <Links />
       </head>
       <body className="site-body">

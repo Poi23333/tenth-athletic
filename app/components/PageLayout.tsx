@@ -227,7 +227,7 @@ function FieldIndexAside() {
           <div className="drawer-list">
             <NavLink
               className="drawer-list-item"
-              to="/race"
+              to="/"
               prefetch="intent"
               onClick={close}
             >
