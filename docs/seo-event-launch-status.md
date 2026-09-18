@@ -32,3 +32,15 @@ Scope: keep the event on the homepage; defer product SEO and Product structured 
 The direct PageSpeed API was rate-limited; the browser-based test above succeeded. Search Console needs time to collect field data and process updated pages; an indexing request does not guarantee ranking or an Event rich result.
 
 Reference: [Google Event structured data](https://developers.google.com/search/docs/appearance/structured-data/event), [Organization structured data](https://developers.google.com/search/docs/appearance/structured-data/organization), [mobile-first indexing](https://developers.google.com/search/docs/crawling-indexing/mobile/mobile-sites-mobile-first-indexing).
+
+
+## Final scope and Search Console
+
+The owner asked to defer further performance work and finish SEO/search configuration. No further performance tuning or repeated speed tests are planned in this task.
+
+Search Console confirmed **Indexing requested** and addition to the priority crawl queue for:
+
+- https://tenthathletic.com/
+- https://tenthathletic.com/pages/event-entry-terms
+
+The homepage is already indexed. The terms page was discovered through the submitted sitemap and is awaiting indexing. The sitemap has 13 public URLs; products remain outside this SEO release. Event Rich Results validation passed with the optional notices described above. Google processing and actual rich-result display remain pending.
