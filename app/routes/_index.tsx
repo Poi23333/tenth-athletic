@@ -77,7 +77,8 @@ export async function loader({context}: Route.LoaderArgs) {
     mapboxAccessToken: mapboxAccessToken || null,
     startsAt: date,
     serverNow: Date.now(),
-    registrationUrl: race?.registrationUrl?.value,
+    registrationUrl:
+      'https://www.letsdothis.com/gb/e/field-circuit-by-tenth-athletic-268904?occurrenceId=21111178849',
     photographerUrl: race?.photographerUrl?.value,
   };
 }
@@ -183,18 +184,28 @@ function FaqItem({
   );
 }
 
-function EntryLink({href, children}: {href?: string | null; children: string}) {
+function EntryLink({
+  href,
+  children,
+  newTab = false,
+}: {
+  href?: string | null;
+  children: string;
+  newTab?: boolean;
+}) {
   if (!href)
     return (
-      <>
-        <button className="race-pill" disabled>
-          {children}
-        </button>
-        <span className="race-entry-status">Applications not yet open</span>
-      </>
+      <button className="race-pill" disabled>
+        {children}
+      </button>
     );
   return (
-    <a className="race-pill" href={href}>
+    <a
+      className="race-pill"
+      href={href}
+      target={newTab ? '_blank' : undefined}
+      rel={newTab ? 'noopener noreferrer' : undefined}
+    >
       {children}
     </a>
   );
@@ -273,7 +284,9 @@ export default function RacePage() {
             <br />
             YOUR SEQUENCE.
           </p>
-          <EntryLink href={registrationUrl}>REGISTER</EntryLink>
+          <EntryLink href={registrationUrl} newTab>
+            REGISTER
+          </EntryLink>
           <div className="race-venue">
             <p>
               LEE VALLEY VELOPARK, LONDON
