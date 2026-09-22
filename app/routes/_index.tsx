@@ -4,6 +4,7 @@ import type {Route} from './+types/_index';
 import {getRaceFaq} from '~/data/race-faq';
 import {raceProgramme, raceSpecifications} from '~/data/race';
 import raceLogo640 from '~/assets/race/field-circuit-logo-640.webp?url';
+import brandLogo from '~/assets/logo.svg';
 import raceLogo1280 from '~/assets/race/field-circuit-logo-1280.webp?url';
 import raceStyles from '~/styles/race.css?url';
 import {RaceMap} from '~/components/RaceMap';
@@ -27,6 +28,14 @@ export const links: Route.LinksFunction = () => [
     href: HERO_IMAGE,
     imageSrcSet: HERO_SRC_SET,
     imageSizes: '100vw',
+  },
+  {
+    rel: 'preload',
+    as: 'image',
+    type: 'image/webp',
+    href: raceLogo640,
+    imageSrcSet: `${raceLogo640} 640w, ${raceLogo1280} 1280w`,
+    imageSizes: '(max-width: 767px) 75vw, 53vw',
   },
   {rel: 'stylesheet', href: raceStyles},
   {
@@ -260,6 +269,7 @@ export default function RacePage() {
           srcSet={HERO_SRC_SET}
           sizes="100vw"
           fetchPriority="high"
+          loading="eager"
           alt=""
           width="1835"
           height="1223"
@@ -269,10 +279,16 @@ export default function RacePage() {
           src={raceLogo640}
           srcSet={`${raceLogo640} 640w, ${raceLogo1280} 1280w`}
           sizes="(max-width: 767px) 75vw, 53vw"
+          loading="eager"
+          fetchPriority="high"
           alt="Field Circuit"
           width="2401"
           height="1006"
         />
+        <div className="race-hero-byline">
+          <span>By</span>
+          <img src={brandLogo} alt="Tenth Athletic" width="562" height="63" />
+        </div>
       </section>
       <div className="race-layout">
         <div className="race-intro">
@@ -296,7 +312,7 @@ export default function RacePage() {
               {eventHours(startsAt)}
             </p>
             <p>
-              INDIVIDUAL FIELD / £25 PER RUNNER
+              INDIVIDUAL FIELD / £35 PER RUNNER
               <br />
               COMMUNITY FIELD RELAY / £120 PER TEAM
               <br />
@@ -372,7 +388,11 @@ export default function RacePage() {
               <br />
               TRAIL ENTRY CLOSED
             </p>
-            <h3>ONE ROAD LOOP. THE ROAD TO POLE.</h3>
+            <h3>
+              GRID TIME TRIAL / GRID TT
+              <br />
+              ONE ROAD LOOP. THE ROAD TO POLE.
+            </h3>
             <p>
               Before the Final, qualified athletes complete one full 660-metre
               Road loop against the clock in Grid TT.
@@ -445,7 +465,7 @@ export default function RacePage() {
             </h2>
             <dl>
               <div className="race-spec-row">
-                <dt>EVENT</dt>
+                <dt>CIRCUIT LAYOUT</dt>
                 <dd>
                   <img
                     src="/images/race/course-outline.svg"
@@ -481,14 +501,6 @@ export default function RacePage() {
             <RaceMap accessToken={mapboxAccessToken} />
           </section>
         </div>
-        <img
-          className="race-stratford"
-          src="/images/race/stratford-map.svg"
-          alt="Illustrated Stratford International venue map"
-          width="526"
-          height="529"
-          loading="lazy"
-        />
         <section className="race-programme">
           <h2>RACE DAY PROGRAMME</h2>
           <ol>
@@ -497,7 +509,7 @@ export default function RacePage() {
                 <time>{time}</time>
                 <div>
                   <h3>{title}</h3>
-                  <p>{detail}</p>
+                  {detail && <p>{detail}</p>}
                 </div>
               </li>
             ))}

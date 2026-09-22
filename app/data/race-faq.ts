@@ -43,7 +43,7 @@ export function getRaceFaq(startsAt: string) {
         {
           question: 'How much does it cost to enter?',
           answer:
-            'Individual Field entry costs £25 per runner.\n\nCommunity Field Relay entry costs £120 per six-person team.\n\nEntry fees secure a place in the selected race format. Full cancellation, transfer and refund terms will be provided during registration.\n\nSpectator entry is free.',
+            'Individual Field entry costs £35 per runner.\n\nCommunity Field Relay entry costs £120 per six-person team.\n\nEntry fees secure a place in the selected race format. Full cancellation, transfer and refund terms will be provided during registration.\n\nSpectator entry is free.',
         },
         {
           question: 'What is the minimum age to compete?',

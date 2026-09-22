@@ -54,7 +54,7 @@ Invited places are issued directly by TENTH.
 
 ### How much does it cost to enter?
 
-Individual Field entry costs £25 per runner.
+Individual Field entry costs £35 per runner.
 
 Community Field Relay entry costs £120 per six-person team.
 

@@ -1,26 +1,39 @@
 export const raceProgramme = [
-  ['15:00', 'CHECK-IN OPENS', 'Bib collection / ID verification / bag drop'],
-  ['15:40', 'ATHLETE BRIEFING', 'Race rules / course entry points / safety'],
+  [
+    '15:00',
+    'EVENT VILLAGE + CHECK-IN OPENS',
+    'Bib collection / ID verification / bag drop',
+  ],
+  [
+    '15:30',
+    'INDIVIDUAL FIELD BRIEFING',
+    'Race rules / course entry points / safety',
+  ],
   ['16:00', 'FIELD QUALIFYING', 'One race / all Field Final places decided'],
   [
-    '17:00',
-    'RECOVERY WINDOW',
+    '17:15',
+    'RESULTS + RECOVERY',
     'Finalist recovery / results verification / refuel',
   ],
-  ['18:00', 'GRID TT', 'One full Road loop / starting grid positions only'],
   [
-    '18:45',
+    '17:50',
+    'GRID TIME TRIAL / GRID TT',
+    'One full Road loop / starting grid positions only',
+  ],
+  ['18:20', 'COMMUNITY FIELD RELAY BRIEFING', ''],
+  [
+    '18:40',
     'COMMUNITY FIELD RELAY',
     'Six runners / two terrains / one team result',
   ],
   [
-    '19:30',
+    '20:00',
     'NIGHT TRANSITION + GRID REVEAL',
     'Lighting / music / Pole Position reveal',
   ],
-  ['20:15', 'FIELD FINAL', '12 laps / Road and Trail / final Road sprint'],
-  ['21:25', 'AWARDS', 'Relay and Individual podiums / official photography'],
-  ['22:00', 'EVENT CLOSE', 'End of programme.'],
+  ['20:20', 'FIELD FINAL', '12 laps / Road and Trail / final Road sprint'],
+  ['21:40', 'AWARDS', 'Relay and Individual podiums / official photography'],
+  ['22:00', 'AFTER PARTY', ''],
 ] as const;
 
 export const raceSpecifications = [
@@ -34,11 +47,10 @@ export const raceSpecifications = [
   ],
   ['LOCATION', ['LEE VALLEY VELOPARK / EAST LONDON']],
   [
-    'TOTAL FIELD',
+    'ENTRY FORMAT',
     [
-      '500 ATHLETES',
-      'FIELD COMPOSITION',
-      'OPEN ENTRY / INVITED ENTRIES / RUN CLUB ALLOCATIONS',
+      'LIMITED CAPACITY',
+      'OPEN ENTRY / INVITED ATHLETES / COMMUNITY TEAM ALLOCATIONS',
     ],
   ],
   ['COURSE COMPOSITION', ['ROAD / TRAIL']],
