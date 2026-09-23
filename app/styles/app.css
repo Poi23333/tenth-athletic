@@ -1044,12 +1044,17 @@ html:has(.product) .footer {
 }
 
 .footer-benefit {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  text-align: center;
 }
 
-.footer-benefit-heading {
-  max-width: 100%;
-  width: fit-content;
+.footer-benefit-heading,
+.footer-benefit p {
+  max-width: 18rem;
+  width: 100%;
 }
 
 .footer-benefit-icon {
@@ -1070,6 +1075,13 @@ html:has(.product) .footer {
   width: auto;
 }
 
+.footer-benefit-icon img[src='/images/cart/returns-30-days.svg'] {
+  /* Compensate for the artwork's inset within its 90.35-unit viewBox.
+     Visible vertical bounds: 5.5–83.93; keep the shared 4rem layout box. */
+  transform: translate(0.018rem, 0.023rem) scale(1.152);
+  transform-origin: center;
+}
+
 .footer-benefit h2,
 .footer-benefit p {
   margin: 0;
@@ -1085,7 +1097,6 @@ html:has(.product) .footer {
   font-size: 0.8125rem;
   line-height: 1.3;
   margin-top: 0.85rem;
-  max-width: 18rem;
 }
 
 .footer-inner {

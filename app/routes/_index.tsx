@@ -3,9 +3,8 @@ import {useLoaderData} from 'react-router';
 import type {Route} from './+types/_index';
 import {getRaceFaq} from '~/data/race-faq';
 import {raceProgramme, raceSpecifications} from '~/data/race';
-import raceLogo640 from '~/assets/race/field-circuit-logo-640.webp?url';
+import raceLogo from '~/assets/race/logo-race.svg?url';
 import brandLogo from '~/assets/logo.svg';
-import raceLogo1280 from '~/assets/race/field-circuit-logo-1280.webp?url';
 import raceStyles from '~/styles/race.css?url';
 import {RaceMap} from '~/components/RaceMap';
 import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
@@ -32,10 +31,8 @@ export const links: Route.LinksFunction = () => [
   {
     rel: 'preload',
     as: 'image',
-    type: 'image/webp',
-    href: raceLogo640,
-    imageSrcSet: `${raceLogo640} 640w, ${raceLogo1280} 1280w`,
-    imageSizes: '(max-width: 767px) 75vw, 53vw',
+    type: 'image/svg+xml',
+    href: raceLogo,
   },
   {rel: 'stylesheet', href: raceStyles},
   {
@@ -276,14 +273,12 @@ export default function RacePage() {
         />
         <img
           className="race-hero-logo"
-          src={raceLogo640}
-          srcSet={`${raceLogo640} 640w, ${raceLogo1280} 1280w`}
-          sizes="(max-width: 767px) 75vw, 53vw"
+          src={raceLogo}
           loading="eager"
           fetchPriority="high"
           alt="Field Circuit"
-          width="2401"
-          height="1006"
+          width="228.63"
+          height="95.69"
         />
         <div className="race-hero-byline">
           <span>By</span>
