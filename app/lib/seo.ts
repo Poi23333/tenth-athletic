@@ -2,7 +2,7 @@ import type {MetaDescriptor} from 'react-router';
 import hero640 from '~/assets/race/field-circuit-hero-640.webp?url';
 import hero960 from '~/assets/race/field-circuit-hero-960.webp?url';
 import hero1440 from '~/assets/race/field-circuit-hero-1440.webp?url';
-import hero1920 from '~/assets/race/field-circuit-hero-1920.webp?url';
+import hero2000 from '~/assets/race/field-circuit-hero-2000.webp?url';
 
 /** Public origin shared by canonical URLs, robots.txt and the sitemap. */
 export const SITE_ORIGIN = 'https://tenthathletic.com';
@@ -13,7 +13,7 @@ export const HERO_SRC_SET = [
   [hero640, 640],
   [hero960, 960],
   [hero1440, 1440],
-  [hero1920, 1920],
+  [hero2000, 2000],
 ]
   .map(([url, width]) => `${url} ${width}w`)
   .join(', ');
