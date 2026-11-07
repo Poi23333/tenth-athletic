@@ -10,8 +10,6 @@ import {RaceMap} from '~/components/RaceMap';
 import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
 import {
   EVENT_IMAGE,
-  HERO_SRC_SET,
-  HERO_IMAGE,
   eventDate,
   eventDescription,
   eventHours,
@@ -20,14 +18,6 @@ import {
 } from '~/lib/seo';
 
 export const links: Route.LinksFunction = () => [
-  {
-    rel: 'preload',
-    as: 'image',
-    type: 'image/avif',
-    href: HERO_IMAGE,
-    imageSrcSet: HERO_SRC_SET,
-    imageSizes: '100vw',
-  },
   {
     rel: 'preload',
     as: 'image',
@@ -260,17 +250,6 @@ export default function RacePage() {
         className="race-hero"
         aria-label="TENTH FIELD CIRCUIT"
       >
-        <img
-          className="race-hero-background"
-          src={HERO_IMAGE}
-          srcSet={HERO_SRC_SET}
-          sizes="100vw"
-          fetchPriority="high"
-          loading="eager"
-          alt=""
-          width="1835"
-          height="1223"
-        />
         <img
           className="race-hero-logo"
           src={raceLogo}
