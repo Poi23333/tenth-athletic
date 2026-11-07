@@ -3,13 +3,13 @@ import {useLoaderData} from 'react-router';
 import type {Route} from './+types/_index';
 import {getRaceFaq} from '~/data/race-faq';
 import {raceProgramme, raceSpecifications} from '~/data/race';
-import raceLogo from '~/assets/race/logo-race.svg?url';
-import brandLogo from '~/assets/logo.svg';
 import raceStyles from '~/styles/race.css?url';
 import {RaceMap} from '~/components/RaceMap';
 import {GlobalDotMatrix} from '~/components/GlobalDotMatrix';
 import {
   EVENT_IMAGE,
+  HERO_IMAGE,
+  HERO_SRC_SET,
   eventDate,
   eventDescription,
   eventHours,
@@ -21,8 +21,10 @@ export const links: Route.LinksFunction = () => [
   {
     rel: 'preload',
     as: 'image',
-    type: 'image/svg+xml',
-    href: raceLogo,
+    type: 'image/webp',
+    href: HERO_IMAGE,
+    imageSrcSet: HERO_SRC_SET,
+    imageSizes: '100vw',
   },
   {rel: 'stylesheet', href: raceStyles},
   {
@@ -251,18 +253,16 @@ export default function RacePage() {
         aria-label="TENTH FIELD CIRCUIT"
       >
         <img
-          className="race-hero-logo"
-          src={raceLogo}
-          loading="eager"
+          className="race-hero-image"
+          src={HERO_IMAGE}
+          srcSet={HERO_SRC_SET}
+          sizes="100vw"
           fetchPriority="high"
-          alt="Field Circuit"
-          width="228.63"
-          height="95.69"
+          loading="eager"
+          alt="FIELD CIRCUIT by Tenth Athletic"
+          width="2000"
+          height="1336"
         />
-        <div className="race-hero-byline">
-          <span>By</span>
-          <img src={brandLogo} alt="Tenth Athletic" width="562" height="63" />
-        </div>
       </section>
       <div className="race-layout">
         <div className="race-intro">
